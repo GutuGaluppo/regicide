@@ -1,16 +1,14 @@
 // /services/storage.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Enemy } from "../data/types";
+import { GameState } from "../data/types";
 
 const KEY = "regicide_save";
 
-type SaveData = { castle: Enemy[]; history: Enemy[] };
-
-export const saveGame = async (data: SaveData): Promise<void> => {
-	await AsyncStorage.setItem(KEY, JSON.stringify(data));
+export const saveGame = async (state: GameState): Promise<void> => {
+	await AsyncStorage.setItem(KEY, JSON.stringify(state));
 };
 
-export const loadGame = async (): Promise<SaveData | null> => {
+export const loadGame = async (): Promise<GameState | null> => {
 	const data = await AsyncStorage.getItem(KEY);
-	return data ? (JSON.parse(data) as SaveData) : null;
+	return data ? (JSON.parse(data) as GameState) : null;
 };
