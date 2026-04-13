@@ -1,9 +1,9 @@
 // /components/CardView.tsx
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import SpellIcon from "../assets/icons/spellImmune_shadow.png";
+import { getHandCardImage } from "../data/images";
 import { Card, Suit } from "../data/types";
-
-const ExclamationIcon = require("../assets/icons/spell.png");
 
 const SUIT_SYMBOL: Record<string, string> = {
 	hearts: "♥",
@@ -32,9 +32,8 @@ export const CardView = ({
 	disabled?: boolean;
 	immuneSuit?: Suit | null;
 }) => {
-	const symbol = card.suit ? SUIT_SYMBOL[card.suit] : "🃏";
-	const color = card.suit ? SUIT_COLOR[card.suit] : "#7C3AED";
 	const isImmune = !!card.suit && card.suit === immuneSuit;
+	const cardImage = getHandCardImage(card.rank, card.suit, card.id);
 
 	return (
 		<View style={styles.wrapper}>
@@ -49,13 +48,35 @@ export const CardView = ({
 				activeOpacity={0.7}
 				disabled={disabled}
 			>
-				<Text style={[styles.rank, { color }]}>{card.rank}</Text>
-				<Text style={[styles.suit, { color }]}>{symbol}</Text>
+				{cardImage ? (
+					<Image
+						source={cardImage}
+						style={styles.cardImage}
+						resizeMode="cover"
+					/>
+				) : (
+					<>
+						<Text
+							style={[
+								styles.rank,
+								{ color: card.suit ? SUIT_COLOR[card.suit] : "#7C3AED" },
+							]}
+						>
+							{card.rank}
+						</Text>
+						<Text
+							style={[
+								styles.suit,
+								{ color: card.suit ? SUIT_COLOR[card.suit] : "#7C3AED" },
+							]}
+						>
+							{card.suit ? SUIT_SYMBOL[card.suit] : "🃏"}
+						</Text>
+					</>
+				)}
 				{selected && <View style={styles.selectedDot} />}
 			</TouchableOpacity>
-			{isImmune && (
-				<Image source={ExclamationIcon} style={styles.immuneIcon} />
-			)}
+			{isImmune && <Image source={SpellIcon} style={styles.immuneIcon} />}
 		</View>
 	);
 };
@@ -68,19 +89,21 @@ const styles = StyleSheet.create({
 	card: {
 		width: 64,
 		height: 92,
-		backgroundColor: "#F8FAFC",
 		borderRadius: 8,
 		borderWidth: 2,
-		borderColor: "#CBD5E1",
-		justifyContent: "center",
-		alignItems: "center",
+		borderColor: "transparent",
+		overflow: "hidden",
+		backgroundColor: "#F8FAFC",
+	},
+	cardImage: {
+		width: "100%",
+		height: "100%",
 	},
 	cardImmune: {
 		borderColor: "#EF4444",
 	},
 	selected: {
 		borderColor: "#FBBF24",
-		backgroundColor: "#FFFBEB",
 		transform: [{ translateY: -10 }],
 	},
 	disabled: {
@@ -89,14 +112,17 @@ const styles = StyleSheet.create({
 	rank: {
 		fontSize: 18,
 		fontWeight: "bold",
+		textAlign: "center",
 	},
 	suit: {
 		fontSize: 22,
 		marginTop: 2,
+		textAlign: "center",
 	},
 	selectedDot: {
 		position: "absolute",
 		bottom: 4,
+		alignSelf: "center",
 		width: 6,
 		height: 6,
 		borderRadius: 3,
@@ -104,9 +130,9 @@ const styles = StyleSheet.create({
 	},
 	immuneIcon: {
 		position: "absolute",
-		top: -5,
-		right: -5,
-		width: 16,
-		height: 16,
+		top: -2,
+		right: -2,
+		width: 26,
+		height: 26,
 	},
 });
