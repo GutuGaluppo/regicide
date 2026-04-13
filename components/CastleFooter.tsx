@@ -1,24 +1,27 @@
 // /components/CastleFooter.tsx
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { getCardImage } from "../data/images";
 import { Enemy, EnemyRank } from "../data/types";
 
 const LetterX = require("../assets/icons/letter-x.png");
 
-const PHASE_LABEL: Record<EnemyRank, string> = {
-	J: "Valetes",
-	Q: "Rainhas",
-	K: "Reis",
-};
-
 export const CastleFooter = ({
 	castle,
 	defeatedEnemies,
+	currentEnemyId,
 }: {
 	castle: Enemy[];
 	defeatedEnemies: Enemy[];
+	currentEnemyId: string;
 }) => {
+	const { t } = useTranslation();
+	const PHASE_LABEL: Record<EnemyRank, string> = {
+		J: t("footer.jacks"),
+		Q: t("footer.queens"),
+		K: t("footer.kings"),
+	};
 	const allEnemies = [...defeatedEnemies, ...castle];
 	const defeatedIds = defeatedEnemies.map((e) => e.id);
 
@@ -47,8 +50,12 @@ export const CastleFooter = ({
 			<View style={styles.row}>
 				{phaseEnemies.map((enemy) => {
 					const defeated = defeatedIds.includes(enemy.id);
+					const isCurrent = enemy.id === currentEnemyId;
 					return (
-						<View key={enemy.id} style={styles.slot}>
+						<View
+							key={enemy.id}
+							style={[styles.slot, isCurrent && styles.slotCurrent]}
+						>
 							<Image
 								source={getCardImage(enemy.rank, enemy.suit)}
 								style={[styles.miniCard, defeated && styles.miniCardDefeated]}
@@ -98,8 +105,13 @@ const styles = StyleSheet.create({
 		aspectRatio: 824 / 1156,
 		borderRadius: 6,
 		overflow: "hidden",
+		backgroundColor: "rgba(255,255,255,0.9)",
 		borderWidth: 2,
 		borderColor: "transparent",
+	},
+	slotCurrent: {
+		borderColor: "#FBBF24",
+		borderRadius: 7,
 	},
 	miniCard: {
 		width: "100%",
