@@ -60,6 +60,23 @@ export const HomeScreen = () => {
 							Placar para o baralho físico — rastreie HP e ataque dos inimigos
 						</Text>
 					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={[styles.card, styles.cardInstructions]}
+						onPress={() => router.push("/instructions")}
+						activeOpacity={0.85}
+					>
+						<View style={styles.cardHeader}>
+							<Image
+								source={require("../assets/images/crown.png")}
+								style={{ width: 32, height: 32 }}
+							/>
+							<Text style={styles.cardTitle}>COMO JOGAR</Text>
+						</View>
+						<Text style={styles.cardDesc}>
+							Regras, poderes dos naipes e tabela dos nobres do castelo
+						</Text>
+					</TouchableOpacity>
 				</View>
 			</View>
 		</ImageBackground>
@@ -104,12 +121,17 @@ const styles = StyleSheet.create({
 		backgroundColor: "rgba(71,85,105,0.7)",
 		borderColor: "#D5B377",
 	},
+	cardInstructions: {
+		backgroundColor: "rgba(71,85,105,0.7)",
+		borderColor: "#94A3B8",
+	},
 	cardIcon: { fontSize: 32 },
 	cardTitle: {
 		color: "#F1F5F9",
 		fontFamily: "IMFellEnglish-Regular",
 		fontSize: 24,
 		fontWeight: "700",
+		width: "100%",
 	},
 	cardDesc: {
 		color: "#e4ebfe",
