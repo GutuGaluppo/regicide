@@ -12,6 +12,7 @@ import {
 import { ActionBar } from "../components/ActionBar";
 import { CastleFooter } from "../components/CastleFooter";
 import { EnemyCard } from "../components/EnemyCard";
+import { NumberSprite } from "../components/NumberSprite";
 import { PlayerHand } from "../components/PlayerHand";
 import { VictoryScreen } from "../components/VictoryScreen";
 import { useGame } from "../hooks/useGame";
@@ -26,8 +27,7 @@ const StatusCard = ({ count }: { count: number }) => (
 			resizeMode="contain"
 		/>
 		<View style={styles.statusCardOverlay}>
-			<Text style={styles.statusCardNumOutline}>{count}</Text>
-			<Text style={styles.statusCardNum}>{count}</Text>
+			<NumberSprite value={count} type="attack" height={25} />
 		</View>
 	</View>
 );
@@ -162,15 +162,22 @@ const styles = StyleSheet.create({
 		justifyContent: "space-between",
 	},
 	statusBar: {
+		position: "absolute",
+		top: 50,
+		left: "50%",
+		transform: [{ translateX: -110 }],
 		flexDirection: "row",
 		justifyContent: "center",
 		alignItems: "flex-end",
 		gap: 12,
+		margin: "auto",
 		paddingHorizontal: 16,
 	},
 	statusCard: {
-		width: 36,
-		height: 50,
+		width: 56,
+		height: 70,
+		borderRadius: 8,
+		overflow: "hidden",
 	},
 	statusCardImg: {
 		width: "100%",
@@ -180,21 +187,6 @@ const styles = StyleSheet.create({
 		...StyleSheet.absoluteFillObject,
 		justifyContent: "center",
 		alignItems: "center",
-	},
-	statusCardNumOutline: {
-		position: "absolute",
-		fontSize: 22,
-		fontWeight: "900",
-		color: "#FFFFFF",
-		textShadowColor: "#FFFFFF",
-		textShadowOffset: { width: 0, height: 0 },
-		textShadowRadius: 6,
-	},
-	statusCardNum: {
-		position: "absolute",
-		fontSize: 22,
-		fontWeight: "900",
-		color: "#000000",
 	},
 	center: {
 		flex: 1,
@@ -232,6 +224,9 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 16,
 	},
 	header: {
+		display: "flex",
+		flexDirection: "row",
+		alignItems: "center",
 		paddingTop: 52,
 		paddingHorizontal: 16,
 		paddingBottom: 4,
