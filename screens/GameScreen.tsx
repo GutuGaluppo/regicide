@@ -64,7 +64,7 @@ export const GameScreen = () => {
 	}
 
 	if (phase === "defeat" && currentEnemy) {
-		return <DefeatScreen enemy={currentEnemy} />;
+		return <DefeatScreen enemy={currentEnemy} onReset={resetGame} />;
 	}
 
 	return (

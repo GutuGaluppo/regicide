@@ -19,8 +19,6 @@ const CARD_BACK = require("../assets/images/cards_back.png");
 const CROWN = require("../assets/images/crown.png");
 const CROWN_ICON = require("../assets/icons/crown_white.png");
 
-const LINEAR = Easing.linear;
-
 // ─── Ghost elements (mimic game layout to shrink out) ───────────────────────
 
 const GhostStatusBar = () => (
@@ -56,20 +54,29 @@ const GhostFooter = () => (
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-export const DefeatScreen = ({ enemy }: { enemy: Enemy }) => {
+export const DefeatScreen = ({
+	enemy,
+	onReset,
+}: {
+	enemy: Enemy;
+	onReset: () => void;
+}) => {
 	// Phase 1 – outros elementos encolhem (0 → 700ms)
 	const othersScale = useRef(new Animated.Value(1)).current;
 	const othersOpacity = useRef(new Animated.Value(1)).current;
 
 	// Phase 1 – carta cresce (0 → 900ms)
-	const cardScale = useRef(new Animated.Value(0.65)).current;
-	const cardOpacity = useRef(new Animated.Value(0.7)).current;
+	const cardScale = useRef(new Animated.Value(0.6)).current;
+	const cardOpacity = useRef(new Animated.Value(0.6)).current;
 
 	// Phase 2 – coroa desce (900 → 1900ms)
-	const crownY = useRef(new Animated.Value(-340)).current;
+	const crownY = useRef(new Animated.Value(-380)).current;
 	const crownOpacity = useRef(new Animated.Value(0)).current;
 
-	// Phase 2 – mensagem aparece (1100 → 1700ms)
+	// Phase 3 – coroa flutua (loop após descida)
+	const crownFloat = useRef(new Animated.Value(0)).current;
+
+	// Phase 2 – mensagem + botão aparecem
 	const msgOpacity = useRef(new Animated.Value(0)).current;
 
 	useEffect(() => {
@@ -79,25 +86,25 @@ export const DefeatScreen = ({ enemy }: { enemy: Enemy }) => {
 				Animated.timing(othersScale, {
 					toValue: 0,
 					duration: 700,
-					easing: LINEAR,
+					easing: Easing.linear,
 					useNativeDriver: true,
 				}),
 				Animated.timing(othersOpacity, {
 					toValue: 0,
 					duration: 500,
-					easing: LINEAR,
+					easing: Easing.linear,
 					useNativeDriver: true,
 				}),
 				Animated.timing(cardScale, {
 					toValue: 1,
 					duration: 900,
-					easing: LINEAR,
+					easing: Easing.linear,
 					useNativeDriver: true,
 				}),
 				Animated.timing(cardOpacity, {
 					toValue: 1,
 					duration: 600,
-					easing: LINEAR,
+					easing: Easing.linear,
 					useNativeDriver: true,
 				}),
 			]),
@@ -106,24 +113,51 @@ export const DefeatScreen = ({ enemy }: { enemy: Enemy }) => {
 				Animated.timing(crownY, {
 					toValue: 0,
 					duration: 1000,
-					easing: LINEAR,
+					easing: Easing.linear,
 					useNativeDriver: true,
 				}),
 				Animated.timing(crownOpacity, {
 					toValue: 1,
 					duration: 1000,
-					easing: LINEAR,
+					easing: Easing.linear,
 					useNativeDriver: true,
 				}),
 				Animated.timing(msgOpacity, {
 					toValue: 1,
 					duration: 700,
-					easing: LINEAR,
+					easing: Easing.linear,
 					useNativeDriver: true,
 				}),
 			]),
-		]).start();
-	}, []);
+		]).start(() => {
+			// Fase 3 — coroa flutua em loop
+			Animated.loop(
+				Animated.sequence([
+					Animated.timing(crownFloat, {
+						toValue: -10,
+						duration: 900,
+						easing: Easing.inOut(Easing.sin),
+						useNativeDriver: true,
+					}),
+					Animated.timing(crownFloat, {
+						toValue: 0,
+						duration: 900,
+						easing: Easing.inOut(Easing.sin),
+						useNativeDriver: true,
+					}),
+				]),
+			).start();
+		});
+	}, [
+		cardOpacity,
+		cardScale,
+		crownFloat,
+		crownOpacity,
+		crownY,
+		msgOpacity,
+		othersOpacity,
+		othersScale,
+	]);
 
 	return (
 		<ImageBackground
@@ -154,13 +188,15 @@ export const DefeatScreen = ({ enemy }: { enemy: Enemy }) => {
 				{/* Centro — carta cresce + coroa desce */}
 				<View style={styles.center}>
 					<View style={styles.cardStack}>
-						{/* Coroa desce de cima */}
+						{/* Coroa desce e flutua */}
 						<Animated.Image
 							source={CROWN}
 							style={[
 								styles.crown,
 								{
-									transform: [{ translateY: crownY }],
+									transform: [
+										{ translateY: Animated.add(crownY, crownFloat) },
+									],
 									opacity: crownOpacity,
 								},
 							]}
@@ -186,6 +222,13 @@ export const DefeatScreen = ({ enemy }: { enemy: Enemy }) => {
 					<Animated.Text style={[styles.defeatMsg, { opacity: msgOpacity }]}>
 						O reino caiu
 					</Animated.Text>
+
+					{/* Botão novo jogo */}
+					<Animated.View style={{ opacity: msgOpacity }}>
+						<TouchableOpacity style={styles.newGameBtn} onPress={onReset} activeOpacity={0.8}>
+							<Text style={styles.newGameText}>Novo jogo</Text>
+						</TouchableOpacity>
+					</Animated.View>
 				</View>
 
 				{/* Ghost mão + botões — encolhe */}
@@ -236,20 +279,19 @@ const styles = StyleSheet.create({
 	},
 	cardStack: {
 		alignItems: "center",
-		// overflow visible para a coroa aparecer acima do container
 	},
 	crown: {
-		width: 110,
-		height: 80,
-		// Posição natural: acima do topo da carta (–80px)
-		// A animação translateY parte de –340 e chega a 0
-		marginBottom: -80,
+		width: 120,
+		height: 88,
+		// Posição natural: acima do topo da carta
+		// translateY parte de –380 e chega a 0; crownFloat oscila ±10
+		marginBottom: -88,
 		zIndex: 10,
 	},
 	enemyCard: {
-		width: 240,
-		height: 336,
-		borderRadius: 12,
+		width: 290,
+		height: 406,
+		borderRadius: 14,
 	},
 	defeatMsg: {
 		fontFamily: "IMFellEnglish-Regular",
@@ -260,6 +302,22 @@ const styles = StyleSheet.create({
 		textShadowColor: "#7F1D1D",
 		textShadowOffset: { width: 0, height: 0 },
 		textShadowRadius: 12,
+	},
+	newGameBtn: {
+		paddingVertical: 12,
+		paddingHorizontal: 40,
+		borderRadius: 10,
+		backgroundColor: "rgba(104,50,55,0.7)",
+		borderWidth: 1,
+		borderColor: "#EF4444",
+	},
+	newGameText: {
+		color: "#F1F5F9",
+		fontFamily: "IMFellEnglish-Regular",
+		fontSize: 18,
+		fontWeight: "700",
+		letterSpacing: 1,
+		textAlign: "center",
 	},
 	ghostBottom: {
 		paddingHorizontal: 12,
