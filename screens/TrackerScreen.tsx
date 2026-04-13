@@ -14,6 +14,7 @@ import {
 import HospitalIcon from "../assets/icons/hospital.svg";
 import { AttackInput } from "../components/AttackInput";
 import { DefeatFooter } from "../components/DefeatFooter";
+import { VictoryScreen } from "../components/VictoryScreen";
 import { getCardImage } from "../data/images";
 import { CardRank, Suit } from "../data/types";
 import { useTracker } from "../hooks/useTracker";
@@ -51,6 +52,10 @@ export const TrackerScreen = () => {
 		applyAttack(suit, rank);
 	};
 
+	if (isVictory) {
+		return <VictoryScreen onReset={resetTracker} />;
+	}
+
 	return (
 		<ImageBackground
 			source={require("../assets/backgrounds/bg_cave.webp")}
@@ -71,15 +76,6 @@ export const TrackerScreen = () => {
 						<Text style={styles.resetText}>Reiniciar</Text>
 					</TouchableOpacity>
 				</View>
-
-				{/* Vitória */}
-				{isVictory && (
-					<View style={styles.victoryBanner}>
-						<Text style={styles.victoryText}>
-							🏆 Vitória! Todos os inimigos derrotados!
-						</Text>
-					</View>
-				)}
 
 				<ScrollView
 					style={styles.scroll}
@@ -216,21 +212,6 @@ const styles = StyleSheet.create({
 	title: { color: "#F1F5F9", fontSize: 18, fontWeight: "700" },
 	resetBtn: { padding: 4 },
 	resetText: { color: "#683237", fontSize: 14, fontWeight: "600" },
-	victoryBanner: {
-		backgroundColor: "rgba(34,197,94,0.2)",
-		borderColor: "#22C55E",
-		borderWidth: 1,
-		marginHorizontal: 16,
-		borderRadius: 10,
-		padding: 12,
-		marginBottom: 8,
-	},
-	victoryText: {
-		color: "#22C55E",
-		textAlign: "center",
-		fontWeight: "700",
-		fontSize: 16,
-	},
 	scroll: { flex: 1 },
 	scrollContent: { gap: 14, paddingBottom: 8 },
 
