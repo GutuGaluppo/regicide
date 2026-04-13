@@ -1,4 +1,4 @@
-// /screens/TrackerScreen.tsx
+import MagicShield from "../assets/icons/magicShield.png";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
@@ -11,10 +11,10 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import HospitalIcon from "../assets/icons/hospital.svg";
 import { AttackInput } from "../components/AttackInput";
 import { DefeatFooter } from "../components/DefeatFooter";
 import { NumberSprite } from "../components/NumberSprite";
+import { ProgressRing } from "../components/ProgressRing";
 import { VictoryScreen } from "../components/VictoryScreen";
 import { getCardImage } from "../data/images";
 import { CardRank, Suit } from "../data/types";
@@ -119,31 +119,6 @@ export const TrackerScreen = () => {
 						>
 							{/* Imagem com badges sobrepostos */}
 							<View style={styles.enemyImageWrapper}>
-								{/* Barra de HP — esquerda, preenche do topo */}
-								<View style={styles.vBarBg}>
-									<View
-										style={[
-											styles.vBarFill,
-											{
-												height: `${hpPercent * 100}%` as any,
-												backgroundColor: hpColor,
-											},
-										]}
-									/>
-								</View>
-								{/* Barra de Ataque — direita, preenche da base */}
-								<View style={[styles.vBarBg, styles.vBarRight]}>
-									<View
-										style={[
-											styles.vBarFill,
-											styles.vBarFillBottom,
-											{
-												height: `${attackPercent * 100}%` as any,
-												backgroundColor: "#FBBF24",
-											},
-										]}
-									/>
-								</View>
 								<Image
 									source={getCardImage(currentEnemy.rank, currentEnemy.suit)}
 									style={styles.enemyImage}
@@ -151,23 +126,41 @@ export const TrackerScreen = () => {
 								/>
 								{/* ATK — topo direito */}
 								<View style={styles.atkBadge}>
-									<NumberSprite
-										value={effectiveAttack}
-										type="attack"
-										height={28}
-									/>
+									<Text style={styles.badgeLabel}>Attack</Text>
+									<ProgressRing
+										percent={attackPercent}
+										size={80}
+										strokeWidth={6}
+										color="#FBBF24"
+									>
+										<NumberSprite
+											value={effectiveAttack}
+											type="attack"
+											height={32}
+										/>
+									</ProgressRing>
 									{currentShield > 0 && (
-										<Text style={styles.shieldBadgeText}>
-											🛡️-{currentShield}
-										</Text>
+										<View style={styles.shieldedWrapper}>
+											<Image source={MagicShield} style={styles.shieldIconBg} />
+											<NumberSprite
+												value={currentShield}
+												type="attack"
+												height={22}
+											/>
+										</View>
 									)}
 								</View>
 								{/* HP — base esquerda */}
-								<View
-									style={[styles.hpBadge, { backgroundColor: hpColor + "33" }]}
-								>
-									<HospitalIcon width={14} height={14} color={hpColor} />
-									<NumberSprite value={currentHP} type="health" height={28} />
+								<View style={styles.hpBadge}>
+									<ProgressRing
+										percent={hpPercent}
+										size={80}
+										strokeWidth={6}
+										color={hpColor}
+									>
+										<NumberSprite value={currentHP} type="health" height={32} />
+									</ProgressRing>
+									<Text style={styles.badgeLabel}>Health</Text>
 								</View>
 							</View>
 
@@ -269,38 +262,47 @@ const styles = StyleSheet.create({
 		height: 309,
 	},
 	enemyImage: {
-		width: 220,
-		height: 309,
+		width: 200,
+		height: 300,
 		borderRadius: 10,
 	},
 	atkBadge: {
 		position: "absolute",
-		top: 8,
-		right: -58,
-		alignSelf: "flex-start",
-		backgroundColor: "rgba(15,23,42,0.82)",
-		borderRadius: 8,
-		paddingHorizontal: 10,
-		paddingVertical: 5,
-		alignItems: "flex-end",
-		gap: 2,
-	},
-	shieldBadgeText: {
-		color: "#60A5FA",
-		fontSize: 13,
-		fontWeight: "600",
+		top: 20,
+		right: -65,
+		alignItems: "center",
+		gap: 4,
 	},
 	hpBadge: {
 		position: "absolute",
-		bottom: 8,
-		left: -68,
-		alignSelf: "flex-start",
-		flexDirection: "row",
+		bottom: 20,
+		left: -65,
 		alignItems: "center",
 		gap: 4,
-		borderRadius: 8,
-		paddingHorizontal: 10,
-		paddingVertical: 5,
+	},
+	badgeLabel: {
+		color: "#F1F5F9",
+		fontFamily: "IMFellEnglish-Regular",
+		fontSize: 13,
+		fontWeight: "700",
+		letterSpacing: 0.8,
+		textTransform: "uppercase",
+		textShadowColor: "rgba(0,0,0,0.8)",
+		textShadowOffset: { width: 0, height: 1 },
+		textShadowRadius: 3,
+	},
+	shieldedWrapper: {
+		width: 88,
+		height: 88,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	shieldIconBg: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		width: 88,
+		height: 88,
 	},
 	hpBarBg: {
 		width: 220,
