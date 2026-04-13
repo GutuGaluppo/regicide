@@ -1,15 +1,9 @@
 // /components/EnemyCard.tsx
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
+import HospitalIcon from "../assets/icons/hospital.svg";
 import { getCardImage } from "../data/images";
 import { Enemy } from "../data/types";
-
-const SUIT_SYMBOL: Record<string, string> = {
-	hearts: "♥",
-	diamonds: "♦",
-	clubs: "♣",
-	spades: "♠",
-};
 
 export const EnemyCard = ({
 	enemy,
@@ -23,43 +17,69 @@ export const EnemyCard = ({
 	jesterActive: boolean;
 }) => {
 	const hpPercent = Math.max(0, currentHP / enemy.health);
-
+	const attackPercent = Math.min(1, effectiveAttack / enemy.attack);
 	const hpColor =
 		hpPercent > 0.5 ? "#22C55E" : hpPercent > 0.25 ? "#FBBF24" : "#EF4444";
+	const attackColor = "#FBBF24";
 
 	return (
 		<View style={styles.card}>
-			<Image
-				source={getCardImage(enemy.rank, enemy.suit)}
-				style={styles.image}
-			/>
+			<View style={styles.imageWrapper}>
+				{/* Barra de HP — esquerda, preenche do topo */}
+				<View style={styles.vBarBg}>
+					<View
+						style={[
+							styles.vBarFill,
+							{
+								height: `${hpPercent * 100}%` as any,
+								backgroundColor: hpColor,
+							},
+						]}
+					/>
+				</View>
 
-			{/* Barra de HP */}
-			<View style={styles.hpBarBg}>
-				<View
-					style={[
-						styles.hpBarFill,
-						{ width: `${hpPercent * 100}%` as any, backgroundColor: hpColor },
-					]}
+				{/* Barra de Ataque — direita, preenche da base */}
+				<View style={[styles.vBarBg, styles.vBarRight]}>
+					<View
+						style={[
+							styles.vBarFill,
+							styles.vBarFillBottom,
+							{
+								height: `${attackPercent * 100}%` as any,
+								backgroundColor: attackColor,
+							},
+						]}
+					/>
+				</View>
+
+				<Image
+					source={getCardImage(enemy.rank, enemy.suit)}
+					style={styles.image}
+					resizeMode="contain"
 				/>
+
+				{/* ATK — topo direito */}
+				<View style={styles.atkBadge}>
+					<Text style={styles.atkBadgeText}>⚔️ {effectiveAttack}</Text>
+					{effectiveAttack < enemy.attack && (
+						<Text style={styles.shieldedText}>🛡️ ({enemy.attack})</Text>
+					)}
+				</View>
+
+				{/* HP — base esquerda */}
+				<View style={[styles.hpBadge, { backgroundColor: hpColor + "33" }]}>
+					<HospitalIcon width={14} height={14} color={hpColor} />
+					<Text style={[styles.hpBadgeText, { color: hpColor }]}>
+						{currentHP}/{enemy.health}
+					</Text>
+				</View>
 			</View>
 
-			<View style={styles.stats}>
-				<Text style={styles.hp}>
-					❤️ {currentHP}/{enemy.health}
-				</Text>
-				<Text style={styles.attack}>
-					⚔️ {effectiveAttack}
-					{effectiveAttack < enemy.attack && (
-						<Text style={styles.shielded}> ({enemy.attack})</Text>
-					)}
-				</Text>
-				<Text style={styles.immunity}>
-					{jesterActive
-						? "⚡ Imunidade cancelada"
-						: `🛡️ Imune a ${SUIT_SYMBOL[enemy.suit]}`}
-				</Text>
-			</View>
+			{/* <Text style={styles.immunity}>
+				{jesterActive
+					? "⚡ Imunidade cancelada"
+					: `🛡️ Imune a ${SUIT_SYMBOL[enemy.suit]}`}
+			</Text> */}
 		</View>
 	);
 };
@@ -67,46 +87,83 @@ export const EnemyCard = ({
 const styles = StyleSheet.create({
 	card: {
 		alignItems: "center",
+		gap: 8,
+	},
+	imageWrapper: {
+		position: "relative",
+		width: 250,
+		height: 320,
 	},
 	image: {
 		width: 250,
-		height: 392,
+		height: 320,
 		borderRadius: 12,
-		marginBottom: 8,
 	},
-	hpBarBg: {
-		width: 180,
-		height: 6,
-		backgroundColor: "#1E293B",
-		borderRadius: 3,
-		marginBottom: 8,
-		overflow: "hidden",
-	},
-	hpBarFill: {
+	vBarBg: {
+		position: "absolute",
+		top: 0,
+		left: -20,
+		width: 5,
 		height: "100%",
+		backgroundColor: "rgba(0,0,0,0.4)",
+		borderRadius: 3,
+		overflow: "hidden",
+		zIndex: 1,
+	},
+	vBarRight: {
+		left: undefined,
+		right: -20,
+		justifyContent: "flex-end",
+	},
+	vBarFill: {
+		width: "100%",
 		borderRadius: 3,
 	},
-	stats: {
-		flexDirection: "row",
-		gap: 12,
-		alignItems: "center",
-		flexWrap: "wrap",
-		justifyContent: "center",
+	vBarFillBottom: {
+		position: "absolute",
+		bottom: 0,
+		left: 0,
+		right: 0,
 	},
-	hp: {
-		color: "#F87171",
-		fontSize: 16,
-		fontWeight: "600",
+	atkBadge: {
+		position: "absolute",
+		top: 8,
+		right: 8,
+		alignSelf: "flex-start",
+		backgroundColor: "rgba(15,23,42,0.82)",
+		borderRadius: 8,
+		paddingHorizontal: 10,
+		paddingVertical: 5,
+		alignItems: "flex-end",
+		gap: 2,
+		zIndex: 2,
 	},
-	attack: {
+	atkBadgeText: {
 		color: "#FBBF24",
+		fontWeight: "700",
 		fontSize: 16,
+	},
+	shieldedText: {
+		color: "#60A5FA",
+		fontSize: 13,
 		fontWeight: "600",
 	},
-	shielded: {
-		color: "#64748B",
-		fontSize: 12,
-		textDecorationLine: "line-through",
+	hpBadge: {
+		position: "absolute",
+		bottom: 8,
+		left: 8,
+		alignSelf: "flex-start",
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+		borderRadius: 8,
+		paddingHorizontal: 10,
+		paddingVertical: 5,
+		zIndex: 2,
+	},
+	hpBadgeText: {
+		fontWeight: "700",
+		fontSize: 16,
 	},
 	immunity: {
 		color: "#94A3B8",

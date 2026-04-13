@@ -1,7 +1,9 @@
 // /components/CardView.tsx
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Card } from "../data/types";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Card, Suit } from "../data/types";
+
+const ExclamationIcon = require("../assets/icons/exclamation.webp");
 
 const SUIT_SYMBOL: Record<string, string> = {
 	hearts: "♥",
@@ -22,30 +24,47 @@ export const CardView = ({
 	selected,
 	onPress,
 	disabled,
+	immuneSuit,
 }: {
 	card: Card;
 	selected?: boolean;
 	onPress?: () => void;
 	disabled?: boolean;
+	immuneSuit?: Suit | null;
 }) => {
 	const symbol = card.suit ? SUIT_SYMBOL[card.suit] : "🃏";
 	const color = card.suit ? SUIT_COLOR[card.suit] : "#7C3AED";
+	const isImmune = !!card.suit && card.suit === immuneSuit;
 
 	return (
-		<TouchableOpacity
-			style={[styles.card, selected && styles.selected, disabled && styles.disabled]}
-			onPress={onPress}
-			activeOpacity={0.7}
-			disabled={disabled}
-		>
-			<Text style={[styles.rank, { color }]}>{card.rank}</Text>
-			<Text style={[styles.suit, { color }]}>{symbol}</Text>
-			{selected && <View style={styles.selectedDot} />}
-		</TouchableOpacity>
+		<View style={styles.wrapper}>
+			<TouchableOpacity
+				style={[
+					styles.card,
+					selected && styles.selected,
+					disabled && styles.disabled,
+					isImmune && styles.cardImmune,
+				]}
+				onPress={onPress}
+				activeOpacity={0.7}
+				disabled={disabled}
+			>
+				<Text style={[styles.rank, { color }]}>{card.rank}</Text>
+				<Text style={[styles.suit, { color }]}>{symbol}</Text>
+				{selected && <View style={styles.selectedDot} />}
+			</TouchableOpacity>
+			{isImmune && (
+				<Image source={ExclamationIcon} style={styles.immuneIcon} />
+			)}
+		</View>
 	);
 };
 
 const styles = StyleSheet.create({
+	wrapper: {
+		position: "relative",
+		marginHorizontal: 4,
+	},
 	card: {
 		width: 64,
 		height: 92,
@@ -55,7 +74,9 @@ const styles = StyleSheet.create({
 		borderColor: "#CBD5E1",
 		justifyContent: "center",
 		alignItems: "center",
-		marginHorizontal: 4,
+	},
+	cardImmune: {
+		borderColor: "#EF4444",
 	},
 	selected: {
 		borderColor: "#FBBF24",
@@ -80,5 +101,12 @@ const styles = StyleSheet.create({
 		height: 6,
 		borderRadius: 3,
 		backgroundColor: "#FBBF24",
+	},
+	immuneIcon: {
+		position: "absolute",
+		top: -5,
+		right: -5,
+		width: 16,
+		height: 16,
 	},
 });

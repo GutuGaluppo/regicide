@@ -1,4 +1,3 @@
-// /components/AttackInput.tsx
 import React, { useState } from "react";
 import {
 	Image,
@@ -9,6 +8,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import ExclamationIcon from "../assets/icons/exclamation.webp";
 import ClubsImage from "../assets/classes/Clubs.avif";
 import DiamondsImage from "../assets/classes/Diamonds.avif";
 import HeartsImage from "../assets/classes/Hearts.avif";
@@ -22,12 +22,6 @@ const SUITS: { suit: Suit; symbol: ImageSourcePropType }[] = [
 	{ suit: "clubs", symbol: ClubsImage },
 	{ suit: "spades", symbol: SpadesImage },
 ];
-// const SUITS: { suit: Suit; symbol: string; color: string }[] = [
-// 	{ suit: "hearts",   symbol: "♥", color: "#F87171" },
-// 	{ suit: "diamonds", symbol: "♦", color: "#FB923C" },
-// 	{ suit: "clubs",    symbol: "♣", color: "#94A3B8" },
-// 	{ suit: "spades",   symbol: "♠", color: "#E2E8F0" },
-// ];
 
 const RANKS: CardRank[] = [
 	"A",
@@ -90,17 +84,31 @@ export const AttackInput = ({
 				{SUITS.map(({ suit: s, symbol }) => {
 					const isImmune = s === enemy.suit;
 					return (
+						<View key={s} style={styles.suitWrapper}>
 						<TouchableOpacity
-							key={s}
-							style={[styles.suitBtn, isImmune && styles.suitBtnImmune, suit === s && styles.suitBtnSelected]}
+							style={[
+								styles.suitBtn,
+								isImmune && styles.suitBtnImmune,
+								suit === s && styles.suitBtnSelected,
+							]}
 							onPress={() => setSuit((prev) => (prev === s ? null : s))}
 							activeOpacity={0.7}
 						>
 							<Image
-								style={[{ width: 60, height: 60 }, isImmune && styles.suitImgImmune]}
+								style={[
+									{ width: 60, height: 60 },
+									isImmune && styles.suitImgImmune,
+								]}
 								source={symbol}
 							/>
 						</TouchableOpacity>
+						{isImmune && (
+							<Image
+								source={ExclamationIcon}
+								style={styles.immuneIcon}
+							/>
+						)}
+					</View>
 					);
 				})}
 			</View>
@@ -179,9 +187,19 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		overflow: "hidden",
 	},
+	suitWrapper: {
+		position: "relative",
+	},
 	suitBtnImmune: {
 		borderColor: "#EF4444",
 		borderWidth: 2,
+	},
+	immuneIcon: {
+		position: "absolute",
+		top: -4,
+		right: -4,
+		width: 18,
+		height: 18,
 	},
 	suitBtnSelected: {
 		borderColor: "#FBBF24",

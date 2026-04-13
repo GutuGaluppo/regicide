@@ -1,7 +1,7 @@
 // /components/DefeatFooter.tsx
 import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
-import { getCardImage } from "../data/images";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { getFooterCardImage } from "../data/images";
 import { Enemy, EnemyRank } from "../data/types";
 
 const PHASE_LABEL: Record<EnemyRank, string> = {
@@ -14,26 +14,40 @@ export const DefeatFooter = ({
 	phase,
 	enemies,
 	defeatedIds,
+	currentEnemyId,
+	onSelect,
 }: {
 	phase: EnemyRank;
-	enemies: Enemy[];   // os 4 inimigos da fase atual
+	enemies: Enemy[];
 	defeatedIds: string[];
+	currentEnemyId: string | null;
+	onSelect: (id: string) => void;
 }) => {
-	const defeatedCount = enemies.filter((e) => defeatedIds.includes(e.id)).length;
+	const defeatedCount = enemies.filter((e) =>
+		defeatedIds.includes(e.id),
+	).length;
 
 	return (
 		<View style={styles.container}>
 			<Text style={styles.label}>
-				{PHASE_LABEL[phase]}  {defeatedCount}/{enemies.length}
+				{PHASE_LABEL[phase]} {defeatedCount}/{enemies.length}
 			</Text>
 			<View style={styles.row}>
 				{enemies.map((enemy) => {
 					const defeated = defeatedIds.includes(enemy.id);
+					const isCurrent = enemy.id === currentEnemyId;
 					return (
-						<View key={enemy.id} style={styles.slot}>
+						<TouchableOpacity
+							key={enemy.id}
+							style={[styles.slot, isCurrent && styles.slotCurrent]}
+							onPress={() => !defeated && onSelect(enemy.id)}
+							activeOpacity={defeated ? 1 : 0.7}
+							disabled={defeated}
+						>
 							<Image
-								source={getCardImage(enemy.rank, enemy.suit)}
+								source={getFooterCardImage(enemy.rank, enemy.suit)}
 								style={[styles.miniCard, defeated && styles.miniCardDefeated]}
+								resizeMode="contain"
 							/>
 							{defeated && (
 								<View style={styles.crossOverlay}>
@@ -41,7 +55,7 @@ export const DefeatFooter = ({
 									<View style={styles.crossLine2} />
 								</View>
 							)}
-						</View>
+						</TouchableOpacity>
 					);
 				})}
 			</View>
@@ -72,10 +86,17 @@ const styles = StyleSheet.create({
 		gap: 10,
 	},
 	slot: {
-		width: 48,
-		height: 67,
+		width: 56,
+		height: 78,
 		borderRadius: 6,
 		overflow: "hidden",
+		backgroundColor: "rgba(255,255,255,0.9)",
+		borderWidth: 2,
+		borderColor: "transparent",
+	},
+	slotCurrent: {
+		borderColor: "#FBBF24",
+		borderRadius: 7,
 	},
 	miniCard: {
 		width: "100%",

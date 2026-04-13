@@ -13,7 +13,7 @@ import {
 export const HomeScreen = () => {
 	return (
 		<ImageBackground
-			source={require("../assets/images/bg_cave.webp")}
+			source={require("../assets/backgrounds/bg_cave.webp")}
 			style={styles.container}
 			resizeMode="cover"
 		>
