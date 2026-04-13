@@ -8,19 +8,29 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import ClubsImage from "../assets/classes/Clubs.avif";
-import DiamondsImage from "../assets/classes/Diamonds.avif";
-import HeartsImage from "../assets/classes/Hearts.avif";
-import SpadesImage from "../assets/classes/Spades.avif";
+import ClubsIcon from "../assets/classes/Clubs.avif";
+import DiamondsIcon from "../assets/classes/Diamonds.avif";
+import HeartsIcon from "../assets/classes/Hearts.avif";
+import SpadesIcon from "../assets/classes/Spades.avif";
+
+import ClubsIconShadow from "../assets/classes/suits_no_bg/clubs_shadow.png";
+import DiamondsIconShadow from "../assets/classes/suits_no_bg/diamonds_shadow.png";
+import HeartsIconShadow from "../assets/classes/suits_no_bg/hearts_shadow.png";
+import SpadesIconShadow from "../assets/classes/suits_no_bg/spades_shadow.png";
 import SpellImmune from "../assets/icons/spellImmune.png";
+
 import { CardRank, Enemy, Suit } from "../data/types";
 import { cardValue } from "../utils/gameLogic";
 
-const SUITS: { suit: Suit; symbol: ImageSourcePropType }[] = [
-	{ suit: "hearts", symbol: HeartsImage },
-	{ suit: "diamonds", symbol: DiamondsImage },
-	{ suit: "clubs", symbol: ClubsImage },
-	{ suit: "spades", symbol: SpadesImage },
+const SUITS: {
+	suit: Suit;
+	icon: ImageSourcePropType;
+	immuneIcon: ImageSourcePropType;
+}[] = [
+	{ suit: "hearts", icon: HeartsIcon, immuneIcon: HeartsIconShadow },
+	{ suit: "diamonds", icon: DiamondsIcon, immuneIcon: DiamondsIconShadow },
+	{ suit: "clubs", icon: ClubsIcon, immuneIcon: ClubsIconShadow },
+	{ suit: "spades", icon: SpadesIcon, immuneIcon: SpadesIconShadow },
 ];
 
 const RANKS: CardRank[] = [
@@ -81,7 +91,7 @@ export const AttackInput = ({
 
 			{/* Seleção de naipe */}
 			<View style={styles.suitRow}>
-				{SUITS.map(({ suit: s, symbol }) => {
+				{SUITS.map(({ suit: s, icon, immuneIcon }) => {
 					const isImmune = s === enemy.suit;
 					return (
 						<View key={s} style={styles.suitWrapper}>
@@ -89,15 +99,15 @@ export const AttackInput = ({
 								<Image source={SpellImmune} style={styles.immuneIcon} />
 							)}
 							<TouchableOpacity
-								style={[
-									styles.suitBtn,
-									isImmune && styles.suitImgImmune,
-									suit === s && styles.suitBtnSelected,
-								]}
+								style={[styles.suitBtn, suit === s && styles.suitBtnSelected]}
 								onPress={() => setSuit((prev) => (prev === s ? null : s))}
 								activeOpacity={0.7}
 							>
-								<Image style={{ width: 60, height: 60 }} source={symbol} />
+								<Image
+									style={styles.suitIcon}
+									source={isImmune ? immuneIcon : icon}
+									resizeMode="contain"
+								/>
 							</TouchableOpacity>
 						</View>
 					);
@@ -191,9 +201,9 @@ const styles = StyleSheet.create({
 	suitBtnSelected: {
 		borderColor: "#FBBF24",
 	},
-	suitImgImmune: {
-		borderColor: "#5c1988",
-		borderWidth: 3,
+	suitIcon: {
+		width: 60,
+		height: 60,
 	},
 	suitSymbol: {
 		fontSize: 26,
