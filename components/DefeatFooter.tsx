@@ -1,4 +1,3 @@
-// /components/DefeatFooter.tsx
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { getFooterCardImage } from "../data/images";
