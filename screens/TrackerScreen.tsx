@@ -1,16 +1,16 @@
 // /screens/TrackerScreen.tsx
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
+	Animated,
+	Dimensions,
 	Image,
-	ImageBackground,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
 } from "react-native";
-
 import HospitalIcon from "../assets/icons/hospital.svg";
 import { AttackInput } from "../components/AttackInput";
 import { DefeatFooter } from "../components/DefeatFooter";
@@ -19,6 +19,14 @@ import { VictoryScreen } from "../components/VictoryScreen";
 import { getCardImage } from "../data/images";
 import { CardRank, Suit } from "../data/types";
 import { useTracker } from "../hooks/useTracker";
+
+const BG = require("../assets/backgrounds/bg_cave.webp");
+const TOTAL_ENEMIES = 12;
+const SHIFT_PER_ENEMY = 18;
+const MAX_SHIFT = -(TOTAL_ENEMIES * SHIFT_PER_ENEMY); // -216px
+// A imagem precisa ter screen_width + abs(MAX_SHIFT) para cobrir a tela em ambos os extremos
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const BG_WIDTH = SCREEN_WIDTH + Math.abs(MAX_SHIFT);
 
 export const TrackerScreen = () => {
 	const {
@@ -52,17 +60,34 @@ export const TrackerScreen = () => {
 		applyAttack(suit, rank);
 	};
 
+	// Background dinâmico: desloca para a esquerda a cada inimigo derrotado
+	const bgShift = useRef(new Animated.Value(0)).current;
+	const prevCount = useRef(defeatedIds.length);
+
+	useEffect(() => {
+		const count = defeatedIds.length;
+		// Começa em 0 (extremo esquerdo da imagem) e desloca para direita a cada derrota
+		const toValue = count === 0 ? 0 : -(count * SHIFT_PER_ENEMY);
+		Animated.spring(bgShift, {
+			toValue,
+			useNativeDriver: true,
+			tension: 30,
+			friction: 10,
+		}).start();
+		prevCount.current = count;
+	}, [defeatedIds.length, bgShift]);
+
 	if (isVictory) {
 		return <VictoryScreen onReset={resetTracker} />;
 	}
 
 	return (
-		<ImageBackground
-			source={require("../assets/backgrounds/bg_cave.webp")}
-			style={styles.bg}
-			resizeMode="cover"
-			imageStyle={{ width: "100%", height: "100%" }}
-		>
+		<View style={styles.bg}>
+			<Animated.Image
+				source={BG}
+				style={[styles.bgImage, { transform: [{ translateX: bgShift }] }]}
+				resizeMode="cover"
+			/>
 			<View style={styles.overlay}>
 				{/* Header */}
 				<View style={styles.header}>
@@ -70,7 +95,11 @@ export const TrackerScreen = () => {
 						onPress={() => router.back()}
 						style={styles.backBtn}
 					>
-						<Text style={styles.backText}>← Voltar</Text>
+						<Image
+							source={require("../assets/icons/crown_white.png")}
+							style={{ width: 30, height: 30 }}
+							resizeMode="contain"
+						/>
 					</TouchableOpacity>
 					<Text style={styles.title}>Tracker</Text>
 					<TouchableOpacity onPress={resetTracker} style={styles.resetBtn}>
@@ -122,7 +151,11 @@ export const TrackerScreen = () => {
 								/>
 								{/* ATK — topo direito */}
 								<View style={styles.atkBadge}>
-									<NumberSprite value={effectiveAttack} type="attack" height={28} />
+									<NumberSprite
+										value={effectiveAttack}
+										type="attack"
+										height={28}
+									/>
 									{currentShield > 0 && (
 										<Text style={styles.shieldBadgeText}>
 											🛡️-{currentShield}
@@ -188,12 +221,19 @@ export const TrackerScreen = () => {
 					onSelect={selectEnemy}
 				/>
 			</View>
-		</ImageBackground>
+		</View>
 	);
 };
 
 const styles = StyleSheet.create({
-	bg: { flex: 1 },
+	bg: { flex: 1, overflow: "hidden" },
+	bgImage: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		width: BG_WIDTH,
+		height: "100%",
+	},
 	overlay: {
 		flex: 1,
 		backgroundColor: "rgba(0,0,0,0.6)",
