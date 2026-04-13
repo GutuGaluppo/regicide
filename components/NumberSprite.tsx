@@ -2,7 +2,7 @@
 import React from "react";
 import { Image, StyleSheet, View } from "react-native";
 
-const ATTACK_DIGITS: Record<string, ReturnType<typeof require>> = {
+const ATTACK_DIGITS: Record<string, number> = {
 	"0": require("../assets/images/numbers/attack/0.png"),
 	"1": require("../assets/images/numbers/attack/1.png"),
 	"2": require("../assets/images/numbers/attack/2.png"),
@@ -15,7 +15,7 @@ const ATTACK_DIGITS: Record<string, ReturnType<typeof require>> = {
 	"9": require("../assets/images/numbers/attack/9.png"),
 };
 
-const HEALTH_DIGITS: Record<string, ReturnType<typeof require>> = {
+const HEALTH_DIGITS: Record<string, number> = {
 	"0": require("../assets/images/numbers/health/0.png"),
 	"1": require("../assets/images/numbers/health/1.png"),
 	"2": require("../assets/images/numbers/health/2.png"),
