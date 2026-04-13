@@ -1,6 +1,7 @@
 // /screens/InstructionsScreen.tsx
 import { router } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
 	Image,
 	ImageBackground,
@@ -34,13 +35,11 @@ const Row = ({ label, value }: { label: string; value: string }) => (
 );
 
 const SuitPower = ({
-	suit,
 	symbol,
 	color,
 	name,
 	power,
 }: {
-	suit: string;
 	symbol: string;
 	color: string;
 	name: string;
@@ -81,12 +80,19 @@ const EnemyRow = ({
 				{"  "}
 				<Text style={styles.statAtk}>⚔ {atk} ATK</Text>
 			</Text>
-			<Text style={styles.enemyImmunity}>Imune a: {immunity}</Text>
+			<Text style={styles.enemyImmunity}>{immunity}</Text>
 		</View>
 	</View>
 );
 
 export const InstructionsScreen = () => {
+	const { t } = useTranslation();
+
+	const steps = t("instructions.sections.turn.steps", { returnObjects: true }) as Array<{
+		title: string;
+		desc: string;
+	}>;
+
 	return (
 		<ImageBackground
 			source={BG}
@@ -101,9 +107,9 @@ export const InstructionsScreen = () => {
 						onPress={() => router.back()}
 						style={styles.backBtn}
 					>
-						<Text style={styles.backText}>← Voltar</Text>
+						<Text style={styles.backText}>{t("common.back")}</Text>
 					</TouchableOpacity>
-					<Text style={styles.headerTitle}>Como Jogar</Text>
+					<Text style={styles.headerTitle}>{t("instructions.header")}</Text>
 					<View style={{ width: 60 }} />
 				</View>
 
@@ -119,60 +125,24 @@ export const InstructionsScreen = () => {
 							style={styles.crownImage}
 							resizeMode="contain"
 						/>
-						<Text style={styles.gameName}>REGICIDE</Text>
-						<Text style={styles.gameSubtitle}>
-							Um jogo cooperativo para 1–4 jogadores
-						</Text>
+						<Text style={styles.gameName}>{t("instructions.gameName")}</Text>
+						<Text style={styles.gameSubtitle}>{t("instructions.gameSubtitle")}</Text>
 					</View>
 
-					{/* Objetivo */}
-					<Section title="Objetivo">
-						<Text style={styles.bodyText}>
-							Os jogadores devem trabalhar juntos para derrotar todos os 12 nobres
-							do castelo — 4 Valetes, 4 Rainhas e 4 Reis — antes que o baralho
-							acabe ou a mão dos jogadores esvazie sem poder agir.
-						</Text>
+					<Section title={t("instructions.sections.objective.title")}>
+						<Text style={styles.bodyText}>{t("instructions.sections.objective.body")}</Text>
 					</Section>
 
-					{/* Preparação */}
-					<Section title="Preparação">
-						<Text style={styles.bodyText}>
-							Separe os 12 nobres (J, Q, K de cada naipe) formando o Castelo:
-							embaralhe os Valetes e coloque-os no topo, depois as Rainhas, depois
-							os Reis. As demais 40 cartas formam a Taverna (baralho dos
-							jogadores). Compre 8 cartas para a mão inicial (7 se forem 2
-							jogadores, 6 se forem 3, 5 se forem 4).
-						</Text>
+					<Section title={t("instructions.sections.setup.title")}>
+						<Text style={styles.bodyText}>{t("instructions.sections.setup.body")}</Text>
 					</Section>
 
-					{/* Turno */}
-					<Section title="Estrutura de um Turno">
+					<Section title={t("instructions.sections.turn.title")}>
 						<View style={styles.stepList}>
-							{[
-								{
-									num: "1",
-									title: "Jogar cartas",
-									desc: 'Jogue 1 ou mais cartas com o mesmo valor ou um combo ("animal companheiro"). O valor total é o dano causado ao inimigo.',
-								},
-								{
-									num: "2",
-									title: "Ativar poderes",
-									desc: "Cada naipe das cartas jogadas ativa um poder especial (ver tabela abaixo).",
-								},
-								{
-									num: "3",
-									title: "Sofrer dano",
-									desc: "Se o inimigo não foi derrotado, os jogadores devem descartar cartas da mão equivalentes ao ataque do inimigo (reduzido pelo escudo de Espadas).",
-								},
-								{
-									num: "4",
-									title: "Comprar cartas",
-									desc: "Ao final do turno, complete sua mão até o limite máximo.",
-								},
-							].map((step) => (
-								<View key={step.num} style={styles.step}>
+							{steps.map((step, index) => (
+								<View key={index} style={styles.step}>
 									<View style={styles.stepNum}>
-										<Text style={styles.stepNumText}>{step.num}</Text>
+										<Text style={styles.stepNumText}>{index + 1}</Text>
 									</View>
 									<View style={styles.stepBody}>
 										<Text style={styles.stepTitle}>{step.title}</Text>
@@ -183,130 +153,129 @@ export const InstructionsScreen = () => {
 						</View>
 					</Section>
 
-					{/* Poderes dos naipes */}
-					<Section title="Poderes dos Naipes">
+					<Section title={t("instructions.sections.suitPowersSection.title")}>
 						<View style={styles.suitList}>
 							<SuitPower
-								suit="hearts"
 								symbol="♥"
 								color="#EF4444"
-								name="Copas — Cura"
-								power="Retire cartas do descarte e recoloque-as na Taverna (embaralhe). Quantidade igual ao valor das cartas jogadas."
+								name={t("instructions.sections.suitPowersSection.hearts.name")}
+								power={t("instructions.sections.suitPowersSection.hearts.power")}
 							/>
 							<SuitPower
-								suit="diamonds"
 								symbol="♦"
 								color="#F59E0B"
-								name="Ouros — Compra"
-								power="Compre cartas imediatamente. Quantidade igual ao valor das cartas jogadas."
+								name={t("instructions.sections.suitPowersSection.diamonds.name")}
+								power={t("instructions.sections.suitPowersSection.diamonds.power")}
 							/>
 							<SuitPower
-								suit="clubs"
 								symbol="♣"
 								color="#4ADE80"
-								name="Paus — Força dupla"
-								power="O dano causado ao inimigo é dobrado para os outros poderes de Paus. Cartas de Paus contam em dobro no cálculo do dano total."
+								name={t("instructions.sections.suitPowersSection.clubs.name")}
+								power={t("instructions.sections.suitPowersSection.clubs.power")}
 							/>
 							<SuitPower
-								suit="spades"
 								symbol="♠"
 								color="#60A5FA"
-								name="Espadas — Escudo"
-								power="Reduza o ataque do inimigo atual pelo valor das cartas de Espadas jogadas. O escudo acumula ao longo dos turnos."
+								name={t("instructions.sections.suitPowersSection.spades.name")}
+								power={t("instructions.sections.suitPowersSection.spades.power")}
 							/>
 						</View>
 					</Section>
 
-					{/* Imunidades */}
-					<Section title="Imunidades dos Nobres">
+					<Section title={t("instructions.sections.immunities.title")}>
 						<Text style={styles.bodyText}>
-							Cada nobre é imune ao naipe correspondente ao seu próprio naipe —
-							cartas do mesmo naipe não causam dano nem ativam poderes contra ele.
-							O Curinga (Jester) cancela a imunidade do inimigo atual por um
-							turno.
+							{t("instructions.sections.immunities.body")}
 						</Text>
 						<View style={styles.immuneExamples}>
-							{[
-								{ symbol: "♥", color: "#EF4444", label: "Nobre de Copas ignora cartas de ♥" },
-								{ symbol: "♦", color: "#F59E0B", label: "Nobre de Ouros ignora cartas de ♦" },
-								{ symbol: "♣", color: "#4ADE80", label: "Nobre de Paus ignora cartas de ♣" },
-								{ symbol: "♠", color: "#60A5FA", label: "Nobre de Espadas ignora cartas de ♠" },
-							].map((item) => (
-								<View key={item.symbol} style={styles.immuneRow}>
-									<Text style={[styles.immuneSymbol, { color: item.color }]}>
-										{item.symbol}
-									</Text>
-									<Text style={styles.immuneLabel}>{item.label}</Text>
-								</View>
-							))}
+							{(["hearts", "diamonds", "clubs", "spades"] as const).map((suit, i) => {
+								const colors = ["#EF4444", "#F59E0B", "#4ADE80", "#60A5FA"];
+								const symbols = ["♥", "♦", "♣", "♠"];
+								return (
+									<View key={suit} style={styles.immuneRow}>
+										<Text style={[styles.immuneSymbol, { color: colors[i] }]}>
+											{symbols[i]}
+										</Text>
+										<Text style={styles.immuneLabel}>
+											{t(`instructions.sections.immunities.examples.${suit}`)}
+										</Text>
+									</View>
+								);
+							})}
 						</View>
 					</Section>
 
-					{/* Tabela de inimigos */}
-					<Section title="Nobres do Castelo">
+					<Section title={t("instructions.sections.enemies.title")}>
 						<EnemyRow
 							rank="J"
-							label="Valete"
+							label={t("instructions.sections.enemies.jack")}
 							hp={20}
 							atk={10}
-							immunity="naipe próprio"
+							immunity={t("instructions.sections.enemies.immuneTo", {
+								suit: t("instructions.sections.enemies.ownSuit"),
+							})}
 						/>
 						<EnemyRow
 							rank="Q"
-							label="Rainha"
+							label={t("instructions.sections.enemies.queen")}
 							hp={30}
 							atk={15}
-							immunity="naipe próprio"
+							immunity={t("instructions.sections.enemies.immuneTo", {
+								suit: t("instructions.sections.enemies.ownSuit"),
+							})}
 						/>
 						<EnemyRow
 							rank="K"
-							label="Rei"
+							label={t("instructions.sections.enemies.king")}
 							hp={40}
 							atk={20}
-							immunity="naipe próprio"
+							immunity={t("instructions.sections.enemies.immuneTo", {
+								suit: t("instructions.sections.enemies.ownSuit"),
+							})}
 						/>
 					</Section>
 
-					{/* Animal companions */}
-					<Section title="Animais Companheiros (Combos)">
+					<Section title={t("instructions.sections.companions.title")}>
 						<Text style={styles.bodyText}>
-							Você pode jogar múltiplas cartas de uma vez se elas formarem um
-							"animal companheiro" — combinações cujo valor somado não ultrapasse
-							10, ou cartas de mesmo valor. O dano total é a soma de todas as
-							cartas jogadas, e todos os poderes de naipe são ativados.
+							{t("instructions.sections.companions.body")}
 						</Text>
 						<View style={styles.comboExamples}>
-							<Row label="Ex: 4 + 6" value="= 10 de dano (ambos os naipes)" />
-							<Row label="Ex: 3 + 3 + 3" value="= 9 de dano (mesmo valor)" />
-							<Row label="Ex: A + A" value="= 2 de dano (mesmo valor)" />
+							<Row
+								label="Ex: 4 + 6"
+								value={t("instructions.sections.companions.examples.fourSix")}
+							/>
+							<Row
+								label="Ex: 3 + 3 + 3"
+								value={t("instructions.sections.companions.examples.threeThrees")}
+							/>
+							<Row
+								label="Ex: A + A"
+								value={t("instructions.sections.companions.examples.twoAces")}
+							/>
 						</View>
 					</Section>
 
-					{/* Derrota inimigo */}
-					<Section title="Derrotando um Nobre">
+					<Section title={t("instructions.sections.defeating.title")}>
 						<Text style={styles.bodyText}>
-							Quando o HP do nobre chega a zero (ou abaixo), ele é derrotado.
-							Coloque as cartas jogadas contra ele embaixo da Taverna (não no
-							descarte). Em seguida, vire o próximo nobre do Castelo e comece um
-							novo combate.
+							{t("instructions.sections.defeating.body")}
 						</Text>
 					</Section>
 
-					{/* Vitória e derrota */}
-					<Section title="Vitória e Derrota">
+					<Section title={t("instructions.sections.endConditions.title")}>
 						<View style={styles.endConditions}>
 							<View style={styles.victoryBlock}>
-								<Text style={styles.victoryTitle}>Vitória 👑</Text>
+								<Text style={styles.victoryTitle}>
+									{t("instructions.sections.endConditions.victoryTitle")}
+								</Text>
 								<Text style={styles.endText}>
-									Derrote todos os 12 nobres do Castelo.
+									{t("instructions.sections.endConditions.victoryText")}
 								</Text>
 							</View>
 							<View style={styles.defeatBlock}>
-								<Text style={styles.defeatTitle}>Derrota 💀</Text>
+								<Text style={styles.defeatTitle}>
+									{t("instructions.sections.endConditions.defeatTitle")}
+								</Text>
 								<Text style={styles.endText}>
-									Um jogador não consegue descartar cartas suficientes para cobrir
-									o dano sofrido, ou precisa jogar uma carta e não tem nenhuma na
-									mão.
+									{t("instructions.sections.endConditions.defeatText")}
 								</Text>
 							</View>
 						</View>

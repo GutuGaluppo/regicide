@@ -1,5 +1,6 @@
 // /components/ActionBar.tsx
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { GamePhase } from "../data/types";
 
@@ -56,18 +57,20 @@ export const ActionBar = ({
 	onReset: () => void;
 	playDisabled: boolean;
 }) => {
+	const { t } = useTranslation();
+
 	return (
 		<View style={styles.container}>
 			{phase === "player_turn" && (
 				<>
-					<Btn label="Jogar" onPress={onPlay} disabled={playDisabled} />
-					<Btn label="Ceder" onPress={onYield} variant="warning" />
+					<Btn label={t("action.play")} onPress={onPlay} disabled={playDisabled} />
+					<Btn label={t("action.yield")} onPress={onYield} variant="warning" />
 				</>
 			)}
 
 			{phase === "suffer_damage" && (
 				<Btn
-					label={`Descartar (${selectedTotal}/${pendingDamage})`}
+					label={t("action.discard", { current: selectedTotal, needed: pendingDamage })}
 					onPress={onDiscard}
 					variant="danger"
 					disabled={selectedTotal < pendingDamage}
@@ -76,7 +79,7 @@ export const ActionBar = ({
 
 			{(phase === "victory" || phase === "defeat") && null}
 
-			<Btn label="Novo jogo" onPress={onReset} variant="danger" />
+			<Btn label={t("action.newGame")} onPress={onReset} variant="danger" />
 		</View>
 	);
 };

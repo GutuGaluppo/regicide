@@ -1,6 +1,7 @@
 // /components/VictoryScreen.tsx
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	Animated,
 	Dimensions,
@@ -92,6 +93,7 @@ const ParallaxLayer = ({
 };
 
 export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
+	const { t } = useTranslation();
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 	const slideAnim = useRef(new Animated.Value(40)).current;
 	const scaleAnim = useRef(new Animated.Value(0.85)).current;
@@ -135,8 +137,8 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 					]}
 				>
 					<Image source={crown} style={styles.image} resizeMode="contain" />
-					<Text style={styles.title}>Vitória!</Text>
-					<Text style={styles.subtitle}>O reino foi salvo</Text>
+					<Text style={styles.title}>{t("victory.title")}</Text>
+					<Text style={styles.subtitle}>{t("victory.subtitle")}</Text>
 
 					<View style={styles.actions}>
 						<TouchableOpacity
@@ -144,14 +146,14 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 							onPress={onReset}
 							activeOpacity={0.8}
 						>
-							<Text style={styles.btnResetText}>Jogar novamente</Text>
+							<Text style={styles.btnResetText}>{t("victory.playAgain")}</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={styles.btnHome}
 							onPress={() => router.back()}
 							activeOpacity={0.8}
 						>
-							<Text style={styles.btnHomeText}>← Início</Text>
+							<Text style={styles.btnHomeText}>{t("victory.home")}</Text>
 						</TouchableOpacity>
 					</View>
 				</Animated.View>

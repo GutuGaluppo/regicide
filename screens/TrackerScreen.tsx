@@ -1,6 +1,7 @@
 import MagicShield from "../assets/icons/magicShield.png";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	Animated,
 	Dimensions,
@@ -29,6 +30,7 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const BG_WIDTH = SCREEN_WIDTH + Math.abs(MAX_SHIFT);
 
 export const TrackerScreen = () => {
+	const { t } = useTranslation();
 	const {
 		currentEnemy,
 		currentHP,
@@ -101,9 +103,9 @@ export const TrackerScreen = () => {
 							resizeMode="contain"
 						/>
 					</TouchableOpacity>
-					<Text style={styles.title}>Tracker</Text>
+					<Text style={styles.title}>{t("tracker.title")}</Text>
 					<TouchableOpacity onPress={resetTracker} style={styles.resetBtn}>
-						<Text style={styles.resetText}>Reiniciar</Text>
+						<Text style={styles.resetText}>{t("tracker.reset")}</Text>
 					</TouchableOpacity>
 				</View>
 
@@ -126,7 +128,7 @@ export const TrackerScreen = () => {
 								/>
 								{/* ATK — topo direito */}
 								<View style={styles.atkBadge}>
-									<Text style={styles.badgeLabel}>Attack</Text>
+									<Text style={styles.badgeLabel}>{t("enemy.attack")}</Text>
 									<ProgressRing
 										percent={attackPercent}
 										size={80}
@@ -160,11 +162,11 @@ export const TrackerScreen = () => {
 									>
 										<NumberSprite value={currentHP} type="health" height={32} />
 									</ProgressRing>
-									<Text style={styles.badgeLabel}>Health</Text>
+									<Text style={styles.badgeLabel}>{t("enemy.health")}</Text>
 								</View>
 							</View>
 
-							{isDead && <Text style={styles.deadBadge}>HP zerado!</Text>}
+							{isDead && <Text style={styles.deadBadge}>{t("tracker.dead")}</Text>}
 						</View>
 					)}
 
@@ -177,8 +179,8 @@ export const TrackerScreen = () => {
 							]}
 						>
 							<Text style={styles.resultDamage}>
-								{lastResult.immune ? "Imunidade — " : ""}Dano: -
-								{lastResult.damage}
+								{lastResult.immune ? t("tracker.immune") : ""}
+								{t("tracker.damage", { value: lastResult.damage })}
 							</Text>
 							<Text style={styles.resultPower}>{lastResult.powerText}</Text>
 						</View>
@@ -197,7 +199,7 @@ export const TrackerScreen = () => {
 							activeOpacity={0.8}
 						>
 							<Text style={styles.defeatBtnText}>
-								{isDead ? "💀 Confirmar derrota" : "Derrotar inimigo"}
+								{isDead ? t("tracker.confirmDefeat") : t("tracker.defeatEnemy")}
 							</Text>
 						</TouchableOpacity>
 					)}
