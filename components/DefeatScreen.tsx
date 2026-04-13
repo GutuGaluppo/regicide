@@ -1,6 +1,7 @@
 // /components/DefeatScreen.tsx
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	Animated,
 	Easing,
@@ -61,6 +62,7 @@ export const DefeatScreen = ({
 	enemy: Enemy;
 	onReset: () => void;
 }) => {
+	const { t } = useTranslation();
 	// Phase 1 – outros elementos encolhem (0 → 700ms)
 	const othersScale = useRef(new Animated.Value(1)).current;
 	const othersOpacity = useRef(new Animated.Value(1)).current;
@@ -220,13 +222,13 @@ export const DefeatScreen = ({
 
 					{/* Mensagem de derrota */}
 					<Animated.Text style={[styles.defeatMsg, { opacity: msgOpacity }]}>
-						O reino caiu
+						{t("defeat.message")}
 					</Animated.Text>
 
 					{/* Botão novo jogo */}
 					<Animated.View style={{ opacity: msgOpacity }}>
 						<TouchableOpacity style={styles.newGameBtn} onPress={onReset} activeOpacity={0.8}>
-							<Text style={styles.newGameText}>Novo jogo</Text>
+							<Text style={styles.newGameText}>{t("defeat.newGame")}</Text>
 						</TouchableOpacity>
 					</Animated.View>
 				</View>

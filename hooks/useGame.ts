@@ -1,11 +1,12 @@
 // /hooks/useGame.ts
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { createTavernDeck, HAND_SIZE } from "../data/deck";
 import { createCastleDeck } from "../data/enemies";
 import { Card, Enemy, GamePhase, GameState } from "../data/types";
 import { loadGame, saveGame } from "../services/storage";
-import { shuffle } from "../utils/shuffle";
 import { enemyToCard, resolvePlay, validatePlay } from "../utils/gameLogic";
+import { shuffle } from "../utils/shuffle";
 
 const PLAYER_COUNT = 2 as const;
 const MAX_HAND = HAND_SIZE[PLAYER_COUNT];
@@ -38,6 +39,7 @@ const createInitialState = (): GameState => {
 };
 
 export const useGame = () => {
+	const { t } = useTranslation();
 	const [gameState, setGameState] = useState<GameState>(createInitialState);
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const [playError, setPlayError] = useState<string | null>(null);
@@ -48,13 +50,19 @@ export const useGame = () => {
 			try {
 				const saved = await loadGame();
 				if (!active) return;
-				if (saved) setGameState({ ...saved, defeatedEnemies: saved.defeatedEnemies ?? [] } as GameState);
+				if (saved)
+					setGameState({
+						...saved,
+						defeatedEnemies: saved.defeatedEnemies ?? [],
+					} as GameState);
 			} catch {
 				// usa estado inicial
 			}
 		};
 		init();
-		return () => { active = false; };
+		return () => {
+			active = false;
+		};
 	}, []);
 
 	const persist = async (state: GameState) => {
@@ -66,7 +74,10 @@ export const useGame = () => {
 	};
 
 	const toggleCard = (card: Card) => {
-		if (gameState.phase !== "player_turn" && gameState.phase !== "suffer_damage")
+		if (
+			gameState.phase !== "player_turn" &&
+			gameState.phase !== "suffer_damage"
+		)
 			return;
 		setPlayError(null);
 		setSelectedIds((prev) => {
@@ -124,7 +135,8 @@ export const useGame = () => {
 				: [...result.newDiscardPile, ...allPlayedCards, enemyCard];
 
 			const [, ...restCastle] = gameState.castle;
-			const newPhase: GamePhase = restCastle.length === 0 ? "victory" : "player_turn";
+			const newPhase: GamePhase =
+				restCastle.length === 0 ? "victory" : "player_turn";
 
 			const next: GameState = {
 				...gameState,
@@ -193,7 +205,8 @@ export const useGame = () => {
 		if (effectiveAttack === 0) return;
 
 		const handValue = gameState.playerHand.reduce((sum, c) => sum + c.value, 0);
-		const newPhase: GamePhase = handValue >= effectiveAttack ? "suffer_damage" : "defeat";
+		const newPhase: GamePhase =
+			handValue >= effectiveAttack ? "suffer_damage" : "defeat";
 
 		const next: GameState = {
 			...gameState,
@@ -212,7 +225,10 @@ export const useGame = () => {
 
 		if (total < gameState.pendingDamage) {
 			setPlayError(
-				`Selecione cartas com valor total ≥ ${gameState.pendingDamage} (atual: ${total})`
+				t("game.errors.discardNotEnough", {
+					needed: gameState.pendingDamage,
+					current: total,
+				}),
 			);
 			return;
 		}
@@ -231,6 +247,53 @@ export const useGame = () => {
 		persist(next);
 	};
 
+	const RANK_ORDER: Record<string, number> = {
+		Jester: 0,
+		A: 1,
+		"2": 2,
+		"3": 3,
+		"4": 4,
+		"5": 5,
+		"6": 6,
+		"7": 7,
+		"8": 8,
+		"9": 9,
+		"10": 10,
+		J: 11,
+		Q: 12,
+		K: 13,
+	};
+	const SUIT_ORDER: Record<string, number> = {
+		hearts: 0,
+		diamonds: 1,
+		clubs: 2,
+		spades: 3,
+	};
+
+	const sortHand = () => {
+		setGameState((prev) => ({
+			...prev,
+			playerHand: [...prev.playerHand].sort((a, b) => {
+				const rankDiff = (RANK_ORDER[a.rank] ?? 0) - (RANK_ORDER[b.rank] ?? 0);
+				if (rankDiff !== 0) return rankDiff;
+				return (
+					(SUIT_ORDER[a.suit ?? ""] ?? 0) - (SUIT_ORDER[b.suit ?? ""] ?? 0)
+				);
+			}),
+		}));
+	};
+
+	const sortHandByClass = () => {
+		setGameState((prev) => ({
+			...prev,
+			playerHand: [...prev.playerHand].sort((a, b) => {
+				const suitDiff =
+					(SUIT_ORDER[a.suit ?? ""] ?? 0) - (SUIT_ORDER[b.suit ?? ""] ?? 0);
+				return suitDiff;
+			}),
+		}));
+	};
+
 	const resetGame = () => {
 		const next = createInitialState();
 		setSelectedIds(new Set());
@@ -240,7 +303,9 @@ export const useGame = () => {
 	};
 
 	// ─── Derivados ──────────────────────────────────────────────────────────────
-	const selectedCards = gameState.playerHand.filter((c) => selectedIds.has(c.id));
+	const selectedCards = gameState.playerHand.filter((c) =>
+		selectedIds.has(c.id),
+	);
 	const selectedTotal = selectedCards.reduce((sum, c) => sum + c.value, 0);
 	const currentEnemy = gameState.castle[0] ?? null;
 	const currentHP = currentEnemy
@@ -264,6 +329,8 @@ export const useGame = () => {
 		playSelected,
 		yieldTurn,
 		confirmDiscard,
+		sortHand,
+		sortHandByClass,
 		resetGame,
 	};
 };

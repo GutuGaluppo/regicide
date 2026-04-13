@@ -1,6 +1,8 @@
 // /screens/HomeScreen.tsx
 import { router } from "expo-router";
+import i18n from "i18next";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
 	Image,
 	ImageBackground,
@@ -10,7 +12,17 @@ import {
 	View,
 } from "react-native";
 
+const LANGUAGES = [
+	{ code: "pt-BR", label: "PT" },
+	{ code: "en", label: "EN" },
+	{ code: "es", label: "ES" },
+	{ code: "fr", label: "FR" },
+] as const;
+
 export const HomeScreen = () => {
+	const { t } = useTranslation();
+	const currentLang = i18n.language;
+
 	return (
 		<ImageBackground
 			source={require("../assets/backgrounds/bg_cave.webp")}
@@ -24,6 +36,25 @@ export const HomeScreen = () => {
 						source={require("../assets/images/regicide_logo.png")}
 						style={{ width: 250, height: 250, resizeMode: "contain" }}
 					/>
+
+					{/* Language selector */}
+					<View style={styles.langRow}>
+						{LANGUAGES.map(({ code, label }) => {
+							const active = currentLang === code;
+							return (
+								<TouchableOpacity
+									key={code}
+									style={[styles.langBtn, active && styles.langBtnActive]}
+									onPress={() => i18n.changeLanguage(code)}
+									activeOpacity={0.7}
+								>
+									<Text style={[styles.langText, active && styles.langTextActive]}>
+										{label}
+									</Text>
+								</TouchableOpacity>
+							);
+						})}
+					</View>
 				</View>
 
 				<View style={styles.cards}>
@@ -37,11 +68,9 @@ export const HomeScreen = () => {
 								source={require("../assets/icons/sword.png")}
 								style={{ width: 32, height: 32 }}
 							/>
-							<Text style={styles.cardTitle}>PLAY</Text>
+							<Text style={styles.cardTitle}>{t("home.play.title")}</Text>
 						</View>
-						<Text style={styles.cardDesc}>
-							Versão digital completa — deck, mão e poderes dos naipes
-						</Text>
+						<Text style={styles.cardDesc}>{t("home.play.desc")}</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity
@@ -54,11 +83,9 @@ export const HomeScreen = () => {
 								source={require("../assets/icons/history.png")}
 								style={{ width: 32, height: 32 }}
 							/>
-							<Text style={styles.cardTitle}>TRACKER</Text>
+							<Text style={styles.cardTitle}>{t("home.tracker.title")}</Text>
 						</View>
-						<Text style={styles.cardDesc}>
-							Placar para o baralho físico — rastreie HP e ataque dos inimigos
-						</Text>
+						<Text style={styles.cardDesc}>{t("home.tracker.desc")}</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity
@@ -71,11 +98,9 @@ export const HomeScreen = () => {
 								source={require("../assets/images/crown.png")}
 								style={{ width: 32, height: 32 }}
 							/>
-							<Text style={styles.cardTitle}>COMO JOGAR</Text>
+							<Text style={styles.cardTitle}>{t("home.instructions.title")}</Text>
 						</View>
-						<Text style={styles.cardDesc}>
-							Regras, poderes dos naipes e tabela dos nobres do castelo
-						</Text>
+						<Text style={styles.cardDesc}>{t("home.instructions.desc")}</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -93,7 +118,32 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 24,
 		gap: 48,
 	},
-	header: { alignItems: "center", gap: 8 },
+	header: { alignItems: "center", gap: 12 },
+	langRow: {
+		flexDirection: "row",
+		gap: 6,
+	},
+	langBtn: {
+		paddingHorizontal: 12,
+		paddingVertical: 5,
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: "rgba(148,163,184,0.3)",
+		backgroundColor: "rgba(15,23,42,0.5)",
+	},
+	langBtnActive: {
+		borderColor: "#FBBF24",
+		backgroundColor: "rgba(251,191,36,0.15)",
+	},
+	langText: {
+		color: "#94A3B8",
+		fontSize: 12,
+		fontWeight: "700",
+		letterSpacing: 0.5,
+	},
+	langTextActive: {
+		color: "#FBBF24",
+	},
 	title: {
 		color: "#F1F5F9",
 		fontSize: 42,
