@@ -35,7 +35,11 @@ interface NumberSpriteProps {
 	height?: number;
 }
 
-export const NumberSprite = ({ value, type, height = 32 }: NumberSpriteProps) => {
+export const NumberSprite = ({
+	value,
+	type,
+	height = 32,
+}: NumberSpriteProps) => {
 	const digits = String(Math.max(0, Math.floor(value))).split("");
 	const map = type === "attack" ? ATTACK_DIGITS : HEALTH_DIGITS;
 	const width = Math.round(height * (193 / 300));
@@ -58,5 +62,8 @@ const styles = StyleSheet.create({
 	row: {
 		flexDirection: "row",
 		alignItems: "center",
+		// backgroundColor: "white",
+		// padding: 4,
+		// borderRadius: 10,
 	},
 });
