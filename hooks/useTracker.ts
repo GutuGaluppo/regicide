@@ -79,6 +79,12 @@ export const useTracker = () => {
 
 	// ─── Ações ──────────────────────────────────────────────────────────────────
 
+	const selectEnemy = (id: string) => {
+		if (state.defeatedIds.includes(id)) return;
+		setLastResult(null);
+		setState((s) => ({ ...s, currentEnemyId: id }));
+	};
+
 	const applyAttack = (suit: Suit, rank: CardRank) => {
 		if (!currentEnemy) return;
 
@@ -163,6 +169,7 @@ export const useTracker = () => {
 		footerEnemies,
 		isVictory,
 		lastResult,
+		selectEnemy,
 		applyAttack,
 		defeatCurrentEnemy,
 		resetTracker,

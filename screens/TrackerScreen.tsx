@@ -11,18 +11,12 @@ import {
 	View,
 } from "react-native";
 
+import HospitalIcon from "../assets/icons/hospital.svg";
 import { AttackInput } from "../components/AttackInput";
 import { DefeatFooter } from "../components/DefeatFooter";
 import { getCardImage } from "../data/images";
 import { CardRank, Suit } from "../data/types";
 import { useTracker } from "../hooks/useTracker";
-
-const SUIT_SYMBOL: Record<string, string> = {
-	hearts: "♥",
-	diamonds: "♦",
-	clubs: "♣",
-	spades: "♠",
-};
 
 export const TrackerScreen = () => {
 	const {
@@ -35,6 +29,7 @@ export const TrackerScreen = () => {
 		footerEnemies,
 		isVictory,
 		lastResult,
+		selectEnemy,
 		applyAttack,
 		defeatCurrentEnemy,
 		resetTracker,
@@ -47,13 +42,18 @@ export const TrackerScreen = () => {
 		hpPercent > 0.5 ? "#22C55E" : hpPercent > 0.25 ? "#FBBF24" : "#EF4444";
 	const isDead = currentHP <= 0;
 
+	const attackPercent = currentEnemy
+		? Math.min(1, effectiveAttack / currentEnemy.attack)
+		: 0;
+	const attackColor = "#FBBF24";
+
 	const handleAttack = (suit: Suit, rank: CardRank) => {
 		applyAttack(suit, rank);
 	};
 
 	return (
 		<ImageBackground
-			source={require("../assets/images/bg_cave.webp")}
+			source={require("../assets/backgrounds/bg_cave.webp")}
 			style={styles.bg}
 			resizeMode="cover"
 		>
@@ -93,41 +93,55 @@ export const TrackerScreen = () => {
 						>
 							{/* Imagem com badges sobrepostos */}
 							<View style={styles.enemyImageWrapper}>
+								{/* Barra de HP — esquerda, preenche do topo */}
+								<View style={styles.vBarBg}>
+									<View
+										style={[
+											styles.vBarFill,
+											{
+												height: `${hpPercent * 100}%` as any,
+												backgroundColor: hpColor,
+											},
+										]}
+									/>
+								</View>
+								{/* Barra de Ataque — direita, preenche da base */}
+								<View style={[styles.vBarBg, styles.vBarRight]}>
+									<View
+										style={[
+											styles.vBarFill,
+											styles.vBarFillBottom,
+											{
+												height: `${attackPercent * 100}%` as any,
+												backgroundColor: attackColor,
+											},
+										]}
+									/>
+								</View>
 								<Image
 									source={getCardImage(currentEnemy.rank, currentEnemy.suit)}
 									style={styles.enemyImage}
+									resizeMode="contain"
 								/>
 								{/* ATK — topo direito */}
 								<View style={styles.atkBadge}>
 									<Text style={styles.atkBadgeText}>⚔️ {effectiveAttack}</Text>
 									{currentShield > 0 && (
-										<Text style={styles.shieldBadgeText}>🛡️-{currentShield}</Text>
+										<Text style={styles.shieldBadgeText}>
+											🛡️-{currentShield}
+										</Text>
 									)}
 								</View>
 								{/* HP — base esquerda */}
-								<View style={[styles.hpBadge, { backgroundColor: hpColor + "33" }]}>
+								<View
+									style={[styles.hpBadge, { backgroundColor: hpColor + "33" }]}
+								>
+									<HospitalIcon width={14} height={14} color={hpColor} />
 									<Text style={[styles.hpBadgeText, { color: hpColor }]}>
-										❤️ {currentHP}/{currentEnemy.health}
+										{currentHP}/{currentEnemy.health}
 									</Text>
 								</View>
 							</View>
-
-							{/* Barra de HP */}
-							<View style={styles.hpBarBg}>
-								<View
-									style={[
-										styles.hpBarFill,
-										{
-											width: `${hpPercent * 100}%` as any,
-											backgroundColor: hpColor,
-										},
-									]}
-								/>
-							</View>
-
-							<Text style={styles.immuneText}>
-								🛡️ Imune a {SUIT_SYMBOL[currentEnemy.suit]}
-							</Text>
 
 							{isDead && <Text style={styles.deadBadge}>HP zerado!</Text>}
 						</View>
@@ -175,6 +189,8 @@ export const TrackerScreen = () => {
 					phase={footerPhase}
 					enemies={footerEnemies}
 					defeatedIds={defeatedIds}
+					currentEnemyId={currentEnemy?.id ?? null}
+					onSelect={selectEnemy}
 				/>
 			</View>
 		</ImageBackground>
@@ -229,47 +245,51 @@ const styles = StyleSheet.create({
 	},
 	enemyImageWrapper: {
 		position: "relative",
-		width: 200,
-		height: 280,
+		width: 220,
+		height: 309,
 	},
 	enemyImage: {
-		width: 200,
-		height: 280,
+		width: 220,
+		height: 309,
 		borderRadius: 10,
 	},
 	atkBadge: {
 		position: "absolute",
 		top: 8,
-		right: 8,
+		right: -58,
+		alignSelf: "flex-start",
 		backgroundColor: "rgba(15,23,42,0.82)",
 		borderRadius: 8,
-		paddingHorizontal: 8,
-		paddingVertical: 4,
+		paddingHorizontal: 10,
+		paddingVertical: 5,
 		alignItems: "flex-end",
 		gap: 2,
 	},
 	atkBadgeText: {
 		color: "#FBBF24",
 		fontWeight: "700",
-		fontSize: 13,
+		fontSize: 16,
 	},
 	shieldBadgeText: {
 		color: "#60A5FA",
-		fontSize: 11,
+		fontSize: 13,
 		fontWeight: "600",
 	},
 	hpBadge: {
 		position: "absolute",
 		bottom: 8,
-		left: 8,
+		left: -68,
+		alignSelf: "flex-start",
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
 		borderRadius: 8,
-		paddingHorizontal: 8,
-		paddingVertical: 4,
-		backgroundColor: "rgba(15,23,42,0.82)",
+		paddingHorizontal: 10,
+		paddingVertical: 5,
 	},
 	hpBadgeText: {
 		fontWeight: "700",
-		fontSize: 13,
+		fontSize: 16,
 	},
 	hpBarBg: {
 		width: 220,
@@ -281,6 +301,32 @@ const styles = StyleSheet.create({
 	hpBarFill: {
 		height: "100%",
 		borderRadius: 4,
+	},
+	vBarBg: {
+		position: "absolute",
+		top: 0,
+		left: -40,
+		width: 5,
+		height: "80%",
+		backgroundColor: "rgba(0,0,0,0.4)",
+		borderRadius: 3,
+		overflow: "hidden",
+	},
+	vBarRight: {
+		left: undefined,
+		top: 50,
+		right: -40,
+		justifyContent: "flex-end",
+	},
+	vBarFill: {
+		width: "100%",
+		borderRadius: 3,
+	},
+	vBarFillBottom: {
+		position: "absolute",
+		bottom: 0,
+		left: 0,
+		right: 0,
 	},
 	immuneText: { color: "#94A3B8", fontSize: 12 },
 	deadBadge: {

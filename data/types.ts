@@ -26,6 +26,7 @@ export type GamePhase = "player_turn" | "suffer_damage" | "victory" | "defeat";
 
 export interface GameState {
 	castle: Enemy[];
+	defeatedEnemies: Enemy[];
 	tavernDeck: Card[];
 	discardPile: Card[];
 	playerHand: Card[];

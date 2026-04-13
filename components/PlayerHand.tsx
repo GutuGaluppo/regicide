@@ -1,18 +1,20 @@
 // /components/PlayerHand.tsx
 import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { Card, GamePhase } from "../data/types";
+import { Card, GamePhase, Suit } from "../data/types";
 import { CardView } from "./CardView";
 
 export const PlayerHand = ({
 	hand,
 	selectedIds,
 	phase,
+	immuneSuit,
 	onCardPress,
 }: {
 	hand: Card[];
 	selectedIds: Set<string>;
 	phase: GamePhase;
+	immuneSuit?: Suit | null;
 	onCardPress: (card: Card) => void;
 }) => {
 	const interactive = phase === "player_turn" || phase === "suffer_damage";
@@ -20,7 +22,9 @@ export const PlayerHand = ({
 	return (
 		<View style={styles.container}>
 			<Text style={styles.label}>
-				{phase === "suffer_damage" ? "Selecione cartas para descartar" : `Mão (${hand.length})`}
+				{phase === "suffer_damage"
+					? "Selecione cartas para descartar"
+					: `Mão (${hand.length})`}
 			</Text>
 			<ScrollView
 				horizontal
@@ -34,11 +38,10 @@ export const PlayerHand = ({
 						selected={selectedIds.has(card.id)}
 						onPress={() => onCardPress(card)}
 						disabled={!interactive}
+						immuneSuit={immuneSuit}
 					/>
 				))}
-				{hand.length === 0 && (
-					<Text style={styles.empty}>Mão vazia</Text>
-				)}
+				{hand.length === 0 && <Text style={styles.empty}>Mão vazia</Text>}
 			</ScrollView>
 		</View>
 	);

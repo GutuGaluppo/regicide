@@ -24,6 +24,7 @@ const createInitialState = (): GameState => {
 	const playerHand = tavernDeck.splice(0, MAX_HAND);
 	return {
 		castle: buildCastle(),
+		defeatedEnemies: [],
 		tavernDeck,
 		discardPile: [],
 		playerHand,
@@ -47,7 +48,7 @@ export const useGame = () => {
 			try {
 				const saved = await loadGame();
 				if (!active) return;
-				if (saved) setGameState(saved as GameState);
+				if (saved) setGameState({ ...saved, defeatedEnemies: saved.defeatedEnemies ?? [] } as GameState);
 			} catch {
 				// usa estado inicial
 			}
@@ -128,6 +129,7 @@ export const useGame = () => {
 			const next: GameState = {
 				...gameState,
 				castle: restCastle,
+				defeatedEnemies: [...gameState.defeatedEnemies, enemy],
 				playerHand: result.newHand,
 				tavernDeck: newTavern,
 				discardPile: newDiscard,
@@ -257,6 +259,7 @@ export const useGame = () => {
 		effectiveAttack,
 		selectedCards,
 		selectedTotal,
+		defeatedEnemies: gameState.defeatedEnemies,
 		toggleCard,
 		playSelected,
 		yieldTurn,

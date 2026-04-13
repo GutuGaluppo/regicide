@@ -1,11 +1,24 @@
 // /screens/GameScreen.tsx
+import { router } from "expo-router";
 import React from "react";
-import { ImageBackground, StyleSheet, Text, View } from "react-native";
+import { Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ActionBar } from "../components/ActionBar";
 import { CastleFooter } from "../components/CastleFooter";
 import { EnemyCard } from "../components/EnemyCard";
 import { PlayerHand } from "../components/PlayerHand";
 import { useGame } from "../hooks/useGame";
+
+const CARD_BACK = require("../assets/images/cards_back.png");
+
+const StatusCard = ({ count }: { count: number }) => (
+	<View style={styles.statusCard}>
+		<Image source={CARD_BACK} style={styles.statusCardImg} resizeMode="contain" />
+		<View style={styles.statusCardOverlay}>
+			<Text style={styles.statusCardNumOutline}>{count}</Text>
+			<Text style={styles.statusCardNum}>{count}</Text>
+		</View>
+	</View>
+);
 
 export const GameScreen = () => {
 	const {
@@ -16,6 +29,7 @@ export const GameScreen = () => {
 		currentHP,
 		effectiveAttack,
 		selectedTotal,
+		defeatedEnemies,
 		toggleCard,
 		playSelected,
 		yieldTurn,
@@ -23,24 +37,35 @@ export const GameScreen = () => {
 		resetGame,
 	} = useGame();
 
-	const { phase, spadesShield, tavernDeck, discardPile, pendingDamage, jesterActive } = gameState;
+	const {
+		phase,
+		spadesShield,
+		tavernDeck,
+		discardPile,
+		pendingDamage,
+		jesterActive,
+	} = gameState;
 
 	return (
 		<ImageBackground
-			source={require("../assets/images/bg_cave.webp")}
+			source={require("../assets/backgrounds/bg_cave.webp")}
 			style={styles.container}
 			resizeMode="cover"
 		>
 			<View style={styles.overlay}>
+				{/* Header */}
+				<View style={styles.header}>
+					<TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+						<Text style={styles.backBtnText}>← Voltar</Text>
+					</TouchableOpacity>
+				</View>
 
 				{/* Status superior */}
 				<View style={styles.statusBar}>
-					<Text style={styles.statusText}>🏰 {gameState.castle.length}</Text>
-					<Text style={styles.statusText}>🃏 {tavernDeck.length}</Text>
-					<Text style={styles.statusText}>🗑️ {discardPile.length}</Text>
-					{spadesShield > 0 && (
-						<Text style={styles.statusText}>🛡️ -{spadesShield}</Text>
-					)}
+					<StatusCard count={gameState.castle.length} />
+					<StatusCard count={tavernDeck.length} />
+					<StatusCard count={discardPile.length} />
+					{spadesShield > 0 && <StatusCard count={spadesShield} />}
 				</View>
 
 				{/* Centro: inimigo ou mensagem final */}
@@ -51,14 +76,15 @@ export const GameScreen = () => {
 					{phase === "defeat" && (
 						<Text style={[styles.endText, styles.defeatText]}>💀 Derrota</Text>
 					)}
-					{(phase === "player_turn" || phase === "suffer_damage") && currentEnemy && (
-						<EnemyCard
-							enemy={currentEnemy}
-							currentHP={currentHP}
-							effectiveAttack={effectiveAttack}
-							jesterActive={jesterActive}
-						/>
-					)}
+					{(phase === "player_turn" || phase === "suffer_damage") &&
+						currentEnemy && (
+							<EnemyCard
+								enemy={currentEnemy}
+								currentHP={currentHP}
+								effectiveAttack={effectiveAttack}
+								jesterActive={jesterActive}
+							/>
+						)}
 				</View>
 
 				{/* Fase: sofrer dano */}
@@ -71,9 +97,7 @@ export const GameScreen = () => {
 				)}
 
 				{/* Erro de jogada */}
-				{playError && (
-					<Text style={styles.error}>{playError}</Text>
-				)}
+				{playError && <Text style={styles.error}>{playError}</Text>}
 
 				{/* Mão do jogador */}
 				{(phase === "player_turn" || phase === "suffer_damage") && (
@@ -81,6 +105,7 @@ export const GameScreen = () => {
 						hand={gameState.playerHand}
 						selectedIds={selectedIds}
 						phase={phase}
+						immuneSuit={jesterActive ? null : currentEnemy?.suit}
 						onCardPress={toggleCard}
 					/>
 				)}
@@ -97,7 +122,10 @@ export const GameScreen = () => {
 					playDisabled={selectedIds.size === 0}
 				/>
 
-				<CastleFooter count={gameState.castle.length} />
+				<CastleFooter
+					castle={gameState.castle}
+					defeatedEnemies={defeatedEnemies}
+				/>
 			</View>
 		</ImageBackground>
 	);
@@ -115,14 +143,37 @@ const styles = StyleSheet.create({
 	statusBar: {
 		flexDirection: "row",
 		justifyContent: "center",
-		gap: 16,
-		paddingTop: 52,
+		alignItems: "flex-end",
+		gap: 12,
 		paddingHorizontal: 16,
 	},
-	statusText: {
-		color: "#CBD5E1",
-		fontSize: 13,
-		fontWeight: "600",
+	statusCard: {
+		width: 36,
+		height: 50,
+	},
+	statusCardImg: {
+		width: "100%",
+		height: "100%",
+	},
+	statusCardOverlay: {
+		...StyleSheet.absoluteFillObject,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	statusCardNumOutline: {
+		position: "absolute",
+		fontSize: 22,
+		fontWeight: "900",
+		color: "#FFFFFF",
+		textShadowColor: "#FFFFFF",
+		textShadowOffset: { width: 0, height: 0 },
+		textShadowRadius: 6,
+	},
+	statusCardNum: {
+		position: "absolute",
+		fontSize: 22,
+		fontWeight: "900",
+		color: "#000000",
 	},
 	center: {
 		flex: 1,
@@ -158,5 +209,24 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		marginBottom: 4,
 		paddingHorizontal: 16,
+	},
+	header: {
+		paddingTop: 52,
+		paddingHorizontal: 16,
+		paddingBottom: 4,
+	},
+	backBtn: {
+		alignSelf: "flex-start",
+		paddingVertical: 6,
+		paddingHorizontal: 12,
+		backgroundColor: "rgba(15,23,42,0.75)",
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: "rgba(148,163,184,0.3)",
+	},
+	backBtnText: {
+		color: "#94A3B8",
+		fontSize: 13,
+		fontWeight: "600",
 	},
 });
