@@ -1,7 +1,10 @@
 // /components/EnemyCard.tsx
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
-import HospitalIcon from "../assets/icons/hospital.svg";
+import MagicShield from "../assets/icons/shield_03.png";
+// import MagicShield from "../assets/icons/magicShield.png";
+import { NumberSprite } from "../components/NumberSprite";
+import { ProgressRing } from "../components/ProgressRing";
 import { getCardImage } from "../data/images";
 import { Enemy } from "../data/types";
 
@@ -20,38 +23,11 @@ export const EnemyCard = ({
 	const attackPercent = Math.min(1, effectiveAttack / enemy.attack);
 	const hpColor =
 		hpPercent > 0.5 ? "#22C55E" : hpPercent > 0.25 ? "#FBBF24" : "#EF4444";
-	const attackColor = "#FBBF24";
+	const shielded = effectiveAttack < enemy.attack;
 
 	return (
 		<View style={styles.card}>
 			<View style={styles.imageWrapper}>
-				{/* Barra de HP — esquerda, preenche do topo */}
-				<View style={styles.vBarBg}>
-					<View
-						style={[
-							styles.vBarFill,
-							{
-								height: `${hpPercent * 100}%` as any,
-								backgroundColor: hpColor,
-							},
-						]}
-					/>
-				</View>
-
-				{/* Barra de Ataque — direita, preenche da base */}
-				<View style={[styles.vBarBg, styles.vBarRight]}>
-					<View
-						style={[
-							styles.vBarFill,
-							styles.vBarFillBottom,
-							{
-								height: `${attackPercent * 100}%` as any,
-								backgroundColor: attackColor,
-							},
-						]}
-					/>
-				</View>
-
 				<Image
 					source={getCardImage(enemy.rank, enemy.suit)}
 					style={styles.image}
@@ -60,26 +36,40 @@ export const EnemyCard = ({
 
 				{/* ATK — topo direito */}
 				<View style={styles.atkBadge}>
-					<Text style={styles.atkBadgeText}>⚔️ {effectiveAttack}</Text>
-					{effectiveAttack < enemy.attack && (
-						<Text style={styles.shieldedText}>🛡️ ({enemy.attack})</Text>
+					<Text style={styles.badgeLabel}>Attack</Text>
+					<ProgressRing
+						percent={attackPercent}
+						size={80}
+						strokeWidth={6}
+						color="#b8860a"
+					>
+						<NumberSprite value={effectiveAttack} type="attack" height={32} />
+					</ProgressRing>
+					{shielded && (
+						<View style={styles.shieldedWrapper}>
+							<Image source={MagicShield} style={styles.shieldIconBg} />
+							<NumberSprite
+								value={enemy.attack - effectiveAttack}
+								type="attack"
+								height={22}
+							/>
+						</View>
 					)}
 				</View>
 
 				{/* HP — base esquerda */}
-				<View style={[styles.hpBadge, { backgroundColor: hpColor + "33" }]}>
-					<HospitalIcon width={14} height={14} color={hpColor} />
-					<Text style={[styles.hpBadgeText, { color: hpColor }]}>
-						{currentHP}/{enemy.health}
-					</Text>
+				<View style={styles.hpBadge}>
+					<ProgressRing
+						percent={hpPercent}
+						size={80}
+						strokeWidth={6}
+						color={hpColor}
+					>
+						<NumberSprite value={currentHP} type="health" height={32} />
+					</ProgressRing>
+					<Text style={styles.badgeLabel}>Health</Text>
 				</View>
 			</View>
-
-			{/* <Text style={styles.immunity}>
-				{jesterActive
-					? "⚡ Imunidade cancelada"
-					: `🛡️ Imune a ${SUIT_SYMBOL[enemy.suit]}`}
-			</Text> */}
 		</View>
 	);
 };
@@ -87,86 +77,53 @@ export const EnemyCard = ({
 const styles = StyleSheet.create({
 	card: {
 		alignItems: "center",
-		gap: 8,
 	},
 	imageWrapper: {
 		position: "relative",
-		width: 250,
+		width: 210,
 		height: 320,
 	},
 	image: {
-		width: 250,
+		width: 210,
 		height: 320,
 		borderRadius: 12,
 	},
-	vBarBg: {
-		position: "absolute",
-		top: 0,
-		left: -20,
-		width: 5,
-		height: "100%",
-		backgroundColor: "rgba(0,0,0,0.4)",
-		borderRadius: 3,
-		overflow: "hidden",
-		zIndex: 1,
-	},
-	vBarRight: {
-		left: undefined,
-		right: -20,
-		justifyContent: "flex-end",
-	},
-	vBarFill: {
-		width: "100%",
-		borderRadius: 3,
-	},
-	vBarFillBottom: {
-		position: "absolute",
-		bottom: 0,
-		left: 0,
-		right: 0,
-	},
 	atkBadge: {
 		position: "absolute",
-		top: 8,
-		right: 8,
-		alignSelf: "flex-start",
-		backgroundColor: "rgba(15,23,42,0.82)",
-		borderRadius: 8,
-		paddingHorizontal: 10,
-		paddingVertical: 5,
-		alignItems: "flex-end",
-		gap: 2,
-		zIndex: 2,
-	},
-	atkBadgeText: {
-		color: "#FBBF24",
-		fontWeight: "700",
-		fontSize: 16,
-	},
-	shieldedText: {
-		color: "#60A5FA",
-		fontSize: 13,
-		fontWeight: "600",
+		top: 20,
+		right: -65,
+		alignItems: "center",
+		gap: 4,
 	},
 	hpBadge: {
 		position: "absolute",
-		bottom: 8,
-		left: 8,
-		alignSelf: "flex-start",
-		flexDirection: "row",
+		bottom: 20,
+		left: -65,
 		alignItems: "center",
 		gap: 4,
-		borderRadius: 8,
-		paddingHorizontal: 10,
-		paddingVertical: 5,
-		zIndex: 2,
 	},
-	hpBadgeText: {
+	badgeLabel: {
+		color: "#F1F5F9",
+		fontFamily: "IMFellEnglish-Regular",
+		fontSize: 13,
 		fontWeight: "700",
-		fontSize: 16,
+		letterSpacing: 0.8,
+		textTransform: "uppercase",
+		textShadowColor: "rgba(0,0,0,0.8)",
+		textShadowOffset: { width: 0, height: 1 },
+		textShadowRadius: 3,
 	},
-	immunity: {
-		color: "#94A3B8",
-		fontSize: 12,
+	shieldedWrapper: {
+		width: 88,
+		height: 88,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	shieldIconBg: {
+		position: "absolute",
+		top: -8,
+		left: 0,
+		width: 88,
+		height: 88,
 	},
 });
