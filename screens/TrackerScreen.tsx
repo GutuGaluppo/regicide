@@ -14,6 +14,7 @@ import {
 import HospitalIcon from "../assets/icons/hospital.svg";
 import { AttackInput } from "../components/AttackInput";
 import { DefeatFooter } from "../components/DefeatFooter";
+import { NumberSprite } from "../components/NumberSprite";
 import { VictoryScreen } from "../components/VictoryScreen";
 import { getCardImage } from "../data/images";
 import { CardRank, Suit } from "../data/types";
@@ -46,7 +47,6 @@ export const TrackerScreen = () => {
 	const attackPercent = currentEnemy
 		? Math.min(1, effectiveAttack / currentEnemy.attack)
 		: 0;
-	const attackColor = "#FBBF24";
 
 	const handleAttack = (suit: Suit, rank: CardRank) => {
 		applyAttack(suit, rank);
@@ -110,7 +110,7 @@ export const TrackerScreen = () => {
 											styles.vBarFillBottom,
 											{
 												height: `${attackPercent * 100}%` as any,
-												backgroundColor: attackColor,
+												backgroundColor: "#FBBF24",
 											},
 										]}
 									/>
@@ -122,7 +122,7 @@ export const TrackerScreen = () => {
 								/>
 								{/* ATK — topo direito */}
 								<View style={styles.atkBadge}>
-									<Text style={styles.atkBadgeText}>⚔️ {effectiveAttack}</Text>
+									<NumberSprite value={effectiveAttack} type="attack" height={28} />
 									{currentShield > 0 && (
 										<Text style={styles.shieldBadgeText}>
 											🛡️-{currentShield}
@@ -134,9 +134,7 @@ export const TrackerScreen = () => {
 									style={[styles.hpBadge, { backgroundColor: hpColor + "33" }]}
 								>
 									<HospitalIcon width={14} height={14} color={hpColor} />
-									<Text style={[styles.hpBadgeText, { color: hpColor }]}>
-										{currentHP}/{currentEnemy.health}
-									</Text>
+									<NumberSprite value={currentHP} type="health" height={28} />
 								</View>
 							</View>
 
@@ -247,11 +245,6 @@ const styles = StyleSheet.create({
 		alignItems: "flex-end",
 		gap: 2,
 	},
-	atkBadgeText: {
-		color: "#FBBF24",
-		fontWeight: "700",
-		fontSize: 16,
-	},
 	shieldBadgeText: {
 		color: "#60A5FA",
 		fontSize: 13,
@@ -268,10 +261,6 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		paddingHorizontal: 10,
 		paddingVertical: 5,
-	},
-	hpBadgeText: {
-		fontWeight: "700",
-		fontSize: 16,
 	},
 	hpBarBg: {
 		width: 220,
