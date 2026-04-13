@@ -6,6 +6,7 @@ import { ActionBar } from "../components/ActionBar";
 import { CastleFooter } from "../components/CastleFooter";
 import { EnemyCard } from "../components/EnemyCard";
 import { PlayerHand } from "../components/PlayerHand";
+import { VictoryScreen } from "../components/VictoryScreen";
 import { useGame } from "../hooks/useGame";
 
 const CARD_BACK = require("../assets/images/cards_back.png");
@@ -46,6 +47,10 @@ export const GameScreen = () => {
 		jesterActive,
 	} = gameState;
 
+	if (phase === "victory") {
+		return <VictoryScreen onReset={resetGame} />;
+	}
+
 	return (
 		<ImageBackground
 			source={require("../assets/backgrounds/bg_cave.webp")}
@@ -70,9 +75,6 @@ export const GameScreen = () => {
 
 				{/* Centro: inimigo ou mensagem final */}
 				<View style={styles.center}>
-					{phase === "victory" && (
-						<Text style={styles.endText}>🏆 Vitória!</Text>
-					)}
 					{phase === "defeat" && (
 						<Text style={[styles.endText, styles.defeatText]}>💀 Derrota</Text>
 					)}
