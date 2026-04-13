@@ -14,6 +14,7 @@ import { CastleFooter } from "../components/CastleFooter";
 import { EnemyCard } from "../components/EnemyCard";
 import { NumberSprite } from "../components/NumberSprite";
 import { PlayerHand } from "../components/PlayerHand";
+import { DefeatScreen } from "../components/DefeatScreen";
 import { VictoryScreen } from "../components/VictoryScreen";
 import { useGame } from "../hooks/useGame";
 
@@ -60,6 +61,10 @@ export const GameScreen = () => {
 
 	if (phase === "victory") {
 		return <VictoryScreen onReset={resetGame} />;
+	}
+
+	if (phase === "defeat" && currentEnemy) {
+		return <DefeatScreen enemy={currentEnemy} />;
 	}
 
 	return (
