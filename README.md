@@ -1,50 +1,89 @@
-# Welcome to your Expo app 👋
+# Regicide Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo mobile companion para o jogo de cartas **Regicide**, construído com React Native e Expo. Oferece dois modos: um **jogo digital** completo com todas as regras implementadas, e um **tracker físico** para acompanhar partidas com o baralho real.
 
-## Get started
+## Sobre o Regicide
 
-1. Install dependencies
+Regicide é um jogo cooperativo de cartas em que os jogadores enfrentam os inimigos do castelo (Valetes, Rainhas e Reis) usando as cartas da taverna como armas. Cada naipe concede um poder especial:
 
-   ```bash
-   npm install
-   ```
+| Naipe | Efeito |
+|-------|--------|
+| Espadas | Reduz o ataque do inimigo atual |
+| Copas | Recupera cartas do descarte para a taverna |
+| Ouros | Compra cartas extras para a mão |
+| Paus | Dobra o dano causado |
 
-2. Start the app
+Cada inimigo é imune ao naipe correspondente ao seu próprio naipe — exceto quando um Jester é jogado.
 
-   ```bash
-   npx expo start
-   ```
+## Funcionalidades
 
-In the output, you'll find options to open the app in a
+### Modo Digital
+- Partida completa para 2 jogadores com todas as regras do Regicide
+- Mão do jogador interativa com seleção de cartas
+- Validação de jogadas (combos, Animal Companions, Jester)
+- Resolução automática dos efeitos de naipe
+- Fase de sofrer dano com descarte forçado
+- Indicadores visuais de imunidade nas cartas da mão
+- Barras de HP e Ataque em tempo real sobre a imagem do inimigo
+- Footer com progresso das fases (Valetes → Rainhas → Reis)
+- Persistência automática do estado via AsyncStorage
+- Botões de Jogar, Ceder turno e Reiniciar
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Tracker Físico
+- Acompanhamento de HP e ataque do inimigo atual
+- Registro de dano por naipe com validação de imunidade
+- Seleção do inimigo ativo pelo footer
+- Histórico de inimigos derrotados
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Estrutura do projeto
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+├── app/                  # Rotas Expo Router
+├── assets/
+│   ├── backgrounds/      # Imagens de fundo
+│   ├── cards/            # Ilustrações dos inimigos
+│   ├── game/             # Cartas da taverna
+│   └── icons/            # Ícones SVG/WebP
+├── components/
+│   ├── ActionBar.tsx     # Botões de ação (jogar, ceder, descartar)
+│   ├── AttackInput.tsx   # Input de dano por naipe (tracker)
+│   ├── CardView.tsx      # Carta individual da mão do jogador
+│   ├── CastleFooter.tsx  # Footer de progresso do castelo
+│   ├── DefeatFooter.tsx  # Footer de inimigos (tracker)
+│   ├── EnemyCard.tsx     # Card do inimigo com HP/ATK overlay
+│   └── PlayerHand.tsx    # Mão do jogador
+├── data/
+│   ├── deck.ts           # Criação do baralho da taverna
+│   ├── enemies.ts        # Deck do castelo (stats dos inimigos)
+│   ├── images.ts         # Mapeamento rank/naipe → imagem
+│   └── types.ts          # Tipos TypeScript globais
+├── hooks/
+│   ├── useGame.ts        # Lógica completa do modo digital
+│   └── useTracker.ts     # Estado do tracker físico
+├── screens/
+│   ├── GameScreen.tsx    # Tela do modo digital
+│   ├── HomeScreen.tsx    # Tela inicial
+│   └── TrackerScreen.tsx # Tela do tracker físico
+├── services/
+│   └── storage.ts        # Persistência com AsyncStorage
+└── utils/
+    ├── gameLogic.ts      # Validação e resolução de jogadas
+    └── shuffle.ts        # Fisher-Yates shuffle
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Tecnologias
 
-## Learn more
+- **React Native** + **Expo** (~54)
+- **Expo Router** — navegação file-based
+- **react-native-svg** + **react-native-svg-transformer** — ícones SVG dinâmicos
+- **AsyncStorage** — persistência local do estado de jogo
+- **TypeScript**
 
-To learn more about developing your project with Expo, look at the following resources:
+## Como rodar
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm install
+npx expo start
+```
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Abra no simulador iOS/Android ou no navegador via Expo Go.
