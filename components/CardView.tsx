@@ -3,7 +3,7 @@ import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Card, Suit } from "../data/types";
 
-const ExclamationIcon = require("../assets/icons/exclamation.webp");
+const ExclamationIcon = require("../assets/icons/spell.png");
 
 const SUIT_SYMBOL: Record<string, string> = {
 	hearts: "♥",

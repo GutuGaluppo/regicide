@@ -8,11 +8,11 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import ExclamationIcon from "../assets/icons/exclamation.webp";
 import ClubsImage from "../assets/classes/Clubs.avif";
 import DiamondsImage from "../assets/classes/Diamonds.avif";
 import HeartsImage from "../assets/classes/Hearts.avif";
 import SpadesImage from "../assets/classes/Spades.avif";
+import SpellImmune from "../assets/icons/spellImmune.png";
 import { CardRank, Enemy, Suit } from "../data/types";
 import { cardValue } from "../utils/gameLogic";
 
@@ -85,30 +85,21 @@ export const AttackInput = ({
 					const isImmune = s === enemy.suit;
 					return (
 						<View key={s} style={styles.suitWrapper}>
-						<TouchableOpacity
-							style={[
-								styles.suitBtn,
-								isImmune && styles.suitBtnImmune,
-								suit === s && styles.suitBtnSelected,
-							]}
-							onPress={() => setSuit((prev) => (prev === s ? null : s))}
-							activeOpacity={0.7}
-						>
-							<Image
+							{isImmune && (
+								<Image source={SpellImmune} style={styles.immuneIcon} />
+							)}
+							<TouchableOpacity
 								style={[
-									{ width: 60, height: 60 },
+									styles.suitBtn,
 									isImmune && styles.suitImgImmune,
+									suit === s && styles.suitBtnSelected,
 								]}
-								source={symbol}
-							/>
-						</TouchableOpacity>
-						{isImmune && (
-							<Image
-								source={ExclamationIcon}
-								style={styles.immuneIcon}
-							/>
-						)}
-					</View>
+								onPress={() => setSuit((prev) => (prev === s ? null : s))}
+								activeOpacity={0.7}
+							>
+								<Image style={{ width: 60, height: 60 }} source={symbol} />
+							</TouchableOpacity>
+						</View>
 					);
 				})}
 			</View>
@@ -190,22 +181,19 @@ const styles = StyleSheet.create({
 	suitWrapper: {
 		position: "relative",
 	},
-	suitBtnImmune: {
-		borderColor: "#EF4444",
-		borderWidth: 2,
-	},
 	immuneIcon: {
 		position: "absolute",
-		top: -4,
-		right: -4,
-		width: 18,
-		height: 18,
+		top: -14,
+		left: -14,
+		width: 86,
+		height: 86,
 	},
 	suitBtnSelected: {
 		borderColor: "#FBBF24",
 	},
 	suitImgImmune: {
-		opacity: 0.35,
+		borderColor: "#5c1988",
+		borderWidth: 3,
 	},
 	suitSymbol: {
 		fontSize: 26,

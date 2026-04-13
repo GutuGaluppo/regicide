@@ -4,6 +4,8 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { getFooterCardImage } from "../data/images";
 import { Enemy, EnemyRank } from "../data/types";
 
+const LetterX = require("../assets/icons/letter-x.png");
+
 const PHASE_LABEL: Record<EnemyRank, string> = {
 	J: "Valetes derrotados",
 	Q: "Rainhas derrotadas",
@@ -51,8 +53,11 @@ export const DefeatFooter = ({
 							/>
 							{defeated && (
 								<View style={styles.crossOverlay}>
-									<View style={styles.crossLine1} />
-									<View style={styles.crossLine2} />
+									<Image
+										source={LetterX}
+										style={styles.crossIcon}
+										resizeMode="contain"
+									/>
 								</View>
 							)}
 						</TouchableOpacity>
@@ -108,21 +113,12 @@ const styles = StyleSheet.create({
 	},
 	crossOverlay: {
 		...StyleSheet.absoluteFillObject,
-		justifyContent: "center",
-		alignItems: "center",
+		justifyContent: "flex-end",
+		alignItems: "flex-start",
+		paddingTop: 14,
 	},
-	crossLine1: {
-		position: "absolute",
-		width: "140%",
-		height: 2,
-		backgroundColor: "#EF4444",
-		transform: [{ rotate: "45deg" }],
-	},
-	crossLine2: {
-		position: "absolute",
-		width: "140%",
-		height: 2,
-		backgroundColor: "#EF4444",
-		transform: [{ rotate: "-45deg" }],
+	crossIcon: {
+		width: "90%",
+		height: "90%",
 	},
 });
