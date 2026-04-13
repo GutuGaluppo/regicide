@@ -3,16 +3,93 @@ import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
 	Animated,
+	Dimensions,
+	Easing,
 	Image,
-	ImageBackground,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
 } from "react-native";
+import crown from "../assets/images/crown.png";
 
-const THRONE_BREAK = require("../assets/images/throneBreak.png");
-const BG = require("../assets/backgrounds/bg_cave.webp");
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+
+// Amplitude base em pixels relativos à largura da tela (robusto em web e nativo)
+// Camada traseira: pouco movimento. Camada frontal: percorre a tela inteira.
+const LAYERS: { source: number; amplitude: number; duration: number }[] = [
+	{
+		source: require("../assets/backgrounds/parallaxi_bgs/4Background-Clouds-trans.png"),
+		amplitude: SCREEN_W * 0.42, // ~47px — quase estático
+		duration: 38000,
+	},
+	{
+		source: require("../assets/backgrounds/parallaxi_bgs/3Background.png"),
+		amplitude: SCREEN_W * 0.58, // ~109px
+		duration: 37000,
+	},
+	{
+		source: require("../assets/backgrounds/parallaxi_bgs/2Foreground2.png"),
+		amplitude: SCREEN_W * 1.0, // ~215px
+		duration: 32000,
+	},
+	{
+		source: require("../assets/backgrounds/parallaxi_bgs/1Foreground-Rocks.png"),
+		amplitude: SCREEN_W * 1.0, // largura completa da tela — máximo percurso
+		duration: 31000,
+	},
+];
+
+// Largura de cada camada = tela + 2 × amplitude máxima para nunca mostrar borda
+const LAYER_W = SCREEN_W + SCREEN_W * 2; // 3× screen width
+
+const ParallaxLayer = ({
+	source,
+	amplitude,
+	duration,
+}: {
+	source: number;
+	amplitude: number;
+	duration: number;
+}) => {
+	const shift = useRef(new Animated.Value(-amplitude)).current;
+
+	useEffect(() => {
+		const loop = Animated.loop(
+			Animated.sequence([
+				Animated.timing(shift, {
+					toValue: amplitude,
+					duration,
+					easing: Easing.inOut(Easing.sin),
+					useNativeDriver: true,
+				}),
+				Animated.timing(shift, {
+					toValue: -amplitude,
+					duration,
+					easing: Easing.inOut(Easing.sin),
+					useNativeDriver: true,
+				}),
+			]),
+		);
+		loop.start();
+		return () => loop.stop();
+	}, [shift, amplitude, duration]);
+
+	return (
+		<Animated.Image
+			source={source}
+			style={[
+				styles.layer,
+				{
+					width: LAYER_W,
+					left: -amplitude,
+					transform: [{ translateX: shift }],
+				},
+			]}
+			resizeMode="cover"
+		/>
+	);
+};
 
 export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 	const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -23,7 +100,7 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 		Animated.parallel([
 			Animated.timing(fadeAnim, {
 				toValue: 1,
-				duration: 600,
+				duration: 700,
 				useNativeDriver: true,
 			}),
 			Animated.spring(slideAnim, {
@@ -39,10 +116,14 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 				useNativeDriver: true,
 			}),
 		]).start();
-	}, []);
+	}, [fadeAnim, slideAnim, scaleAnim]);
 
 	return (
-		<ImageBackground source={BG} style={styles.bg} resizeMode="cover" imageStyle={{ width: "100%", height: "100%" }}>
+		<View style={styles.bg}>
+			{LAYERS.map((layer, i) => (
+				<ParallaxLayer key={i} {...layer} />
+			))}
+
 			<View style={styles.overlay}>
 				<Animated.View
 					style={[
@@ -53,14 +134,9 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 						},
 					]}
 				>
+					<Image source={crown} style={styles.image} resizeMode="contain" />
 					<Text style={styles.title}>Vitória!</Text>
 					<Text style={styles.subtitle}>O reino foi salvo</Text>
-
-					<Image
-						source={THRONE_BREAK}
-						style={styles.image}
-						resizeMode="contain"
-					/>
 
 					<View style={styles.actions}>
 						<TouchableOpacity
@@ -80,17 +156,23 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 					</View>
 				</Animated.View>
 			</View>
-		</ImageBackground>
+		</View>
 	);
 };
 
 const styles = StyleSheet.create({
 	bg: {
 		flex: 1,
+		overflow: "hidden",
+	},
+	layer: {
+		position: "absolute",
+		top: 0,
+		height: SCREEN_H,
 	},
 	overlay: {
 		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.65)",
+		backgroundColor: "rgba(0,0,0,0.45)",
 		justifyContent: "center",
 		alignItems: "center",
 		paddingHorizontal: 24,
@@ -109,6 +191,7 @@ const styles = StyleSheet.create({
 		textShadowOffset: { width: 0, height: 0 },
 		textShadowRadius: 20,
 		letterSpacing: 2,
+		padding: 15,
 	},
 	subtitle: {
 		fontFamily: "IMFellEnglish-Regular",
@@ -120,9 +203,10 @@ const styles = StyleSheet.create({
 		marginBottom: 8,
 	},
 	image: {
-		width: "90%",
-		height: 320,
-		marginVertical: 8,
+		position: "absolute",
+		top: -160,
+		width: "50%",
+		height: 180,
 	},
 	actions: {
 		width: "100%",
