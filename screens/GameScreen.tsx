@@ -1,7 +1,14 @@
 // /screens/GameScreen.tsx
 import { router } from "expo-router";
 import React from "react";
-import { Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+	Image,
+	ImageBackground,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import { ActionBar } from "../components/ActionBar";
 import { CastleFooter } from "../components/CastleFooter";
 import { EnemyCard } from "../components/EnemyCard";
@@ -13,7 +20,11 @@ const CARD_BACK = require("../assets/images/cards_back.png");
 
 const StatusCard = ({ count }: { count: number }) => (
 	<View style={styles.statusCard}>
-		<Image source={CARD_BACK} style={styles.statusCardImg} resizeMode="contain" />
+		<Image
+			source={CARD_BACK}
+			style={styles.statusCardImg}
+			resizeMode="contain"
+		/>
 		<View style={styles.statusCardOverlay}>
 			<Text style={styles.statusCardNumOutline}>{count}</Text>
 			<Text style={styles.statusCardNum}>{count}</Text>
@@ -61,8 +72,15 @@ export const GameScreen = () => {
 			<View style={styles.overlay}>
 				{/* Header */}
 				<View style={styles.header}>
-					<TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-						<Text style={styles.backBtnText}>← Voltar</Text>
+					<TouchableOpacity
+						onPress={() => router.back()}
+						style={styles.backBtn}
+					>
+						<Image
+							source={require("../assets/icons/crown_white.png")}
+							style={{ width: 30, height: 30 }}
+							resizeMode="contain"
+						/>
 					</TouchableOpacity>
 				</View>
 
@@ -222,10 +240,6 @@ const styles = StyleSheet.create({
 		alignSelf: "flex-start",
 		paddingVertical: 6,
 		paddingHorizontal: 12,
-		backgroundColor: "rgba(15,23,42,0.75)",
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: "rgba(148,163,184,0.3)",
 	},
 	backBtnText: {
 		color: "#94A3B8",
