@@ -16,6 +16,7 @@ export const HomeScreen = () => {
 			source={require("../assets/backgrounds/bg_cave.webp")}
 			style={styles.container}
 			resizeMode="cover"
+			imageStyle={{ width: "100%", height: "100%" }}
 		>
 			<View style={styles.overlay}>
 				<View style={styles.header}>

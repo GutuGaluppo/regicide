@@ -42,7 +42,7 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 	}, []);
 
 	return (
-		<ImageBackground source={BG} style={styles.bg} resizeMode="cover">
+		<ImageBackground source={BG} style={styles.bg} resizeMode="cover" imageStyle={{ width: "100%", height: "100%" }}>
 			<View style={styles.overlay}>
 				<Animated.View
 					style={[
