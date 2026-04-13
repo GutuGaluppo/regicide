@@ -53,13 +53,13 @@ const styles = StyleSheet.create({
 	},
 	label: {
 		color: "#94A3B8",
-		fontSize: 12,
+		fontSize: 14,
 		textAlign: "center",
 		marginBottom: 6,
 	},
 	scroll: {
 		paddingHorizontal: 12,
-		paddingBottom: 12,
+		paddingTop: 14,
 		alignItems: "flex-end",
 	},
 	empty: {
