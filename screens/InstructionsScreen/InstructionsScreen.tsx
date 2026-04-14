@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { styles } from "./InstructionsScreen.styles";
 
-const BG = require("@/assets/backgrounds/bg_cave.webp");
+import BG from "@/assets/backgrounds/blue_mountains.webp";
 
 const Section = ({
 	title,
@@ -45,7 +45,12 @@ const SuitPower = ({
 	power: string;
 }) => (
 	<View style={styles.suitRow}>
-		<View style={[styles.suitBadge, { backgroundColor: color + "22", borderColor: color }]}>
+		<View
+			style={[
+				styles.suitBadge,
+				{ backgroundColor: color + "22", borderColor: color },
+			]}
+		>
 			<Text style={[styles.suitSymbol, { color }]}>{symbol}</Text>
 		</View>
 		<View style={styles.suitInfo}>
@@ -87,10 +92,12 @@ const EnemyRow = ({
 export const InstructionsScreen = () => {
 	const { t } = useTranslation();
 
-	const steps = t("instructions.sections.turn.steps", { returnObjects: true }) as Array<{
+	const steps = t("instructions.sections.turn.steps", {
+		returnObjects: true,
+	}) as {
 		title: string;
 		desc: string;
-	}>;
+	}[];
 
 	return (
 		<ImageBackground
@@ -124,15 +131,21 @@ export const InstructionsScreen = () => {
 							resizeMode="contain"
 						/>
 						<Text style={styles.gameName}>{t("instructions.gameName")}</Text>
-						<Text style={styles.gameSubtitle}>{t("instructions.gameSubtitle")}</Text>
+						<Text style={styles.gameSubtitle}>
+							{t("instructions.gameSubtitle")}
+						</Text>
 					</View>
 
 					<Section title={t("instructions.sections.objective.title")}>
-						<Text style={styles.bodyText}>{t("instructions.sections.objective.body")}</Text>
+						<Text style={styles.bodyText}>
+							{t("instructions.sections.objective.body")}
+						</Text>
 					</Section>
 
 					<Section title={t("instructions.sections.setup.title")}>
-						<Text style={styles.bodyText}>{t("instructions.sections.setup.body")}</Text>
+						<Text style={styles.bodyText}>
+							{t("instructions.sections.setup.body")}
+						</Text>
 					</Section>
 
 					<Section title={t("instructions.sections.turn.title")}>
@@ -157,13 +170,19 @@ export const InstructionsScreen = () => {
 								symbol="♥"
 								color="#EF4444"
 								name={t("instructions.sections.suitPowersSection.hearts.name")}
-								power={t("instructions.sections.suitPowersSection.hearts.power")}
+								power={t(
+									"instructions.sections.suitPowersSection.hearts.power",
+								)}
 							/>
 							<SuitPower
 								symbol="♦"
 								color="#F59E0B"
-								name={t("instructions.sections.suitPowersSection.diamonds.name")}
-								power={t("instructions.sections.suitPowersSection.diamonds.power")}
+								name={t(
+									"instructions.sections.suitPowersSection.diamonds.name",
+								)}
+								power={t(
+									"instructions.sections.suitPowersSection.diamonds.power",
+								)}
 							/>
 							<SuitPower
 								symbol="♣"
@@ -175,7 +194,9 @@ export const InstructionsScreen = () => {
 								symbol="♠"
 								color="#60A5FA"
 								name={t("instructions.sections.suitPowersSection.spades.name")}
-								power={t("instructions.sections.suitPowersSection.spades.power")}
+								power={t(
+									"instructions.sections.suitPowersSection.spades.power",
+								)}
 							/>
 						</View>
 					</Section>
@@ -185,20 +206,22 @@ export const InstructionsScreen = () => {
 							{t("instructions.sections.immunities.body")}
 						</Text>
 						<View style={styles.immuneExamples}>
-							{(["hearts", "diamonds", "clubs", "spades"] as const).map((suit, i) => {
-								const colors = ["#EF4444", "#F59E0B", "#4ADE80", "#60A5FA"];
-								const symbols = ["♥", "♦", "♣", "♠"];
-								return (
-									<View key={suit} style={styles.immuneRow}>
-										<Text style={[styles.immuneSymbol, { color: colors[i] }]}>
-											{symbols[i]}
-										</Text>
-										<Text style={styles.immuneLabel}>
-											{t(`instructions.sections.immunities.examples.${suit}`)}
-										</Text>
-									</View>
-								);
-							})}
+							{(["hearts", "diamonds", "clubs", "spades"] as const).map(
+								(suit, i) => {
+									const colors = ["#EF4444", "#F59E0B", "#4ADE80", "#60A5FA"];
+									const symbols = ["♥", "♦", "♣", "♠"];
+									return (
+										<View key={suit} style={styles.immuneRow}>
+											<Text style={[styles.immuneSymbol, { color: colors[i] }]}>
+												{symbols[i]}
+											</Text>
+											<Text style={styles.immuneLabel}>
+												{t(`instructions.sections.immunities.examples.${suit}`)}
+											</Text>
+										</View>
+									);
+								},
+							)}
 						</View>
 					</Section>
 
@@ -243,7 +266,9 @@ export const InstructionsScreen = () => {
 							/>
 							<Row
 								label="Ex: 3 + 3 + 3"
-								value={t("instructions.sections.companions.examples.threeThrees")}
+								value={t(
+									"instructions.sections.companions.examples.threeThrees",
+								)}
 							/>
 							<Row
 								label="Ex: A + A"
