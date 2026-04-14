@@ -7,20 +7,20 @@ import {
 	Easing,
 	Image,
 	ImageBackground,
+	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { getCardImage } from "../data/images";
-import { Enemy } from "../data/types";
+import { Enemy, GameStats } from "../data/types";
 
 const BG = require("../assets/backgrounds/bg_cave.webp");
 const CARD_BACK = require("../assets/images/cards_back.png");
-const CROWN = require("../assets/images/crown.png");
 const CROWN_ICON = require("../assets/icons/crown_white.png");
 
-// ─── Ghost elements (mimic game layout to shrink out) ───────────────────────
+// ─── Ghost elements ──────────────────────────────────────────────────────────
 
 const GhostStatusBar = () => (
 	<View style={ghost.statusRow}>
@@ -53,37 +53,77 @@ const GhostFooter = () => (
 	</View>
 );
 
-// ─── Main component ──────────────────────────────────────────────────────────
+// ─── Stats panel ─────────────────────────────────────────────────────────────
+
+const formatTime = (ms: number): string => {
+	const totalSec = Math.floor(ms / 1000);
+	const m = Math.floor(totalSec / 60);
+	const s = totalSec % 60;
+	return `${m}m ${s}s`;
+};
+
+const StatsPanel = ({ stats, defeatedEnemies }: { stats: GameStats; defeatedEnemies: Enemy[] }) => {
+	const { t } = useTranslation();
+	const elapsed = Date.now() - stats.startTime;
+
+	const SUIT_SYMBOL: Record<string, string> = {
+		hearts: "♥", diamonds: "♦", clubs: "♣", spades: "♠",
+	};
+
+	return (
+		<View style={statsStyles.panel}>
+			<View style={statsStyles.row}>
+				<StatItem icon="⏱" label={t("defeat.stats.time")} value={formatTime(elapsed)} />
+				<StatItem icon="⚔" label={t("defeat.stats.turns")} value={String(stats.turnsPlayed)} />
+				<StatItem icon="💀" label={t("defeat.stats.enemies")} value={String(defeatedEnemies.length)} />
+				<StatItem icon="🗑" label={t("defeat.stats.discarded")} value={String(stats.discardedCards.length)} />
+			</View>
+			{defeatedEnemies.length > 0 && (
+				<ScrollView horizontal showsHorizontalScrollIndicator={false} style={statsStyles.killList}>
+					{defeatedEnemies.map((e) => (
+						<View key={e.id} style={statsStyles.killChip}>
+							<Text style={statsStyles.killText}>
+								{SUIT_SYMBOL[e.suit]} {e.rank}
+							</Text>
+						</View>
+					))}
+				</ScrollView>
+			)}
+		</View>
+	);
+};
+
+const StatItem = ({ icon, label, value }: { icon: string; label: string; value: string }) => (
+	<View style={statsStyles.item}>
+		<Text style={statsStyles.itemIcon}>{icon}</Text>
+		<Text style={statsStyles.itemValue}>{value}</Text>
+		<Text style={statsStyles.itemLabel}>{label}</Text>
+	</View>
+);
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export const DefeatScreen = ({
 	enemy,
+	stats,
+	defeatedEnemies,
 	onReset,
 }: {
 	enemy: Enemy;
+	stats?: GameStats;
+	defeatedEnemies?: Enemy[];
 	onReset: () => void;
 }) => {
 	const { t } = useTranslation();
-	// Phase 1 – outros elementos encolhem (0 → 700ms)
+
 	const othersScale = useRef(new Animated.Value(1)).current;
 	const othersOpacity = useRef(new Animated.Value(1)).current;
-
-	// Phase 1 – carta cresce (0 → 900ms)
 	const cardScale = useRef(new Animated.Value(0.6)).current;
 	const cardOpacity = useRef(new Animated.Value(0.6)).current;
-
-	// Phase 2 – coroa desce (900 → 1900ms)
-	const crownY = useRef(new Animated.Value(-380)).current;
-	const crownOpacity = useRef(new Animated.Value(0)).current;
-
-	// Phase 3 – coroa flutua (loop após descida)
-	const crownFloat = useRef(new Animated.Value(0)).current;
-
-	// Phase 2 – mensagem + botão aparecem
 	const msgOpacity = useRef(new Animated.Value(0)).current;
 
 	useEffect(() => {
 		Animated.sequence([
-			// Fase 1 — simultânea
 			Animated.parallel([
 				Animated.timing(othersScale, {
 					toValue: 0,
@@ -110,56 +150,14 @@ export const DefeatScreen = ({
 					useNativeDriver: true,
 				}),
 			]),
-			// Fase 2 — coroa desce + mensagem aparece
-			Animated.parallel([
-				Animated.timing(crownY, {
-					toValue: 0,
-					duration: 1000,
-					easing: Easing.linear,
-					useNativeDriver: true,
-				}),
-				Animated.timing(crownOpacity, {
-					toValue: 1,
-					duration: 1000,
-					easing: Easing.linear,
-					useNativeDriver: true,
-				}),
-				Animated.timing(msgOpacity, {
-					toValue: 1,
-					duration: 700,
-					easing: Easing.linear,
-					useNativeDriver: true,
-				}),
-			]),
-		]).start(() => {
-			// Fase 3 — coroa flutua em loop
-			Animated.loop(
-				Animated.sequence([
-					Animated.timing(crownFloat, {
-						toValue: -10,
-						duration: 900,
-						easing: Easing.inOut(Easing.sin),
-						useNativeDriver: true,
-					}),
-					Animated.timing(crownFloat, {
-						toValue: 0,
-						duration: 900,
-						easing: Easing.inOut(Easing.sin),
-						useNativeDriver: true,
-					}),
-				]),
-			).start();
-		});
-	}, [
-		cardOpacity,
-		cardScale,
-		crownFloat,
-		crownOpacity,
-		crownY,
-		msgOpacity,
-		othersOpacity,
-		othersScale,
-	]);
+			Animated.timing(msgOpacity, {
+				toValue: 1,
+				duration: 600,
+				easing: Easing.linear,
+				useNativeDriver: true,
+			}),
+		]).start();
+	}, [cardOpacity, cardScale, msgOpacity, othersOpacity, othersScale]);
 
 	return (
 		<ImageBackground
@@ -169,63 +167,37 @@ export const DefeatScreen = ({
 			imageStyle={{ width: "100%", height: "100%" }}
 		>
 			<View style={styles.overlay}>
-
-				{/* Header — sempre visível */}
 				<View style={styles.header}>
 					<TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
 						<Image source={CROWN_ICON} style={styles.backIcon} resizeMode="contain" />
 					</TouchableOpacity>
 				</View>
 
-				{/* Ghost status bar — encolhe */}
 				<Animated.View
-					style={[
-						styles.ghostTop,
-						{ transform: [{ scale: othersScale }], opacity: othersOpacity },
-					]}
+					style={[styles.ghostTop, { transform: [{ scale: othersScale }], opacity: othersOpacity }]}
 				>
 					<GhostStatusBar />
 				</Animated.View>
 
-				{/* Centro — carta cresce + coroa desce */}
 				<View style={styles.center}>
-					<View style={styles.cardStack}>
-						{/* Coroa desce e flutua */}
-						<Animated.Image
-							source={CROWN}
-							style={[
-								styles.crown,
-								{
-									transform: [
-										{ translateY: Animated.add(crownY, crownFloat) },
-									],
-									opacity: crownOpacity,
-								},
-							]}
+					<Animated.View style={{ transform: [{ scale: cardScale }], opacity: cardOpacity }}>
+						<Image
+							source={getCardImage(enemy.rank, enemy.suit)}
+							style={styles.enemyCard}
 							resizeMode="contain"
 						/>
+					</Animated.View>
 
-						{/* Carta do inimigo */}
-						<Animated.View
-							style={{
-								transform: [{ scale: cardScale }],
-								opacity: cardOpacity,
-							}}
-						>
-							<Image
-								source={getCardImage(enemy.rank, enemy.suit)}
-								style={styles.enemyCard}
-								resizeMode="contain"
-							/>
-						</Animated.View>
-					</View>
-
-					{/* Mensagem de derrota */}
 					<Animated.Text style={[styles.defeatMsg, { opacity: msgOpacity }]}>
 						{t("defeat.message")}
 					</Animated.Text>
 
-					{/* Botão novo jogo */}
+					{stats && (
+						<Animated.View style={{ opacity: msgOpacity, width: "100%" }}>
+							<StatsPanel stats={stats} defeatedEnemies={defeatedEnemies ?? []} />
+						</Animated.View>
+					)}
+
 					<Animated.View style={{ opacity: msgOpacity }}>
 						<TouchableOpacity style={styles.newGameBtn} onPress={onReset} activeOpacity={0.8}>
 							<Text style={styles.newGameText}>{t("defeat.newGame")}</Text>
@@ -233,68 +205,35 @@ export const DefeatScreen = ({
 					</Animated.View>
 				</View>
 
-				{/* Ghost mão + botões — encolhe */}
 				<Animated.View
-					style={[
-						styles.ghostBottom,
-						{ transform: [{ scale: othersScale }], opacity: othersOpacity },
-					]}
+					style={[styles.ghostBottom, { transform: [{ scale: othersScale }], opacity: othersOpacity }]}
 				>
 					<GhostHand />
 					<GhostActions />
 					<GhostFooter />
 				</Animated.View>
-
 			</View>
 		</ImageBackground>
 	);
 };
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
 	bg: { flex: 1 },
-	overlay: {
-		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.65)",
-	},
-	header: {
-		paddingTop: 52,
-		paddingHorizontal: 16,
-		paddingBottom: 4,
-	},
-	backBtn: {
-		alignSelf: "flex-start",
-		paddingVertical: 6,
-		paddingHorizontal: 12,
-	},
+	overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.65)" },
+	header: { paddingTop: 52, paddingHorizontal: 16, paddingBottom: 4 },
+	backBtn: { alignSelf: "flex-start", paddingVertical: 6, paddingHorizontal: 12 },
 	backIcon: { width: 30, height: 30 },
-	ghostTop: {
-		alignItems: "center",
-		paddingHorizontal: 16,
-	},
+	ghostTop: { alignItems: "center", paddingHorizontal: 16 },
 	center: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
-		gap: 20,
+		gap: 16,
+		paddingHorizontal: 20,
 	},
-	cardStack: {
-		alignItems: "center",
-	},
-	crown: {
-		width: 120,
-		height: 88,
-		// Posição natural: acima do topo da carta
-		// translateY parte de –380 e chega a 0; crownFloat oscila ±10
-		marginBottom: -88,
-		zIndex: 10,
-	},
-	enemyCard: {
-		width: 290,
-		height: 406,
-		borderRadius: 14,
-	},
+	enemyCard: { width: 220, height: 308, borderRadius: 14 },
 	defeatMsg: {
 		fontFamily: "IMFellEnglish-Regular",
 		color: "#EF4444",
@@ -321,48 +260,67 @@ const styles = StyleSheet.create({
 		letterSpacing: 1,
 		textAlign: "center",
 	},
-	ghostBottom: {
-		paddingHorizontal: 12,
-		paddingBottom: 8,
-		gap: 8,
+	ghostBottom: { paddingHorizontal: 12, paddingBottom: 8, gap: 8 },
+});
+
+const statsStyles = StyleSheet.create({
+	panel: {
+		backgroundColor: "rgba(15,23,42,0.75)",
+		borderRadius: 12,
+		borderWidth: 1,
+		borderColor: "rgba(148,163,184,0.15)",
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		gap: 10,
+		width: "100%",
+	},
+	row: {
+		flexDirection: "row",
+		justifyContent: "space-around",
+	},
+	item: {
+		alignItems: "center",
+		gap: 2,
+	},
+	itemIcon: { fontSize: 18 },
+	itemValue: {
+		color: "#F1F5F9",
+		fontSize: 18,
+		fontWeight: "700",
+	},
+	itemLabel: {
+		color: "#64748B",
+		fontSize: 9,
+		fontWeight: "600",
+		letterSpacing: 0.5,
+		textTransform: "uppercase",
+		textAlign: "center",
+	},
+	killList: { marginTop: 2 },
+	killChip: {
+		paddingHorizontal: 10,
+		paddingVertical: 4,
+		borderRadius: 20,
+		backgroundColor: "rgba(239,68,68,0.12)",
+		borderWidth: 1,
+		borderColor: "rgba(239,68,68,0.3)",
+		marginRight: 6,
+	},
+	killText: {
+		color: "#FCA5A5",
+		fontSize: 12,
+		fontWeight: "700",
 	},
 });
 
 const ghost = StyleSheet.create({
-	statusRow: {
-		flexDirection: "row",
-		justifyContent: "center",
-		gap: 12,
-		paddingVertical: 4,
-	},
+	statusRow: { flexDirection: "row", justifyContent: "center", gap: 12, paddingVertical: 4 },
 	statusCard: { width: 36, height: 50 },
-	handRow: {
-		flexDirection: "row",
-		gap: 6,
-		justifyContent: "center",
-	},
+	handRow: { flexDirection: "row", gap: 6, justifyContent: "center" },
 	handCard: { width: 52, height: 75 },
-	actionsRow: {
-		flexDirection: "row",
-		gap: 10,
-		justifyContent: "center",
-	},
-	btnPrimary: {
-		width: 160,
-		height: 44,
-		borderRadius: 10,
-		backgroundColor: "rgba(103,130,110,0.6)",
-	},
-	btnSecondary: {
-		width: 100,
-		height: 44,
-		borderRadius: 10,
-		backgroundColor: "rgba(51,65,85,0.5)",
-	},
-	footerRow: {
-		flexDirection: "row",
-		gap: 10,
-		justifyContent: "center",
-	},
+	actionsRow: { flexDirection: "row", gap: 10, justifyContent: "center" },
+	btnPrimary: { width: 160, height: 44, borderRadius: 10, backgroundColor: "rgba(103,130,110,0.6)" },
+	btnSecondary: { width: 100, height: 44, borderRadius: 10, backgroundColor: "rgba(51,65,85,0.5)" },
+	footerRow: { flexDirection: "row", gap: 10, justifyContent: "center" },
 	footerCard: { width: 44, height: 62 },
 });

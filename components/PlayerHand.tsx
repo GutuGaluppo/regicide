@@ -11,9 +11,11 @@ import {
 	View,
 } from "react-native";
 import { Card, GamePhase, Suit } from "../data/types";
+import { getCompatibleCardIds } from "../utils/gameLogic";
 import { useCardSize } from "../utils/responsive";
 import { CardDetailModal } from "./CardDetailModal";
 import { CardView } from "./CardView";
+import { SvgNumberSprite } from "./SvgNumberSprite";
 
 export const PlayerHand = ({
 	hand,
@@ -21,23 +23,35 @@ export const PlayerHand = ({
 	phase,
 	immuneSuit,
 	discardingIds,
+	pendingDamage,
+	selectedTotal,
 	onCardPress,
 	onSort,
 	onSortByClass,
+	onDiscard,
 }: {
 	hand: Card[];
 	selectedIds: Set<string>;
 	phase: GamePhase;
 	immuneSuit?: Suit | null;
 	discardingIds?: Set<string>;
+	pendingDamage?: number;
+	selectedTotal?: number;
 	onCardPress: (card: Card) => void;
 	onSort?: () => void;
 	onSortByClass?: () => void;
+	onDiscard?: () => void;
 }) => {
 	const { t } = useTranslation();
 	const [detailCard, setDetailCard] = useState<Card | null>(null);
 	const interactive = phase === "player_turn" || phase === "suffer_damage";
 	const { liftY } = useCardSize();
+
+	const selectedCards = hand.filter((c) => selectedIds.has(c.id));
+	const compatibleIds =
+		phase === "player_turn" && selectedIds.size > 0
+			? getCompatibleCardIds(selectedCards, hand)
+			: null;
 
 	const handleLongPress = (card: Card) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -53,33 +67,50 @@ export const PlayerHand = ({
 		onSortByClass?.();
 	};
 
+	const pending = pendingDamage ?? 0;
+	const current = selectedTotal ?? 0;
+	const damageSubtraction = Math.max(0, pending - current);
+	const enough = current >= pending;
+	const totalColor = "#fff";
+
 	return (
 		<View style={styles.container}>
-			<View style={styles.labelRow}>
-				<Text style={styles.label}>
-					{phase === "suffer_damage"
-						? t("hand.sufferDiscard")
-						: t("hand.title", { count: hand.length })}
-				</Text>
-				{onSort && phase === "player_turn" && (
-					<TouchableOpacity
-						onPress={handleSort}
-						style={styles.sortBtn}
-						activeOpacity={0.7}
-					>
-						<Text style={styles.sortText}>{t("hand.sort")}</Text>
-					</TouchableOpacity>
-				)}
-				{onSortByClass && phase === "player_turn" && (
-					<TouchableOpacity
-						onPress={handleSortByClass}
-						style={styles.sortBtn}
-						activeOpacity={0.7}
-					>
-						<Text style={styles.sortText}>{t("hand.sortByClass")}</Text>
-					</TouchableOpacity>
-				)}
-			</View>
+			{phase === "suffer_damage" && pending > 0 && onDiscard ? (
+				<TouchableOpacity
+					style={styles.discardBtn}
+					onPress={onDiscard}
+					disabled={!enough}
+					activeOpacity={0.8}
+				>
+					<Text style={styles.discardLabel}>{t("action.discard_label")}</Text>
+					<SvgNumberSprite
+						value={damageSubtraction}
+						height={26}
+						color={totalColor}
+					/>
+				</TouchableOpacity>
+			) : (
+				<View style={styles.labelRow}>
+					{onSort && phase === "player_turn" && (
+						<TouchableOpacity
+							onPress={handleSort}
+							style={styles.sortBtn}
+							activeOpacity={0.7}
+						>
+							<Text style={styles.sortText}>{t("hand.sort")}</Text>
+						</TouchableOpacity>
+					)}
+					{onSortByClass && phase === "player_turn" && (
+						<TouchableOpacity
+							onPress={handleSortByClass}
+							style={styles.sortBtn}
+							activeOpacity={0.7}
+						>
+							<Text style={styles.sortText}>{t("hand.sortByClass")}</Text>
+						</TouchableOpacity>
+					)}
+				</View>
+			)}
 			<ScrollView
 				horizontal
 				showsHorizontalScrollIndicator={false}
@@ -99,9 +130,18 @@ export const PlayerHand = ({
 						disabled={!interactive}
 						immuneSuit={immuneSuit}
 						discarding={discardingIds?.has(card.id)}
+						sufferMode={phase === "suffer_damage"}
+						dimmed={
+							phase === "player_turn" &&
+							selectedIds.size > 0 &&
+							!selectedIds.has(card.id) &&
+							!(compatibleIds?.has(card.id) ?? true)
+						}
 					/>
 				))}
-				{hand.length === 0 && <Text style={styles.empty}>{t("hand.empty")}</Text>}
+				{hand.length === 0 && (
+					<Text style={styles.empty}>{t("hand.empty")}</Text>
+				)}
 			</ScrollView>
 
 			<CardDetailModal
@@ -157,5 +197,30 @@ const styles = StyleSheet.create({
 		fontStyle: "italic",
 		paddingHorizontal: 16,
 		alignSelf: "center",
+	},
+	discardBtn: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 8,
+		minWidth: 200,
+		marginHorizontal: "auto",
+		marginBottom: 6,
+		paddingVertical: 10,
+		paddingHorizontal: 20,
+		borderRadius: 10,
+		backgroundColor: "#683237",
+	},
+	discardLabel: {
+		color: "#fff",
+		fontSize: 16,
+		fontWeight: "700",
+		letterSpacing: 0.5,
+	},
+	discardSep: {
+		color: "#475569",
+		fontSize: 18,
+		fontWeight: "600",
+		marginHorizontal: 2,
 	},
 });

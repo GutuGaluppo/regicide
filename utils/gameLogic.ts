@@ -61,6 +61,30 @@ export const validatePlay = (cards: Card[]): ValidationResult => {
 	return { valid: true };
 };
 
+/**
+ * Returns the IDs of hand cards that can still be added to `selected`
+ * to form a valid play. Already-selected cards are excluded from the result
+ * (the caller is responsible for not dimming them).
+ * Returns all IDs when nothing is selected (no dimming state).
+ */
+export const getCompatibleCardIds = (
+	selected: Card[],
+	hand: Card[],
+): Set<string> => {
+	if (selected.length === 0) return new Set(hand.map((c) => c.id));
+
+	const compatible = new Set<string>();
+	const unselected = hand.filter((c) => !selected.some((s) => s.id === c.id));
+
+	for (const candidate of unselected) {
+		if (validatePlay([...selected, candidate]).valid) {
+			compatible.add(candidate.id);
+		}
+	}
+
+	return compatible;
+};
+
 // ─── Resolução de jogada ──────────────────────────────────────────────────────
 
 export interface PlayResult {

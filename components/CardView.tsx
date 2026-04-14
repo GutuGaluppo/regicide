@@ -33,16 +33,20 @@ export const CardView = ({
 	onPress,
 	onLongPress,
 	disabled,
+	dimmed,
 	immuneSuit,
 	discarding,
+	sufferMode,
 }: {
 	card: Card;
 	selected?: boolean;
 	onPress?: () => void;
 	onLongPress?: () => void;
 	disabled?: boolean;
+	dimmed?: boolean;
 	immuneSuit?: Suit | null;
 	discarding?: boolean;
+	sufferMode?: boolean;
 }) => {
 	const isImmune = !!card.suit && card.suit === immuneSuit;
 	const cardImage = getHandCardImage(card.rank, card.suit, card.id);
@@ -50,6 +54,7 @@ export const CardView = ({
 
 	const discardOpacity = useRef(new Animated.Value(1)).current;
 	const discardScale = useRef(new Animated.Value(1)).current;
+	const dimOpacity = useRef(new Animated.Value(1)).current;
 
 	useEffect(() => {
 		if (discarding) {
@@ -72,19 +77,28 @@ export const CardView = ({
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [discarding]);
 
+	useEffect(() => {
+		Animated.timing(dimOpacity, {
+			toValue: dimmed ? 0.3 : 1,
+			duration: 150,
+			useNativeDriver: true,
+		}).start();
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [dimmed]);
+
 	return (
 		<Animated.View
 			style={[
 				styles.wrapper,
 				{ marginHorizontal: mx },
-				{ opacity: discardOpacity, transform: [{ scale: discardScale }] },
+				{ opacity: Animated.multiply(discardOpacity, dimOpacity), transform: [{ scale: discardScale }] },
 			]}
 		>
 			<TouchableOpacity
 				style={[
 					styles.card,
 					{ width: w, height: h },
-					selected && styles.cardSelected,
+					selected && (sufferMode ? styles.cardDiscardSelected : styles.cardSelected),
 					selected && { transform: [{ translateY: -liftY }] },
 					disabled && styles.disabled,
 					isImmune && styles.cardImmune,
@@ -121,7 +135,8 @@ export const CardView = ({
 						</Text>
 					</>
 				)}
-				{selected && <View style={styles.selectedDot} />}
+				{selected && sufferMode && <View style={styles.discardOverlay} />}
+				{selected && <View style={[styles.selectedDot, sufferMode && styles.selectedDotDiscard]} />}
 			</TouchableOpacity>
 			{isImmune && (
 				<Image source={SpellIcon} style={[styles.immuneIcon, { width: icon, height: icon }]} />
@@ -150,6 +165,16 @@ const styles = StyleSheet.create({
 	},
 	cardSelected: {
 		borderColor: "#FBBF24",
+	},
+	cardDiscardSelected: {
+		borderColor: "#EF4444",
+	},
+	discardOverlay: {
+		...StyleSheet.absoluteFillObject,
+		backgroundColor: "rgba(239, 68, 68, 0.28)",
+	},
+	selectedDotDiscard: {
+		backgroundColor: "#EF4444",
 	},
 	disabled: {
 		opacity: 0.4,

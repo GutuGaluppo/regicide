@@ -1,4 +1,3 @@
-import MagicShield from "../assets/icons/magicShield.png";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,7 +11,8 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { AttackInput } from "../components/AttackInput";
+import MagicShield from "../assets/icons/magicShield.png";
+import { AttackInput } from "../components/AttackInput/AttackInput";
 import { DefeatFooter } from "../components/DefeatFooter";
 import { NumberSprite } from "../components/NumberSprite";
 import { ProgressRing } from "../components/ProgressRing";
@@ -166,7 +166,9 @@ export const TrackerScreen = () => {
 								</View>
 							</View>
 
-							{isDead && <Text style={styles.deadBadge}>{t("tracker.dead")}</Text>}
+							{isDead && (
+								<Text style={styles.deadBadge}>{t("tracker.dead")}</Text>
+							)}
 						</View>
 					)}
 

@@ -35,6 +35,7 @@ const en: Translations = {
     play: "Play",
     yield: "Yield",
     discard: "Discard ({{current}}/{{needed}})",
+    discard_label: "Discard",
     newGame: "New game",
   },
   hand: {
@@ -100,6 +101,17 @@ const en: Translations = {
   defeat: {
     message: "The kingdom has fallen",
     newGame: "New game",
+    stats: {
+      time: "Time",
+      turns: "Turns",
+      enemies: "Enemies defeated",
+      discarded: "Cards discarded",
+    },
+  },
+  settings: {
+    title: "Settings",
+    restart: "Restart game",
+    exit: "Exit to home",
   },
   victory: {
     title: "Victory!",

@@ -28,9 +28,22 @@ const HEALTH_DIGITS: Record<string, number> = {
 	"9": require("../assets/images/numbers/health/9.png"),
 };
 
+const OUTLINED_DIGITS: Record<string, number> = {
+	"0": require("../assets/images/numbers/outlined/0_outlined.png"),
+	"1": require("../assets/images/numbers/outlined/1_outlined.png"),
+	"2": require("../assets/images/numbers/outlined/2_outlined.png"),
+	"3": require("../assets/images/numbers/outlined/3_outlined.png"),
+	"4": require("../assets/images/numbers/outlined/4_outlined.png"),
+	"5": require("../assets/images/numbers/outlined/5_outlined.png"),
+	"6": require("../assets/images/numbers/outlined/6_outlined.png"),
+	"7": require("../assets/images/numbers/outlined/7_outlined.png"),
+	"8": require("../assets/images/numbers/outlined/8_outlined.png"),
+	"9": require("../assets/images/numbers/outlined/9_outlined.png"),
+};
+
 interface NumberSpriteProps {
 	value: number;
-	type: "attack" | "health";
+	type: "attack" | "health" | "outlined";
 	/** Altura de cada dígito em dp. Largura é calculada pela proporção 193/300. */
 	height?: number;
 }
@@ -41,7 +54,7 @@ export const NumberSprite = ({
 	height = 32,
 }: NumberSpriteProps) => {
 	const digits = String(Math.max(0, Math.floor(value))).split("");
-	const map = type === "attack" ? ATTACK_DIGITS : HEALTH_DIGITS;
+	const map = type === "attack" ? ATTACK_DIGITS : type === "outlined" ? OUTLINED_DIGITS : HEALTH_DIGITS;
 	const width = Math.round(height * (193 / 300));
 
 	return (
