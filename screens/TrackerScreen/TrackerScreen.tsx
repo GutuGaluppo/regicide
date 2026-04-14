@@ -10,18 +10,18 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import MagicShield from "../../assets/icons/magicShield.png";
-import { AttackInput } from "../../components/AttackInput";
-import { DefeatFooter } from "../../components/DefeatFooter";
-import { NumberSprite } from "../../components/NumberSprite";
-import { ProgressRing } from "../../components/ProgressRing";
-import { VictoryScreen } from "../../components/VictoryScreen";
-import { getCardImage } from "../../data/images";
-import { CardRank, Suit } from "../../data/types";
-import { useTracker } from "../../hooks/useTracker";
+import MagicShield from "@/assets/icons/magicShield.png";
+import { AttackInput } from "@/components/AttackInput";
+import { DefeatFooter } from "@/components/DefeatFooter";
+import { NumberSprite } from "@/components/NumberSprite";
+import { ProgressRing } from "@/components/ProgressRing";
+import { VictoryScreen } from "@/components/VictoryScreen";
+import { getCardImage } from "@/data/images";
+import { CardRank, Suit } from "@/data/types";
+import { useTracker } from "@/hooks/useTracker";
 import { BG_WIDTH, SHIFT_PER_ENEMY_EXPORT, styles } from "./TrackerScreen.styles";
 
-const BG = require("../../assets/backgrounds/bg_cave.webp");
+const BG = require("@/assets/backgrounds/bg_cave.webp");
 
 export const TrackerScreen = () => {
 	const { t } = useTranslation();
@@ -90,7 +90,7 @@ export const TrackerScreen = () => {
 						style={styles.backBtn}
 					>
 						<Image
-							source={require("../../assets/icons/crown_white.png")}
+							source={require("@/assets/icons/crown_white.png")}
 							style={{ width: 30, height: 30 }}
 							resizeMode="contain"
 						/>

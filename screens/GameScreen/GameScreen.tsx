@@ -10,19 +10,19 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { ActionBar } from "../../components/ActionBar/ActionBar";
-import { CastleFooter } from "../../components/CastleFooter";
-import { DefeatScreen } from "../../components/DefeatScreen";
-import { EnemyCard } from "../../components/EnemyCard";
-import { EnemyModal } from "../../components/EnemyModal";
-import { NumberSprite } from "../../components/NumberSprite";
-import { PlayerHand } from "../../components/PlayerHand";
-import { SettingsDrawer } from "../../components/SettingsDrawer";
-import { VictoryScreen } from "../../components/VictoryScreen";
-import { useGame } from "../../hooks/useGame";
+import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { CastleFooter } from "@/components/CastleFooter";
+import { DefeatScreen } from "@/components/DefeatScreen";
+import { EnemyCard } from "@/components/EnemyCard";
+import { EnemyModal } from "@/components/EnemyModal";
+import { NumberSprite } from "@/components/NumberSprite";
+import { PlayerHand } from "@/components/PlayerHand";
+import { SettingsDrawer } from "@/components/SettingsDrawer";
+import { VictoryScreen } from "@/components/VictoryScreen";
+import { useGame } from "@/hooks/useGame";
 import { styles } from "./GameScreen.styles";
 
-const CARD_BACK = require("../../assets/images/cards_back.png");
+const CARD_BACK = require("@/assets/images/cards_back.png");
 
 const StatusCard = ({ count, label }: { count: number; label: string }) => (
 	<View style={styles.statusItem}>
@@ -98,7 +98,7 @@ export const GameScreen = () => {
 
 	return (
 		<ImageBackground
-			source={require("../../assets/backgrounds/bg_cave.webp")}
+			source={require("@/assets/backgrounds/bg_cave.webp")}
 			style={styles.container}
 			resizeMode="cover"
 			imageStyle={{ width: "100%", height: "100%" }}

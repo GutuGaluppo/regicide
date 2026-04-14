@@ -11,8 +11,8 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { getCardImage } from "../../data/images";
-import { Enemy, GameStats } from "../../data/types";
+import { getCardImage } from "@/data/images";
+import { Enemy, GameStats } from "@/data/types";
 import { styles } from "./DefeatScreen.styles";
 import {
 	GhostActions,
@@ -22,8 +22,8 @@ import {
 } from "./components/GhostElements";
 import { StatsPanel } from "./components/StatsPanel/StatsPanel";
 
-const BG = require("../../assets/backgrounds/bg_cave.webp");
-const CROWN_ICON = require("../../assets/icons/crown_white.png");
+const BG = require("@/assets/backgrounds/bg_cave.webp");
+const CROWN_ICON = require("@/assets/icons/crown_white.png");
 
 type DefeatScreenPropsType = {
 	enemy: Enemy;

@@ -1,6 +1,6 @@
+import CARD_BACK from "@/assets/images/cards_back.png";
 import { Image, View } from "react-native";
 import { styles } from "./GhostElements.styles";
-const CARD_BACK = require("../assets/images/cards_back.png");
 export const GhostStatusBar = () => (
 	<View style={styles.statusRow}>
 		{[0, 1, 2].map((i) => (

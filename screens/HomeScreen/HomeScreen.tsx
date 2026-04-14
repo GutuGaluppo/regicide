@@ -25,7 +25,7 @@ export const HomeScreen = () => {
 
 	return (
 		<ImageBackground
-			source={require("../../assets/backgrounds/bg_cave.webp")}
+			source={require("@/assets/backgrounds/bg_cave.webp")}
 			style={styles.container}
 			resizeMode="cover"
 			imageStyle={{ width: "100%", height: "100%" }}
@@ -33,7 +33,7 @@ export const HomeScreen = () => {
 			<View style={styles.overlay}>
 				<View style={styles.header}>
 					<Image
-						source={require("../../assets/images/regicide_logo.png")}
+						source={require("@/assets/images/regicide_logo.png")}
 						style={{ width: 250, height: 250, resizeMode: "contain" }}
 					/>
 
@@ -65,7 +65,7 @@ export const HomeScreen = () => {
 					>
 						<View style={styles.cardHeader}>
 							<Image
-								source={require("../../assets/icons/sword.png")}
+								source={require("@/assets/icons/sword.png")}
 								style={{ width: 32, height: 32 }}
 							/>
 							<Text style={styles.cardTitle}>{t("home.play.title")}</Text>
@@ -80,7 +80,7 @@ export const HomeScreen = () => {
 					>
 						<View style={styles.cardHeader}>
 							<Image
-								source={require("../../assets/icons/history.png")}
+								source={require("@/assets/icons/history.png")}
 								style={{ width: 32, height: 32 }}
 							/>
 							<Text style={styles.cardTitle}>{t("home.tracker.title")}</Text>
@@ -95,7 +95,7 @@ export const HomeScreen = () => {
 					>
 						<View style={styles.cardHeader}>
 							<Image
-								source={require("../../assets/images/crown.png")}
+								source={require("@/assets/images/crown.png")}
 								style={{ width: 32, height: 32 }}
 							/>
 							<Text style={styles.cardTitle}>{t("home.instructions.title")}</Text>

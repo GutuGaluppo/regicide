@@ -9,9 +9,9 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { Card, GamePhase, Suit } from "../../data/types";
-import { getCompatibleCardIds } from "../../utils/gameLogic";
-import { useCardSize } from "../../utils/responsive";
+import { Card, GamePhase, Suit } from "@/data/types";
+import { getCompatibleCardIds } from "@/utils/gameLogic";
+import { useCardSize } from "@/utils/responsive";
 import { CardDetailModal } from "../CardDetailModal";
 import { CardView } from "../CardView";
 import { SvgNumberSprite } from "../SvgNumberSprite";

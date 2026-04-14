@@ -1,10 +1,9 @@
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
-import { getFooterCardImage } from "../../data/images";
-import { Enemy, EnemyRank } from "../../data/types";
+import LetterX from "@/assets/icons/letter-x.png";
+import { getFooterCardImage } from "@/data/images";
+import { Enemy, EnemyRank } from "@/data/types";
 import { styles } from "./DefeatFooter.styles";
-
-const LetterX = require("../assets/icons/letter-x.png");
 
 const PHASE_LABEL: Record<EnemyRank, string> = {
 	J: "Valetes derrotados",

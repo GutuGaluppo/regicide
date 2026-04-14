@@ -4,16 +4,16 @@
 import React from "react";
 import { View } from "react-native";
 
-import Svg0 from "../../assets/images/numbers/svg/0.svg";
-import Svg1 from "../../assets/images/numbers/svg/1.svg";
-import Svg2 from "../../assets/images/numbers/svg/2.svg";
-import Svg3 from "../../assets/images/numbers/svg/3.svg";
-import Svg4 from "../../assets/images/numbers/svg/4.svg";
-import Svg5 from "../../assets/images/numbers/svg/5.svg";
-import Svg6 from "../../assets/images/numbers/svg/6.svg";
-import Svg7 from "../../assets/images/numbers/svg/7.svg";
-import Svg8 from "../../assets/images/numbers/svg/8.svg";
-import Svg9 from "../../assets/images/numbers/svg/9.svg";
+import Svg0 from "@/assets/images/numbers/svg/0.svg";
+import Svg1 from "@/assets/images/numbers/svg/1.svg";
+import Svg2 from "@/assets/images/numbers/svg/2.svg";
+import Svg3 from "@/assets/images/numbers/svg/3.svg";
+import Svg4 from "@/assets/images/numbers/svg/4.svg";
+import Svg5 from "@/assets/images/numbers/svg/5.svg";
+import Svg6 from "@/assets/images/numbers/svg/6.svg";
+import Svg7 from "@/assets/images/numbers/svg/7.svg";
+import Svg8 from "@/assets/images/numbers/svg/8.svg";
+import Svg9 from "@/assets/images/numbers/svg/9.svg";
 
 // Natural width (px) of each digit at height=300
 const NATURAL_W: Record<string, number> = {

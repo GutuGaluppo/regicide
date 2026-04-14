@@ -1,4 +1,4 @@
-// /components/CardDetailModal.tsx
+import crownIcon from "@/assets/icons/crown_white.png";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,14 +12,10 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { getHeroName } from "../../data/heroes";
-import { getHandCardImage } from "../../data/images";
-import { Card, Suit } from "../../data/types";
-import {
-	CROWN_ICON,
-	SUIT_COLOR,
-	SUIT_SYMBOL,
-} from "./CardDetailModal.constants";
+import { getHeroName } from "@/data/heroes";
+import { getHandCardImage } from "@/data/images";
+import { Card, Suit } from "@/data/types";
+import { SUIT_COLOR, SUIT_SYMBOL } from "./CardDetailModal.constants";
 import { styles } from "./CardDetailModal.styles";
 
 export const CardDetailModal = ({
@@ -115,7 +111,7 @@ export const CardDetailModal = ({
 					activeOpacity={0.7}
 				>
 					<Image
-						source={CROWN_ICON}
+						source={crownIcon}
 						style={styles.closeIcon}
 						resizeMode="contain"
 					/>

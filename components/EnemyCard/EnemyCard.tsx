@@ -1,21 +1,15 @@
 // /components/EnemyCard/EnemyCard.tsx
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	Animated,
-	Image,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
+import { getCardImage, getHandCardImage } from "@/data/images";
+import { Card, Enemy } from "@/data/types";
 import { NumberSprite } from "../NumberSprite";
 import { ProgressRing } from "../ProgressRing";
-import { getCardImage, getHandCardImage } from "../../data/images";
-import { Card, Enemy } from "../../data/types";
 import { JesterStack } from "./components/JesterStack";
 import { styles } from "./EnemyCard.styles";
 
-import MagicShield from "../../assets/icons/shield_03.png";
+import MagicShield from "@/assets/icons/shield.png";
 
 export const EnemyCard = ({
 	enemy,
@@ -70,46 +64,111 @@ export const EnemyCard = ({
 		prevShield.current = spadesShield ?? 0;
 
 		Animated.parallel([
-			Animated.timing(entryOpacity, { toValue: 1, duration: 450, useNativeDriver: true }),
-			Animated.spring(entryScale, { toValue: 1, tension: 90, friction: 12, useNativeDriver: true }),
-			Animated.timing(entryY, { toValue: 0, duration: 400, useNativeDriver: true }),
+			Animated.timing(entryOpacity, {
+				toValue: 1,
+				duration: 450,
+				useNativeDriver: true,
+			}),
+			Animated.spring(entryScale, {
+				toValue: 1,
+				tension: 90,
+				friction: 12,
+				useNativeDriver: true,
+			}),
+			Animated.timing(entryY, {
+				toValue: 0,
+				duration: 400,
+				useNativeDriver: true,
+			}),
 		]).start();
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [enemy.id]);
 
 	useEffect(() => {
 		if (currentHP < prevHP.current) {
 			Animated.sequence([
-				Animated.timing(shakeX, { toValue: -10, duration: 45, useNativeDriver: true }),
-				Animated.timing(shakeX, { toValue: 10, duration: 45, useNativeDriver: true }),
-				Animated.timing(shakeX, { toValue: -7, duration: 45, useNativeDriver: true }),
-				Animated.timing(shakeX, { toValue: 7, duration: 45, useNativeDriver: true }),
-				Animated.timing(shakeX, { toValue: 0, duration: 45, useNativeDriver: true }),
+				Animated.timing(shakeX, {
+					toValue: -10,
+					duration: 45,
+					useNativeDriver: true,
+				}),
+				Animated.timing(shakeX, {
+					toValue: 10,
+					duration: 45,
+					useNativeDriver: true,
+				}),
+				Animated.timing(shakeX, {
+					toValue: -7,
+					duration: 45,
+					useNativeDriver: true,
+				}),
+				Animated.timing(shakeX, {
+					toValue: 7,
+					duration: 45,
+					useNativeDriver: true,
+				}),
+				Animated.timing(shakeX, {
+					toValue: 0,
+					duration: 45,
+					useNativeDriver: true,
+				}),
 			]).start();
 
 			Animated.sequence([
-				Animated.timing(flashOpacity, { toValue: 0.45, duration: 60, useNativeDriver: true }),
-				Animated.timing(flashOpacity, { toValue: 0, duration: 380, useNativeDriver: true }),
+				Animated.timing(flashOpacity, {
+					toValue: 0.45,
+					duration: 60,
+					useNativeDriver: true,
+				}),
+				Animated.timing(flashOpacity, {
+					toValue: 0,
+					duration: 380,
+					useNativeDriver: true,
+				}),
 			]).start();
 		}
 		prevHP.current = currentHP;
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentHP]);
 
 	useEffect(() => {
 		const shield = spadesShield ?? 0;
 		if (shield > prevShield.current) {
 			Animated.sequence([
-				Animated.timing(shieldGlow, { toValue: 1, duration: 180, useNativeDriver: true }),
-				Animated.timing(shieldGlow, { toValue: 0.3, duration: 280, useNativeDriver: true }),
-				Animated.timing(shieldGlow, { toValue: 1, duration: 280, useNativeDriver: true }),
-				Animated.timing(shieldGlow, { toValue: 0.3, duration: 280, useNativeDriver: true }),
-				Animated.timing(shieldGlow, { toValue: 1, duration: 280, useNativeDriver: true }),
-				Animated.timing(shieldGlow, { toValue: 0, duration: 400, useNativeDriver: true }),
+				Animated.timing(shieldGlow, {
+					toValue: 1,
+					duration: 180,
+					useNativeDriver: true,
+				}),
+				Animated.timing(shieldGlow, {
+					toValue: 0.3,
+					duration: 280,
+					useNativeDriver: true,
+				}),
+				Animated.timing(shieldGlow, {
+					toValue: 1,
+					duration: 280,
+					useNativeDriver: true,
+				}),
+				Animated.timing(shieldGlow, {
+					toValue: 0.3,
+					duration: 280,
+					useNativeDriver: true,
+				}),
+				Animated.timing(shieldGlow, {
+					toValue: 1,
+					duration: 280,
+					useNativeDriver: true,
+				}),
+				Animated.timing(shieldGlow, {
+					toValue: 0,
+					duration: 400,
+					useNativeDriver: true,
+				}),
 			]).start();
 		}
 		prevShield.current = shield;
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [spadesShield]);
 
 	return (
@@ -196,7 +255,11 @@ export const EnemyCard = ({
 										]}
 									>
 										{visible.map((card, i) => {
-											const img = getHandCardImage(card.rank, card.suit, card.id);
+											const img = getHandCardImage(
+												card.rank,
+												card.suit,
+												card.id,
+											);
 											return (
 												<View
 													key={card.id}
