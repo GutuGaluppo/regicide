@@ -1,10 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import i18n from "i18next";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Image,
 	ImageBackground,
+	Modal,
 	Text,
 	TouchableOpacity,
 	View,
@@ -12,14 +14,30 @@ import {
 import { styles } from "./HomeScreen.styles";
 
 const LANGUAGES = [
-	{ code: "pt-BR", label: "PT" },
-	{ code: "en", label: "EN" },
-	{ code: "es", label: "ES" },
-	{ code: "fr", label: "FR" },
+	{ code: "pt-BR", label: "Português", abbr: "PT" },
+	{ code: "en", label: "English", abbr: "EN" },
+	{ code: "es", label: "Español", abbr: "ES" },
+	{ code: "fr", label: "Français", abbr: "FR" },
+] as const;
+
+const NAV_ITEMS = [
+	{
+		route: "/game",
+		tKey: "home.play.title" as const,
+	},
+	{
+		route: "/tracker",
+		tKey: "home.tracker.title" as const,
+	},
+	{
+		route: "/instructions",
+		tKey: "home.instructions.title" as const,
+	},
 ] as const;
 
 export const HomeScreen = () => {
 	const { t } = useTranslation();
+	const [langVisible, setLangVisible] = useState(false);
 	const currentLang = i18n.language;
 
 	return (
@@ -30,78 +48,75 @@ export const HomeScreen = () => {
 			imageStyle={{ width: "100%", height: "100%" }}
 		>
 			<View style={styles.overlay}>
-				<View style={styles.header}>
-					<Image
-						source={require("@/assets/images/regicide_logo.png")}
-						style={{ width: 250, height: 250, resizeMode: "contain" }}
-					/>
+				<TouchableOpacity
+					style={styles.globeBtn}
+					onPress={() => setLangVisible(true)}
+					activeOpacity={0.7}
+				>
+					<Text style={styles.globeAbbr}>
+						{LANGUAGES.find((l) => l.code === currentLang)?.abbr ?? "EN"}
+					</Text>
+					<Ionicons name="globe-outline" size={26} color="#94A3B8" />
+				</TouchableOpacity>
 
-					{/* Language selector */}
-					<View style={styles.langRow}>
-						{LANGUAGES.map(({ code, label }) => {
-							const active = currentLang === code;
-							return (
-								<TouchableOpacity
-									key={code}
-									style={[styles.langBtn, active && styles.langBtnActive]}
-									onPress={() => i18n.changeLanguage(code)}
-									activeOpacity={0.7}
-								>
-									<Text style={[styles.langText, active && styles.langTextActive]}>
-										{label}
-									</Text>
-								</TouchableOpacity>
-							);
-						})}
-					</View>
+				<Image
+					source={require("@/assets/images/regicide_logo.png")}
+					style={styles.logo}
+				/>
+
+				<View style={styles.navList}>
+					{NAV_ITEMS.map(({ route, tKey }) => (
+						<TouchableOpacity
+							key={route}
+							style={styles.navBtn}
+							onPress={() => router.push(route)}
+							activeOpacity={0.8}
+						>
+							<Text style={styles.navLabel}>{t(tKey)}</Text>
+						</TouchableOpacity>
+					))}
 				</View>
 
-				<View style={styles.cards}>
+				<Modal
+					visible={langVisible}
+					transparent
+					animationType="fade"
+					onRequestClose={() => setLangVisible(false)}
+				>
 					<TouchableOpacity
-						style={[styles.card, styles.cardGame]}
-						onPress={() => router.push("/game")}
-						activeOpacity={0.85}
+						style={styles.modalOverlay}
+						activeOpacity={1}
+						onPress={() => setLangVisible(false)}
 					>
-						<View style={styles.cardHeader}>
-							<Image
-								source={require("@/assets/icons/sword.png")}
-								style={{ width: 32, height: 32 }}
-							/>
-							<Text style={styles.cardTitle}>{t("home.play.title")}</Text>
+						<View style={styles.langDropdown}>
+							{LANGUAGES.map(({ code, label }) => {
+								const active = currentLang === code;
+								return (
+									<TouchableOpacity
+										key={code}
+										style={[
+											styles.langOption,
+											active && styles.langOptionActive,
+										]}
+										onPress={() => {
+											i18n.changeLanguage(code);
+											setLangVisible(false);
+										}}
+									>
+										<Text
+											style={[
+												styles.langOptionText,
+												active && styles.langOptionTextActive,
+											]}
+										>
+											{label}
+										</Text>
+									</TouchableOpacity>
+								);
+							})}
 						</View>
-						<Text style={styles.cardDesc}>{t("home.play.desc")}</Text>
 					</TouchableOpacity>
-
-					<TouchableOpacity
-						style={[styles.card, styles.cardTracker]}
-						onPress={() => router.push("/tracker")}
-						activeOpacity={0.85}
-					>
-						<View style={styles.cardHeader}>
-							<Image
-								source={require("@/assets/icons/history.png")}
-								style={{ width: 32, height: 32 }}
-							/>
-							<Text style={styles.cardTitle}>{t("home.tracker.title")}</Text>
-						</View>
-						<Text style={styles.cardDesc}>{t("home.tracker.desc")}</Text>
-					</TouchableOpacity>
-
-					<TouchableOpacity
-						style={[styles.card, styles.cardInstructions]}
-						onPress={() => router.push("/instructions")}
-						activeOpacity={0.85}
-					>
-						<View style={styles.cardHeader}>
-							<Image
-								source={require("@/assets/images/crown.png")}
-								style={{ width: 32, height: 32 }}
-							/>
-							<Text style={styles.cardTitle}>{t("home.instructions.title")}</Text>
-						</View>
-						<Text style={styles.cardDesc}>{t("home.instructions.desc")}</Text>
-					</TouchableOpacity>
-				</View>
+				</Modal>
 			</View>
 		</ImageBackground>
 	);
