@@ -1,4 +1,3 @@
-// /components/CardView.tsx
 import React, { useEffect, useRef } from "react";
 import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
 import SpellIcon from "@/assets/icons/spellImmune_shadow.png";

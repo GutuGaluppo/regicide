@@ -1,4 +1,3 @@
-// /utils/gameLogic.ts
 import { Card, Enemy, GameState, Suit } from "../data/types";
 import { shuffle } from "./shuffle";
 

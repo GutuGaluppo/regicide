@@ -1,15 +1,13 @@
-// /components/EnemyCard/EnemyCard.tsx
+import MagicShield from "@/assets/icons/shield.png";
+import { getCardImage, getHandCardImage } from "@/data/images";
+import { Card, Enemy } from "@/data/types";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
-import { getCardImage, getHandCardImage } from "@/data/images";
-import { Card, Enemy } from "@/data/types";
 import { NumberSprite } from "../NumberSprite";
 import { ProgressRing } from "../ProgressRing";
 import { JesterStack } from "./components/JesterStack";
 import { styles } from "./EnemyCard.styles";
-
-import MagicShield from "@/assets/icons/shield.png";
 
 export const EnemyCard = ({
 	enemy,
@@ -230,16 +228,22 @@ export const EnemyCard = ({
 							strokeWidth={6}
 							color="#b8860a"
 						>
-							<NumberSprite value={effectiveAttack} type="attack" height={32} />
+							<NumberSprite
+								value={effectiveAttack}
+								type="deckstatus"
+								height={32}
+							/>
 						</ProgressRing>
 						{shielded && (
 							<View style={styles.shieldedWrapper}>
 								<Image source={MagicShield} style={styles.shieldIconBg} />
-								<NumberSprite
-									value={enemy.attack - effectiveAttack}
-									type="attack"
-									height={22}
-								/>
+								<View style={styles.shieldNumber}>
+									<NumberSprite
+										value={enemy.attack - effectiveAttack}
+										type="shield"
+										height={22}
+									/>
+								</View>
 							</View>
 						)}
 						{shieldCards &&

@@ -1,4 +1,3 @@
-// /components/CastleFooter.tsx
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Image, Text, View } from "react-native";

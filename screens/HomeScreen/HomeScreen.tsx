@@ -1,4 +1,3 @@
-// /screens/HomeScreen/HomeScreen.tsx
 import { router } from "expo-router";
 import i18n from "i18next";
 import React from "react";

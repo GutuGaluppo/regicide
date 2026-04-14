@@ -1,4 +1,3 @@
-// /utils/responsive.ts
 import { useWindowDimensions } from "react-native";
 
 export type CardSize = {

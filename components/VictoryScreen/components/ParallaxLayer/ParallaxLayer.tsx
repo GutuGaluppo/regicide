@@ -1,4 +1,3 @@
-// /components/VictoryScreen/components/ParallaxLayer/ParallaxLayer.tsx
 import React, { useEffect, useRef } from "react";
 import { Animated, Dimensions, Easing } from "react-native";
 

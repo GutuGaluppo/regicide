@@ -8,7 +8,6 @@ const JESTER_IMGS = [
 ];
 const CARD_BACK = require("@/assets/images/cards_back.png");
 
-// ─── Jester individual com flip ───────────────────────────────────────────────
 export const JesterCard = ({
 	index,
 	startUsed,

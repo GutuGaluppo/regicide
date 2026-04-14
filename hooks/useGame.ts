@@ -1,4 +1,3 @@
-// /hooks/useGame.ts
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createTavernDeck, HAND_SIZE } from "../data/deck";

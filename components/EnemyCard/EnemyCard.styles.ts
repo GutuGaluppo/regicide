@@ -70,6 +70,11 @@ export const styles = StyleSheet.create({
 		width: 88,
 		height: 88,
 	},
+	shieldNumber: {
+		position: "absolute",
+		top: 25, // (88/2 - 8) - 22/2 = center of shifted shield image
+		alignSelf: "center",
+	},
 	shieldPile: {
 		position: "relative",
 	},

@@ -1,4 +1,3 @@
-// /components/SvgNumberSprite/SvgNumberSprite.tsx
 // Renders numeric digits from SVG assets with a configurable fill color.
 // SVG paths use `fill="currentColor"` — pass `color` to tint them.
 import React from "react";

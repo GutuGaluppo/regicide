@@ -1,4 +1,3 @@
-// /screens/TrackerScreen/TrackerScreen.tsx
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
