@@ -2,11 +2,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Image, Text, View } from "react-native";
-import { getCardImage } from "../../data/images";
-import { Enemy, EnemyRank } from "../../data/types";
+import { getCardImage } from "@/data/images";
+import { Enemy, EnemyRank } from "@/data/types";
+import LetterX from "@/assets/icons/letter-x.png";
 import { styles } from "./CastleFooter.styles";
-
-const LetterX = require("../assets/icons/letter-x.png");
 
 export const CastleFooter = ({
 	castle,

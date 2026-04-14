@@ -13,28 +13,28 @@ import {
 import { ParallaxLayer } from "./components/ParallaxLayer";
 import { styles } from "./VictoryScreen.styles";
 
-import crown from "../../assets/images/crown.png";
+import crown from "@/assets/images/crown.png";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 
 const LAYERS: { source: number; amplitude: number; duration: number }[] = [
 	{
-		source: require("../../assets/backgrounds/parallaxi_bgs/4Background-Clouds-trans.png"),
+		source: require("@/assets/backgrounds/parallaxi_bgs/4Background-Clouds-trans.png"),
 		amplitude: SCREEN_W * 0.42,
 		duration: 38000,
 	},
 	{
-		source: require("../../assets/backgrounds/parallaxi_bgs/3Background.png"),
+		source: require("@/assets/backgrounds/parallaxi_bgs/3Background.png"),
 		amplitude: SCREEN_W * 0.58,
 		duration: 37000,
 	},
 	{
-		source: require("../../assets/backgrounds/parallaxi_bgs/2Foreground2.png"),
+		source: require("@/assets/backgrounds/parallaxi_bgs/2Foreground2.png"),
 		amplitude: SCREEN_W * 1.0,
 		duration: 32000,
 	},
 	{
-		source: require("../../assets/backgrounds/parallaxi_bgs/1Foreground-Rocks.png"),
+		source: require("@/assets/backgrounds/parallaxi_bgs/1Foreground-Rocks.png"),
 		amplitude: SCREEN_W * 1.0,
 		duration: 31000,
 	},

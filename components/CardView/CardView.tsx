@@ -1,10 +1,10 @@
 // /components/CardView.tsx
 import React, { useEffect, useRef } from "react";
 import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
-import SpellIcon from "../../assets/icons/spellImmune_shadow.png";
-import { getHandCardImage } from "../../data/images";
-import { Card, Suit } from "../../data/types";
-import { useCardSize } from "../../utils/responsive";
+import SpellIcon from "@/assets/icons/spellImmune_shadow.png";
+import { getHandCardImage } from "@/data/images";
+import { Card, Suit } from "@/data/types";
+import { useCardSize } from "@/utils/responsive";
 import { SUIT_COLOR, SUIT_SYMBOL } from "./CardView.constants";
 import { styles } from "./CardView.styles";
 

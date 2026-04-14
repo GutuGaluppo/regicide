@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import SpellImmune from "../../assets/icons/spellImmune.png";
-import { CardRank, Enemy, Suit } from "../../data/types";
-import { cardValue } from "../../utils/gameLogic";
+import SpellImmune from "@/assets/icons/spellImmune.png";
+import { CardRank, Enemy, Suit } from "@/data/types";
+import { cardValue } from "@/utils/gameLogic";
 import { RANKS, SUITS } from "./AttackInput.constants";
 import { styles } from "./AttackInput.styles";
 

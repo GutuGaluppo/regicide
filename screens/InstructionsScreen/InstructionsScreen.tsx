@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { styles } from "./InstructionsScreen.styles";
 
-const BG = require("../../assets/backgrounds/bg_cave.webp");
+const BG = require("@/assets/backgrounds/bg_cave.webp");
 
 const Section = ({
 	title,
@@ -120,7 +120,7 @@ export const InstructionsScreen = () => {
 				>
 					<View style={styles.introBlock}>
 						<Image
-							source={require("../../assets/images/crown.png")}
+							source={require("@/assets/images/crown.png")}
 							style={styles.crownImage}
 							resizeMode="contain"
 						/>

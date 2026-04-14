@@ -14,11 +14,11 @@ import {
 } from "react-native";
 import { NumberSprite } from "../NumberSprite";
 import { ProgressRing } from "../ProgressRing";
-import { getCardImage } from "../../data/images";
-import { Enemy, Suit } from "../../data/types";
+import { getCardImage } from "@/data/images";
+import { Enemy, Suit } from "@/data/types";
 import { styles } from "./EnemyModal.styles";
 
-const CROWN_ICON = require("../../assets/icons/crown_white.png");
+const CROWN_ICON = require("@/assets/icons/crown_white.png");
 
 const SUITS: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
 

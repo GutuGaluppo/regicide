@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
-import { GamePhase } from "../../data/types";
+import { GamePhase } from "@/data/types";
 import { styles } from "./ActionBar.styles";
 import CustomButton from "./components/CustomButton";
 
