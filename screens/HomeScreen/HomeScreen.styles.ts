@@ -4,68 +4,105 @@ export const styles = StyleSheet.create({
 	container: { flex: 1 },
 	overlay: {
 		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.6)",
+		backgroundColor: "rgba(0,0,0,0.62)",
 		justifyContent: "center",
 		alignItems: "center",
-		paddingHorizontal: 24,
 		gap: 48,
 	},
-	header: { alignItems: "center", gap: 12 },
-	langRow: {
+
+	// Globe button — top-right corner
+	globeBtn: {
+		position: "absolute",
+		top: 52,
+		right: 24,
+		padding: 8,
 		flexDirection: "row",
+		alignItems: "center",
 		gap: 6,
 	},
-	langBtn: {
-		paddingHorizontal: 12,
-		paddingVertical: 5,
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: "rgba(148,163,184,0.3)",
-		backgroundColor: "rgba(15,23,42,0.5)",
-	},
-	langBtnActive: {
-		borderColor: "#FBBF24",
-		backgroundColor: "rgba(251,191,36,0.15)",
-	},
-	langText: {
+	globeAbbr: {
 		color: "#94A3B8",
+		fontFamily: "Cinzel-VariableFont_wght",
 		fontSize: 12,
 		fontWeight: "700",
 		letterSpacing: 0.5,
 	},
-	langTextActive: {
-		color: "#FBBF24",
+
+	// Logo
+	logo: {
+		width: 240,
+		height: 240,
+		resizeMode: "contain",
 	},
-	cards: { width: "100%", gap: 16 },
-	card: {
-		borderRadius: 16,
-		padding: 24,
-		gap: 8,
-		borderWidth: 1,
-	},
-	cardHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
-	cardGame: {
-		backgroundColor: "rgba(71,85,105,0.7)",
-		borderColor: "#67826E",
-	},
-	cardTracker: {
-		backgroundColor: "rgba(71,85,105,0.7)",
-		borderColor: "#D5B377",
-	},
-	cardInstructions: {
-		backgroundColor: "rgba(71,85,105,0.7)",
-		borderColor: "#94A3B8",
-	},
-	cardTitle: {
-		color: "#F1F5F9",
-		fontFamily: "IMFellEnglish-Regular",
-		fontSize: 24,
-		fontWeight: "700",
+
+	// ── Nav buttons ───────────────────────────────────────────────────────────
+	navList: {
 		width: "100%",
+		gap: 12,
+		paddingHorizontal: 24,
 	},
-	cardDesc: {
-		color: "#e4ebfe",
-		fontSize: 16,
-		lineHeight: 18,
+	navBtn: {
+		flexDirection: "row",
+		justifyContent: "center",
+		alignItems: "center",
+		gap: 14,
+		width: 250,
+		marginHorizontal: "auto",
+		paddingVertical: 20,
+		paddingHorizontal: 20,
+		borderRadius: 12,
+		borderWidth: 1,
+		backgroundColor: "#e7e6de",
+	},
+	navIcon: {
+		width: 28,
+		height: 28,
+	},
+	navLabel: {
+		fontFamily: "Cinzel-VariableFont_wght",
+		fontSize: 24,
+		fontWeight: 700,
+		color: "#000",
+		letterSpacing: 0.8,
+	},
+
+	// ── Language modal ─────────────────────────────────────────────────────────
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.55)",
+		alignItems: "flex-end",
+		justifyContent: "flex-start",
+		paddingTop: 100,
+		paddingRight: 20,
+	},
+	langDropdown: {
+		backgroundColor: "#1a1008",
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: "rgba(148,163,184,0.25)",
+		overflow: "hidden",
+		minWidth: 150,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 6 },
+		shadowOpacity: 0.5,
+		shadowRadius: 12,
+		elevation: 10,
+	},
+	langOption: {
+		paddingHorizontal: 20,
+		paddingVertical: 13,
+		borderBottomWidth: 1,
+		borderBottomColor: "rgba(148,163,184,0.1)",
+	},
+	langOptionActive: {
+		backgroundColor: "rgba(251,191,36,0.1)",
+	},
+	langOptionText: {
+		color: "#94A3B8",
+		fontFamily: "Cinzel-VariableFont_wght",
+		fontSize: 15,
+	},
+	langOptionTextActive: {
+		color: "#FBBF24",
 	},
 });

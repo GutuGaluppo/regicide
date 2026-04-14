@@ -11,6 +11,7 @@ export default function RootLayout() {
 				await Font.loadAsync({
 					"IMFellEnglish-Regular": require("../assets/fonts/IMFellEnglish-Regular.ttf"),
 					"IMFellEnglish-Italic": require("../assets/fonts/IMFellEnglish-Italic.ttf"),
+					"Cinzel-VariableFont_wght": require("../assets/fonts/Cinzel-VariableFont_wght.ttf"),
 				});
 			} catch (e) {
 				console.warn(e);
