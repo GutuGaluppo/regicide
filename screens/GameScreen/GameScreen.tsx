@@ -1,4 +1,14 @@
-// /screens/GameScreen/GameScreen.tsx
+import cardBack from "@/assets/images/cardBack.png";
+import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { CastleFooter } from "@/components/CastleFooter";
+import { DefeatScreen } from "@/components/DefeatScreen";
+import { EnemyCard } from "@/components/EnemyCard";
+import { EnemyModal } from "@/components/EnemyModal";
+import { NumberSprite } from "@/components/NumberSprite";
+import { PlayerHand } from "@/components/PlayerHand";
+import { SettingsDrawer } from "@/components/SettingsDrawer";
+import { VictoryScreen } from "@/components/VictoryScreen";
+import { useGame } from "@/hooks/useGame";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -10,30 +20,18 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { CastleFooter } from "@/components/CastleFooter";
-import { DefeatScreen } from "@/components/DefeatScreen";
-import { EnemyCard } from "@/components/EnemyCard";
-import { EnemyModal } from "@/components/EnemyModal";
-import { NumberSprite } from "@/components/NumberSprite";
-import { PlayerHand } from "@/components/PlayerHand";
-import { SettingsDrawer } from "@/components/SettingsDrawer";
-import { VictoryScreen } from "@/components/VictoryScreen";
-import { useGame } from "@/hooks/useGame";
 import { styles } from "./GameScreen.styles";
-
-const CARD_BACK = require("@/assets/images/cards_back.png");
 
 const StatusCard = ({ count, label }: { count: number; label: string }) => (
 	<View style={styles.statusItem}>
 		<View style={styles.statusCard}>
 			<Image
-				source={CARD_BACK}
+				source={cardBack}
 				style={styles.statusCardImg}
 				resizeMode="contain"
 			/>
 			<View style={styles.statusCardOverlay}>
-				<NumberSprite value={count} type="attack" height={25} />
+				<NumberSprite value={count} type="deckstatus" height={25} />
 			</View>
 		</View>
 		<Text style={styles.deckLabel}>{label}</Text>
@@ -53,7 +51,6 @@ export const GameScreen = () => {
 		defeatedEnemies,
 		toggleCard,
 		playSelected,
-		// yieldTurn,
 		confirmDiscard,
 		useJester,
 		sortHand,

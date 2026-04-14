@@ -1,4 +1,3 @@
-// /components/EnemyCard/components/JesterStack/JesterStack.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { JesterCard } from "./JesterCard";

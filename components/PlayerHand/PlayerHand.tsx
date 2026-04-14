@@ -1,4 +1,3 @@
-// /components/PlayerHand/PlayerHand.tsx
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";

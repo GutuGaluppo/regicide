@@ -1,4 +1,3 @@
-// /components/ProgressRing/ProgressRing.tsx
 import React from "react";
 import { View } from "react-native";
 import { Circle, Svg } from "react-native-svg";

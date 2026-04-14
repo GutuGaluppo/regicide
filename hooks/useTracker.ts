@@ -1,4 +1,3 @@
-// /hooks/useTracker.ts
 import { useState } from "react";
 import { createCastleDeck } from "../data/enemies";
 import { CardRank, Enemy, EnemyRank, Suit } from "../data/types";
