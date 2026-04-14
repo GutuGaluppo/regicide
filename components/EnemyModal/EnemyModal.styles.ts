@@ -1,0 +1,136 @@
+import { StyleSheet } from "react-native";
+
+export const styles = StyleSheet.create({
+	backdrop: {
+		...StyleSheet.absoluteFillObject,
+		backgroundColor: "rgba(0,0,0,0.6)",
+	},
+	panel: {
+		position: "absolute",
+		bottom: 0,
+		left: 0,
+		right: 0,
+		backgroundColor: "#0F172A",
+		borderTopLeftRadius: 20,
+		borderTopRightRadius: 20,
+		borderTopWidth: 1,
+		borderColor: "rgba(148,163,184,0.2)",
+		paddingBottom: 32,
+		maxHeight: "88%",
+	},
+	handle: {
+		alignSelf: "center",
+		width: 36,
+		height: 4,
+		borderRadius: 2,
+		backgroundColor: "rgba(148,163,184,0.35)",
+		marginTop: 10,
+		marginBottom: 6,
+	},
+	closeBtn: {
+		position: "absolute",
+		top: 12,
+		right: 16,
+		padding: 6,
+	},
+	closeIcon: { width: 22, height: 22 },
+	content: {
+		paddingHorizontal: 20,
+		paddingTop: 8,
+		paddingBottom: 8,
+		gap: 14,
+	},
+	cardRow: {
+		flexDirection: "row",
+		gap: 20,
+		alignItems: "flex-start",
+	},
+	enemyImage: {
+		width: 120,
+		height: 168,
+		borderRadius: 10,
+	},
+	statsCol: {
+		flex: 1,
+		gap: 10,
+		paddingTop: 4,
+	},
+	enemyName: {
+		color: "#F1F5F9",
+		fontFamily: "IMFellEnglish-Regular",
+		fontSize: 22,
+		fontWeight: "700",
+		letterSpacing: 0.5,
+	},
+	enemySuit: {
+		color: "#94A3B8",
+		fontFamily: "IMFellEnglish-Regular",
+		fontSize: 14,
+		letterSpacing: 0.5,
+	},
+	statBlock: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 10,
+	},
+	statLabel: {
+		color: "#94A3B8",
+		fontFamily: "IMFellEnglish-Regular",
+		fontSize: 13,
+		fontWeight: "600",
+		letterSpacing: 0.8,
+		textTransform: "uppercase",
+	},
+	divider: {
+		height: 1,
+		backgroundColor: "rgba(148,163,184,0.15)",
+	},
+	sectionTitle: {
+		color: "#CBD5E1",
+		fontFamily: "IMFellEnglish-Regular",
+		fontSize: 14,
+		fontWeight: "700",
+		letterSpacing: 1,
+		textTransform: "uppercase",
+	},
+	powerRow: {
+		flexDirection: "row",
+		gap: 12,
+		alignItems: "flex-start",
+		paddingVertical: 8,
+		paddingHorizontal: 10,
+		borderRadius: 10,
+	},
+	powerRowImmune: {
+		backgroundColor: "rgba(239,68,68,0.08)",
+		borderWidth: 1,
+		borderColor: "rgba(239,68,68,0.25)",
+	},
+	suitSymbol: {
+		fontSize: 22,
+		width: 24,
+		textAlign: "center",
+		marginTop: 1,
+	},
+	powerTextCol: {
+		flex: 1,
+		gap: 2,
+	},
+	suitName: {
+		color: "#E2E8F0",
+		fontSize: 14,
+		fontWeight: "700",
+		letterSpacing: 0.3,
+	},
+	suitNameImmune: {
+		color: "#F87171",
+	},
+	powerDesc: {
+		color: "#64748B",
+		fontSize: 12,
+		lineHeight: 17,
+	},
+	powerDescImmune: {
+		color: "#94A3B8",
+	},
+});

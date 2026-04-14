@@ -1,0 +1,49 @@
+import { StyleSheet } from "react-native";
+
+export const styles = StyleSheet.create({
+	bg: { flex: 1 },
+	overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.65)" },
+	header: { paddingTop: 52, paddingHorizontal: 16, paddingBottom: 4 },
+	backBtn: {
+		alignSelf: "flex-start",
+		paddingVertical: 6,
+		paddingHorizontal: 12,
+	},
+	backIcon: { width: 30, height: 30 },
+	ghostTop: { alignItems: "center", paddingHorizontal: 16 },
+	center: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		gap: 16,
+		paddingHorizontal: 20,
+	},
+	enemyCard: { width: 220, height: 308, borderRadius: 14 },
+	defeatMsg: {
+		fontFamily: "IMFellEnglish-Regular",
+		color: "#EF4444",
+		fontSize: 28,
+		fontWeight: "900",
+		letterSpacing: 2,
+		textShadowColor: "#7F1D1D",
+		textShadowOffset: { width: 0, height: 0 },
+		textShadowRadius: 12,
+	},
+	newGameBtn: {
+		paddingVertical: 12,
+		paddingHorizontal: 40,
+		borderRadius: 10,
+		backgroundColor: "rgba(104,50,55,0.7)",
+		borderWidth: 1,
+		borderColor: "#EF4444",
+	},
+	newGameText: {
+		color: "#F1F5F9",
+		fontFamily: "IMFellEnglish-Regular",
+		fontSize: 18,
+		fontWeight: "700",
+		letterSpacing: 1,
+		textAlign: "center",
+	},
+	ghostBottom: { paddingHorizontal: 12, paddingBottom: 8, gap: 8 },
+});
