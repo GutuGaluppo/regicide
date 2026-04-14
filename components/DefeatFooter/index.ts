@@ -1,0 +1,1 @@
+export { DefeatFooter } from "./DefeatFooter";
