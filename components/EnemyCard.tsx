@@ -1,5 +1,5 @@
 // /components/EnemyCard.tsx
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Animated,
@@ -15,12 +15,166 @@ import { ProgressRing } from "../components/ProgressRing";
 import { getCardImage, getHandCardImage } from "../data/images";
 import { Card, Enemy } from "../data/types";
 
+const JESTER_IMGS = [
+	require("../assets/game/cards/jester_1.png"),
+	require("../assets/game/cards/jester_2.png"),
+];
+const CARD_BACK = require("../assets/images/cards_back.png");
+
+// ─── Jester individual com flip ───────────────────────────────────────────
+const JesterCard = ({
+	index,
+	startUsed,
+	flip,
+	offsetX,
+	offsetY,
+	zIndex,
+}: {
+	index: number;
+	startUsed: boolean;
+	flip: boolean;
+	offsetX: number;
+	offsetY: number;
+	zIndex: number;
+}) => {
+	const [isBack, setIsBack] = useState(startUsed);
+	const scaleX = useRef(new Animated.Value(1)).current;
+
+	useEffect(() => {
+		if (flip) {
+			Animated.sequence([
+				Animated.timing(scaleX, { toValue: 0, duration: 160, useNativeDriver: true }),
+				Animated.timing(scaleX, { toValue: 1, duration: 160, useNativeDriver: true }),
+			]).start();
+			const t = setTimeout(() => setIsBack(true), 160);
+			return () => clearTimeout(t);
+		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [flip]);
+
+	return (
+		<Animated.View
+			style={[
+				jesterStyles.card,
+				{ left: offsetX, top: offsetY, zIndex, transform: [{ scaleX }] },
+			]}
+		>
+			<Image
+				source={isBack ? CARD_BACK : JESTER_IMGS[index]}
+				style={jesterStyles.img}
+				resizeMode="cover"
+			/>
+		</Animated.View>
+	);
+};
+
+// ─── Pilha de Jesters ────────────────────────────────────────────────────
+const JesterStack = ({
+	jestersAvailable,
+	jestersUsed,
+	jesterActive,
+	onUseJester,
+}: {
+	jestersAvailable: number;
+	jestersUsed: number;
+	jesterActive: boolean;
+	onUseJester?: () => void;
+}) => {
+	const prevUsed = useRef(jestersUsed);
+	const [flips, setFlips] = useState<[boolean, boolean]>([false, false]);
+
+	useEffect(() => {
+		if (jestersUsed > prevUsed.current) {
+			const idx = jestersUsed - 1; // 0 ou 1
+			if (idx < 2) {
+				setFlips((prev) => {
+					const next: [boolean, boolean] = [prev[0], prev[1]];
+					next[idx] = true;
+					return next;
+				});
+				// reset flip flag após animação completar
+				const t = setTimeout(() => {
+					setFlips((prev) => {
+						const next: [boolean, boolean] = [prev[0], prev[1]];
+						next[idx] = false;
+						return next;
+					});
+				}, 350);
+				return () => clearTimeout(t);
+			}
+		}
+		prevUsed.current = jestersUsed;
+	}, [jestersUsed]);
+
+	const totalCards = jestersAvailable + jestersUsed; // sempre 2
+	if (totalCards === 0) return null;
+
+	return (
+		<TouchableOpacity
+			style={[
+				jesterStyles.stack,
+				jesterActive && jesterStyles.stackActive,
+			]}
+			onPress={jestersAvailable > 0 ? onUseJester : undefined}
+			activeOpacity={jestersAvailable > 0 ? 0.75 : 1}
+			disabled={!onUseJester || jestersAvailable === 0}
+		>
+			{[0, 1].map((i) => (
+				<JesterCard
+					key={i}
+					index={i}
+					startUsed={jestersUsed > i}
+					flip={flips[i]}
+					offsetX={i * 7}
+					offsetY={i * 7}
+					zIndex={i}
+				/>
+			))}
+			{jesterActive && <View style={jesterStyles.activeDot} />}
+		</TouchableOpacity>
+	);
+};
+
+const jesterStyles = StyleSheet.create({
+	stack: {
+		position: "relative",
+		width: 46 + 7,
+		height: 64 + 7,
+	},
+	stackActive: {
+		// glow handled via activeDot
+	},
+	card: {
+		position: "absolute",
+		width: 46,
+		height: 64,
+		borderRadius: 5,
+		overflow: "hidden",
+		borderWidth: 1,
+		borderColor: "rgba(167,139,250,0.5)",
+	},
+	img: { width: "100%", height: "100%" },
+	activeDot: {
+		position: "absolute",
+		bottom: -6,
+		alignSelf: "center",
+		width: 8,
+		height: 8,
+		borderRadius: 4,
+		backgroundColor: "#A78BFA",
+	},
+});
+
 export const EnemyCard = ({
 	enemy,
 	currentHP,
 	effectiveAttack,
+	jesterActive,
 	spadesShield,
 	shieldCards,
+	jestersAvailable,
+	jestersUsed,
+	onUseJester,
 	onPress,
 }: {
 	enemy: Enemy;
@@ -29,6 +183,9 @@ export const EnemyCard = ({
 	jesterActive?: boolean;
 	spadesShield?: number;
 	shieldCards?: Card[];
+	jestersAvailable?: number;
+	jestersUsed?: number;
+	onUseJester?: () => void;
 	onPress?: () => void;
 }) => {
 	const { t } = useTranslation();
@@ -197,7 +354,19 @@ export const EnemyCard = ({
 						resizeMode="contain"
 					/>
 
-					{/* Red damage flash */}
+					{/* Jesters — topo esquerdo */}
+				{(jestersAvailable !== undefined || jestersUsed !== undefined) && (
+					<View style={styles.jesterBadge}>
+						<JesterStack
+							jestersAvailable={jestersAvailable ?? 0}
+							jestersUsed={jestersUsed ?? 0}
+							jesterActive={!!jesterActive}
+							onUseJester={onUseJester}
+						/>
+					</View>
+				)}
+
+				{/* Red damage flash */}
 					<Animated.View
 						style={[styles.damageFlash, { opacity: flashOpacity }]}
 						pointerEvents="none"
@@ -325,6 +494,12 @@ const styles = StyleSheet.create({
 		right: -65,
 		alignItems: "center",
 		gap: 4,
+	},
+	jesterBadge: {
+		position: "absolute",
+		top: 16,
+		left: -68,
+		alignItems: "center",
 	},
 	hpBadge: {
 		position: "absolute",

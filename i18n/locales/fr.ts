@@ -35,6 +35,7 @@ const fr: Translations = {
     play: "Jouer",
     yield: "Passer",
     discard: "Défausser ({{current}}/{{needed}})",
+    discard_label: "Défausser",
     newGame: "Nouvelle partie",
   },
   hand: {
@@ -101,6 +102,17 @@ const fr: Translations = {
   defeat: {
     message: "Le royaume est tombé",
     newGame: "Nouvelle partie",
+    stats: {
+      time: "Temps",
+      turns: "Tours",
+      enemies: "Ennemis vaincus",
+      discarded: "Cartes défaussées",
+    },
+  },
+  settings: {
+    title: "Paramètres",
+    restart: "Recommencer la partie",
+    exit: "Retour à l'accueil",
   },
   victory: {
     title: "Victoire!",

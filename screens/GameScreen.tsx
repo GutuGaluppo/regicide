@@ -1,4 +1,5 @@
 // /screens/GameScreen.tsx
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,13 +11,14 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { ActionBar } from "../components/ActionBar";
+import { ActionBar } from "../components/ActionBar/ActionBar";
 import { CastleFooter } from "../components/CastleFooter";
 import { DefeatScreen } from "../components/DefeatScreen";
 import { EnemyCard } from "../components/EnemyCard";
 import { EnemyModal } from "../components/EnemyModal";
 import { NumberSprite } from "../components/NumberSprite";
 import { PlayerHand } from "../components/PlayerHand";
+import { SettingsDrawer } from "../components/SettingsDrawer";
 import { VictoryScreen } from "../components/VictoryScreen";
 import { useGame } from "../hooks/useGame";
 
@@ -51,8 +53,9 @@ export const GameScreen = () => {
 		defeatedEnemies,
 		toggleCard,
 		playSelected,
-		yieldTurn,
+		// yieldTurn,
 		confirmDiscard,
+		useJester,
 		sortHand,
 		sortHandByClass,
 		resetGame,
@@ -67,10 +70,8 @@ export const GameScreen = () => {
 		jesterActive,
 	} = gameState;
 
-	// ─── Modal ────────────────────────────────────────────────────────────────────
 	const [modalVisible, setModalVisible] = useState(false);
-
-	// ─── Discard animation: mark cards before committing ──────────────────────────
+	const [settingsVisible, setSettingsVisible] = useState(false);
 	const [discardingIds, setDiscardingIds] = useState<Set<string>>(new Set());
 
 	const handleConfirmDiscard = () => {
@@ -82,12 +83,17 @@ export const GameScreen = () => {
 		}, 340);
 	};
 
-	if (phase === "victory") {
-		return <VictoryScreen onReset={resetGame} />;
-	}
+	if (phase === "victory") return <VictoryScreen onReset={resetGame} />;
 
 	if (phase === "defeat" && currentEnemy) {
-		return <DefeatScreen enemy={currentEnemy} onReset={resetGame} />;
+		return (
+			<DefeatScreen
+				enemy={currentEnemy}
+				stats={gameState.stats}
+				defeatedEnemies={defeatedEnemies}
+				onReset={resetGame}
+			/>
+		);
 	}
 
 	return (
@@ -102,24 +108,35 @@ export const GameScreen = () => {
 				<View style={styles.header}>
 					<TouchableOpacity
 						onPress={() => router.back()}
-						style={styles.backBtn}
+						style={styles.headerBtn}
 					>
-						<Image
-							source={require("../assets/icons/crown_white.png")}
-							style={{ width: 30, height: 30 }}
-							resizeMode="contain"
-						/>
+						<Ionicons name="chevron-back" size={26} color="#F1F5F9" />
+					</TouchableOpacity>
+					<TouchableOpacity
+						onPress={() => setSettingsVisible(true)}
+						style={styles.headerBtn}
+					>
+						<Ionicons name="settings-outline" size={24} color="#94A3B8" />
 					</TouchableOpacity>
 				</View>
 
-				{/* Status bar with labeled deck piles */}
+				{/* Status bar */}
 				<View style={styles.statusBar}>
-					<StatusCard count={gameState.castle.length} label={t("game.status.castle")} />
-					<StatusCard count={tavernDeck.length} label={t("game.status.tavern")} />
-					<StatusCard count={discardPile.length} label={t("game.status.discard")} />
+					<StatusCard
+						count={gameState.castle.length}
+						label={t("game.status.castle")}
+					/>
+					<StatusCard
+						count={tavernDeck.length}
+						label={t("game.status.tavern")}
+					/>
+					<StatusCard
+						count={discardPile.length}
+						label={t("game.status.discard")}
+					/>
 				</View>
 
-				{/* Center: enemy card */}
+				{/* Enemy card */}
 				<View style={styles.center}>
 					{(phase === "player_turn" || phase === "suffer_damage") &&
 						currentEnemy && (
@@ -132,19 +149,13 @@ export const GameScreen = () => {
 								shieldCards={gameState.playedThisFight.filter(
 									(c) => c.suit === "spades",
 								)}
+								jestersAvailable={gameState.jestersAvailable}
+								jestersUsed={gameState.jestersUsed}
+								onUseJester={phase === "player_turn" ? useJester : undefined}
 								onPress={() => setModalVisible(true)}
 							/>
 						)}
 				</View>
-
-				{/* Suffer damage banner */}
-				{phase === "suffer_damage" && (
-					<View style={styles.phaseBar}>
-						<Text style={styles.phaseText}>
-							{t("game.sufferDamage", { damage: pendingDamage })}
-						</Text>
-					</View>
-				)}
 
 				{/* Play error */}
 				{playError && <Text style={styles.error}>{playError}</Text>}
@@ -157,21 +168,20 @@ export const GameScreen = () => {
 						phase={phase}
 						immuneSuit={jesterActive ? null : currentEnemy?.suit}
 						discardingIds={discardingIds}
+						pendingDamage={pendingDamage}
+						selectedTotal={selectedTotal}
 						onCardPress={toggleCard}
+						onDiscard={handleConfirmDiscard}
 						onSort={sortHand}
 						onSortByClass={sortHandByClass}
 					/>
 				)}
 
-				{/* Action buttons */}
+				{/* Action buttons (only player_turn) */}
 				<ActionBar
 					phase={phase}
-					selectedTotal={selectedTotal}
-					pendingDamage={pendingDamage}
 					onPlay={playSelected}
-					onYield={yieldTurn}
-					onDiscard={handleConfirmDiscard}
-					onReset={resetGame}
+					// onYield={yieldTurn}
 					playDisabled={selectedIds.size === 0}
 				/>
 
@@ -182,7 +192,7 @@ export const GameScreen = () => {
 				/>
 			</View>
 
-			{/* Enemy detail modal */}
+			{/* Enemy modal */}
 			{currentEnemy && (
 				<EnemyModal
 					enemy={currentEnemy}
@@ -192,6 +202,13 @@ export const GameScreen = () => {
 					onClose={() => setModalVisible(false)}
 				/>
 			)}
+
+			{/* Settings drawer */}
+			<SettingsDrawer
+				visible={settingsVisible}
+				onClose={() => setSettingsVisible(false)}
+				onReset={resetGame}
+			/>
 		</ImageBackground>
 	);
 };
@@ -206,14 +223,13 @@ const styles = StyleSheet.create({
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
+		justifyContent: "space-between",
 		paddingTop: 52,
-		paddingHorizontal: 16,
+		paddingHorizontal: 12,
 		paddingBottom: 4,
 	},
-	backBtn: {
-		alignSelf: "flex-start",
-		paddingVertical: 6,
-		paddingHorizontal: 12,
+	headerBtn: {
+		padding: 8,
 	},
 	statusBar: {
 		position: "absolute",
@@ -226,20 +242,14 @@ const styles = StyleSheet.create({
 		gap: 12,
 		paddingHorizontal: 16,
 	},
-	statusItem: {
-		alignItems: "center",
-		gap: 4,
-	},
+	statusItem: { alignItems: "center", gap: 4 },
 	statusCard: {
 		width: 56,
 		height: 70,
 		borderRadius: 8,
 		overflow: "hidden",
 	},
-	statusCardImg: {
-		width: "100%",
-		height: "100%",
-	},
+	statusCardImg: { width: "100%", height: "100%" },
 	statusCardOverlay: {
 		...StyleSheet.absoluteFillObject,
 		justifyContent: "center",
@@ -257,61 +267,11 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 	},
-	phaseBar: {
-		backgroundColor: "rgba(239,68,68,0.2)",
-		paddingVertical: 8,
-		paddingHorizontal: 16,
-		marginHorizontal: 12,
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: "#EF4444",
-		marginBottom: 4,
-	},
-	phaseText: {
-		color: "#FCA5A5",
-		fontSize: 13,
-		textAlign: "center",
-	},
 	error: {
 		color: "#FCA5A5",
 		fontSize: 12,
 		textAlign: "center",
 		marginBottom: 4,
 		paddingHorizontal: 16,
-	},
-	// Shield pile
-	shieldStack: {
-		position: "relative",
-	},
-	shieldCard: {
-		position: "absolute",
-		width: 56,
-		height: 70,
-		borderRadius: 6,
-		overflow: "hidden",
-		borderWidth: 1,
-		borderColor: "rgba(96,165,250,0.5)",
-	},
-	shieldCardImg: {
-		width: "100%",
-		height: "100%",
-	},
-	shieldCardFallback: {
-		flex: 1,
-		backgroundColor: "#F8FAFC",
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	shieldCardRank: {
-		fontSize: 14,
-		fontWeight: "bold",
-		color: "#1E293B",
-	},
-	shieldCardSuit: {
-		fontSize: 16,
-		color: "#1E293B",
-	},
-	deckLabelShield: {
-		color: "rgba(96,165,250,0.9)",
 	},
 });

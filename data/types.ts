@@ -24,6 +24,14 @@ export interface Card {
 
 export type GamePhase = "player_turn" | "suffer_damage" | "victory" | "defeat";
 
+export interface GameStats {
+	startTime: number;
+	turnsPlayed: number;
+	cardsPerTurn: Card[][];
+	discardedCards: Card[];
+	enemyKills: Array<{ enemy: Enemy; allCards: Card[] }>;
+}
+
 export interface GameState {
 	castle: Enemy[];
 	defeatedEnemies: Enemy[];
@@ -36,4 +44,7 @@ export interface GameState {
 	jesterActive: boolean;    // imunidade do inimigo cancelada
 	pendingDamage: number;    // dano a sofrer na fase suffer_damage
 	phase: GamePhase;
+	jestersAvailable: number;
+	jestersUsed: number;
+	stats: GameStats;
 }

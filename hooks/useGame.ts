@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createTavernDeck, HAND_SIZE } from "../data/deck";
 import { createCastleDeck } from "../data/enemies";
-import { Card, Enemy, GamePhase, GameState } from "../data/types";
+import { Card, Enemy, GamePhase, GameState, GameStats } from "../data/types";
 import { loadGame, saveGame } from "../services/storage";
 import { enemyToCard, resolvePlay, validatePlay } from "../utils/gameLogic";
 import { shuffle } from "../utils/shuffle";
 
-const PLAYER_COUNT = 2 as const;
+const PLAYER_COUNT = 1 as const;
 const MAX_HAND = HAND_SIZE[PLAYER_COUNT];
 
 const buildCastle = (): Enemy[] => {
@@ -16,9 +16,16 @@ const buildCastle = (): Enemy[] => {
 	const jacks = shuffle(all.filter((e) => e.rank === "J"));
 	const queens = shuffle(all.filter((e) => e.rank === "Q"));
 	const kings = shuffle(all.filter((e) => e.rank === "K"));
-	// Valetes em cima, Reis em baixo (Valetes são encontrados primeiro)
 	return [...jacks, ...queens, ...kings];
 };
+
+const emptyStats = (): GameStats => ({
+	startTime: Date.now(),
+	turnsPlayed: 0,
+	cardsPerTurn: [],
+	discardedCards: [],
+	enemyKills: [],
+});
 
 const createInitialState = (): GameState => {
 	const tavernDeck = createTavernDeck(PLAYER_COUNT);
@@ -35,6 +42,36 @@ const createInitialState = (): GameState => {
 		jesterActive: false,
 		pendingDamage: 0,
 		phase: "player_turn",
+		jestersAvailable: 2,
+		jestersUsed: 0,
+		stats: emptyStats(),
+	};
+};
+
+// ─── Empty-hand resolution helper ──────────────────────────────────────────
+const resolveEmptyHand = (
+	state: GameState,
+	tavernDeck: Card[],
+	discardPile: Card[],
+): Pick<GameState, "playerHand" | "tavernDeck" | "discardPile" | "jestersAvailable" | "jestersUsed" | "phase"> => {
+	if (state.jestersAvailable > 0) {
+		const canDraw = Math.min(MAX_HAND, tavernDeck.length);
+		return {
+			playerHand: tavernDeck.slice(0, canDraw),
+			tavernDeck: tavernDeck.slice(canDraw),
+			discardPile,
+			jestersAvailable: state.jestersAvailable - 1,
+			jestersUsed: state.jestersUsed + 1,
+			phase: "player_turn",
+		};
+	}
+	return {
+		playerHand: [],
+		tavernDeck,
+		discardPile,
+		jestersAvailable: 0,
+		jestersUsed: state.jestersUsed,
+		phase: "defeat",
 	};
 };
 
@@ -54,15 +91,16 @@ export const useGame = () => {
 					setGameState({
 						...saved,
 						defeatedEnemies: saved.defeatedEnemies ?? [],
+						jestersAvailable: (saved as GameState).jestersAvailable ?? 2,
+						jestersUsed: (saved as GameState).jestersUsed ?? 0,
+						stats: (saved as GameState).stats ?? emptyStats(),
 					} as GameState);
 			} catch {
 				// usa estado inicial
 			}
 		};
 		init();
-		return () => {
-			active = false;
-		};
+		return () => { active = false; };
 	}, []);
 
 	const persist = async (state: GameState) => {
@@ -74,11 +112,7 @@ export const useGame = () => {
 	};
 
 	const toggleCard = (card: Card) => {
-		if (
-			gameState.phase !== "player_turn" &&
-			gameState.phase !== "suffer_damage"
-		)
-			return;
+		if (gameState.phase !== "player_turn" && gameState.phase !== "suffer_damage") return;
 		setPlayError(null);
 		setSelectedIds((prev) => {
 			const next = new Set(prev);
@@ -87,6 +121,21 @@ export const useGame = () => {
 		});
 	};
 
+	// ─── Usar Jester (cancela imunidade) ──────────────────────────────────────
+	const useJester = () => {
+		if (gameState.phase !== "player_turn") return;
+		if (gameState.jestersAvailable <= 0) return;
+		const next: GameState = {
+			...gameState,
+			jestersAvailable: gameState.jestersAvailable - 1,
+			jestersUsed: gameState.jestersUsed + 1,
+			jesterActive: true,
+		};
+		setGameState(next);
+		persist(next);
+	};
+
+	// ─── Jogar cartas ─────────────────────────────────────────────────────────
 	const playSelected = () => {
 		if (gameState.phase !== "player_turn") return;
 
@@ -103,7 +152,13 @@ export const useGame = () => {
 		const enemy = gameState.castle[0];
 		const result = resolvePlay(selected, gameState, MAX_HAND);
 
-		// Jester: cancela imunidade, pula passos 3 e 4
+		const newStats: GameStats = {
+			...gameState.stats,
+			turnsPlayed: gameState.stats.turnsPlayed + 1,
+			cardsPerTurn: [...gameState.stats.cardsPerTurn, selected],
+		};
+
+		// Jester jogado da mão (compatibilidade, caso ainda exista)
 		if (result.isJester) {
 			const next: GameState = {
 				...gameState,
@@ -112,6 +167,7 @@ export const useGame = () => {
 				discardPile: result.newDiscardPile,
 				jesterActive: true,
 				phase: "player_turn",
+				stats: newStats,
 			};
 			setGameState(next);
 			persist(next);
@@ -135,42 +191,84 @@ export const useGame = () => {
 				: [...result.newDiscardPile, ...allPlayedCards, enemyCard];
 
 			const [, ...restCastle] = gameState.castle;
-			const newPhase: GamePhase =
-				restCastle.length === 0 ? "victory" : "player_turn";
+			const defeatedStats: GameStats = {
+				...newStats,
+				enemyKills: [...newStats.enemyKills, { enemy, allCards: allPlayedCards }],
+			};
+
+			if (restCastle.length === 0) {
+				const next: GameState = {
+					...gameState,
+					castle: restCastle,
+					defeatedEnemies: [...gameState.defeatedEnemies, enemy],
+					playerHand: result.newHand,
+					tavernDeck: newTavern,
+					discardPile: newDiscard,
+					playedThisFight: [],
+					currentDamage: 0,
+					spadesShield: 0,
+					jesterActive: false,
+					pendingDamage: 0,
+					phase: "victory",
+					stats: defeatedStats,
+				};
+				setGameState(next);
+				persist(next);
+				return;
+			}
+
+			// Verifica mão vazia após derrota do inimigo
+			const emptyResolution = result.newHand.length === 0
+				? resolveEmptyHand(
+					{ ...gameState, jestersAvailable: gameState.jestersAvailable, jestersUsed: gameState.jestersUsed },
+					newTavern,
+					newDiscard,
+				)
+				: null;
 
 			const next: GameState = {
 				...gameState,
 				castle: restCastle,
 				defeatedEnemies: [...gameState.defeatedEnemies, enemy],
-				playerHand: result.newHand,
-				tavernDeck: newTavern,
-				discardPile: newDiscard,
+				playerHand: emptyResolution ? emptyResolution.playerHand : result.newHand,
+				tavernDeck: emptyResolution ? emptyResolution.tavernDeck : newTavern,
+				discardPile: emptyResolution ? emptyResolution.discardPile : newDiscard,
 				playedThisFight: [],
 				currentDamage: 0,
 				spadesShield: 0,
 				jesterActive: false,
 				pendingDamage: 0,
-				phase: newPhase,
+				phase: emptyResolution ? emptyResolution.phase : "player_turn",
+				jestersAvailable: emptyResolution ? emptyResolution.jestersAvailable : gameState.jestersAvailable,
+				jestersUsed: emptyResolution ? emptyResolution.jestersUsed : gameState.jestersUsed,
+				stats: defeatedStats,
 			};
 			setGameState(next);
 			persist(next);
 			return;
 		}
 
-		// Inimigo não derrotado — passo 4: sofrer dano
+		// Inimigo não derrotado — verificar dano
 		const effectiveAttack = Math.max(0, enemy.attack - result.newShield);
 
 		if (effectiveAttack === 0) {
 			// Totalmente bloqueado por espadas
+			const emptyResolution = result.newHand.length === 0
+				? resolveEmptyHand(gameState, result.newTavernDeck, result.newDiscardPile)
+				: null;
+
 			const next: GameState = {
 				...gameState,
-				playerHand: result.newHand,
-				tavernDeck: result.newTavernDeck,
-				discardPile: result.newDiscardPile,
+				playerHand: emptyResolution ? emptyResolution.playerHand : result.newHand,
+				tavernDeck: emptyResolution ? emptyResolution.tavernDeck : result.newTavernDeck,
+				discardPile: emptyResolution ? emptyResolution.discardPile : result.newDiscardPile,
 				playedThisFight: allPlayedCards,
 				currentDamage: newCurrentDamage,
 				spadesShield: result.newShield,
-				phase: "player_turn",
+				phase: emptyResolution ? emptyResolution.phase : "player_turn",
+				jestersAvailable: emptyResolution ? emptyResolution.jestersAvailable : gameState.jestersAvailable,
+				jestersUsed: emptyResolution ? emptyResolution.jestersUsed : gameState.jestersUsed,
+				stats: newStats,
 			};
 			setGameState(next);
 			persist(next);
@@ -191,11 +289,13 @@ export const useGame = () => {
 			spadesShield: result.newShield,
 			pendingDamage: effectiveAttack,
 			phase: newPhase,
+			stats: newStats,
 		};
 		setGameState(next);
 		persist(next);
 	};
 
+	// ─── Passar turno ─────────────────────────────────────────────────────────
 	const yieldTurn = () => {
 		if (gameState.phase !== "player_turn") return;
 		const enemy = gameState.castle[0];
@@ -205,8 +305,7 @@ export const useGame = () => {
 		if (effectiveAttack === 0) return;
 
 		const handValue = gameState.playerHand.reduce((sum, c) => sum + c.value, 0);
-		const newPhase: GamePhase =
-			handValue >= effectiveAttack ? "suffer_damage" : "defeat";
+		const newPhase: GamePhase = handValue >= effectiveAttack ? "suffer_damage" : "defeat";
 
 		const next: GameState = {
 			...gameState,
@@ -217,6 +316,7 @@ export const useGame = () => {
 		persist(next);
 	};
 
+	// ─── Confirmar descarte ───────────────────────────────────────────────────
 	const confirmDiscard = () => {
 		if (gameState.phase !== "suffer_damage") return;
 
@@ -236,38 +336,52 @@ export const useGame = () => {
 		setPlayError(null);
 		setSelectedIds(new Set());
 
+		const newHand = gameState.playerHand.filter((c) => !selectedIds.has(c.id));
+		const newDiscard = [...gameState.discardPile, ...selected];
+		const newStats: GameStats = {
+			...gameState.stats,
+			discardedCards: [...gameState.stats.discardedCards, ...selected],
+		};
+
+		if (newHand.length === 0) {
+			const emptyResolution = resolveEmptyHand(gameState, gameState.tavernDeck, newDiscard);
+			const next: GameState = {
+				...gameState,
+				playerHand: emptyResolution.playerHand,
+				tavernDeck: emptyResolution.tavernDeck,
+				discardPile: emptyResolution.discardPile,
+				pendingDamage: 0,
+				phase: emptyResolution.phase,
+				jestersAvailable: emptyResolution.jestersAvailable,
+				jestersUsed: emptyResolution.jestersUsed,
+				stats: newStats,
+			};
+			setGameState(next);
+			persist(next);
+			return;
+		}
+
 		const next: GameState = {
 			...gameState,
-			playerHand: gameState.playerHand.filter((c) => !selectedIds.has(c.id)),
-			discardPile: [...gameState.discardPile, ...selected],
+			playerHand: newHand,
+			discardPile: newDiscard,
 			pendingDamage: 0,
 			phase: "player_turn",
+			stats: newStats,
 		};
 		setGameState(next);
 		persist(next);
 	};
 
+	// ─── Ordenação ────────────────────────────────────────────────────────────
 	const RANK_ORDER: Record<string, number> = {
-		Jester: 0,
-		A: 1,
-		"2": 2,
-		"3": 3,
-		"4": 4,
-		"5": 5,
-		"6": 6,
-		"7": 7,
-		"8": 8,
-		"9": 9,
-		"10": 10,
-		J: 11,
-		Q: 12,
-		K: 13,
+		Jester: 0, A: 1,
+		"2": 2, "3": 3, "4": 4, "5": 5, "6": 6,
+		"7": 7, "8": 8, "9": 9, "10": 10,
+		J: 11, Q: 12, K: 13,
 	};
 	const SUIT_ORDER: Record<string, number> = {
-		hearts: 0,
-		diamonds: 1,
-		clubs: 2,
-		spades: 3,
+		hearts: 0, diamonds: 1, clubs: 2, spades: 3,
 	};
 
 	const sortHand = () => {
@@ -276,9 +390,7 @@ export const useGame = () => {
 			playerHand: [...prev.playerHand].sort((a, b) => {
 				const rankDiff = (RANK_ORDER[a.rank] ?? 0) - (RANK_ORDER[b.rank] ?? 0);
 				if (rankDiff !== 0) return rankDiff;
-				return (
-					(SUIT_ORDER[a.suit ?? ""] ?? 0) - (SUIT_ORDER[b.suit ?? ""] ?? 0)
-				);
+				return (SUIT_ORDER[a.suit ?? ""] ?? 0) - (SUIT_ORDER[b.suit ?? ""] ?? 0);
 			}),
 		}));
 	};
@@ -286,11 +398,9 @@ export const useGame = () => {
 	const sortHandByClass = () => {
 		setGameState((prev) => ({
 			...prev,
-			playerHand: [...prev.playerHand].sort((a, b) => {
-				const suitDiff =
-					(SUIT_ORDER[a.suit ?? ""] ?? 0) - (SUIT_ORDER[b.suit ?? ""] ?? 0);
-				return suitDiff;
-			}),
+			playerHand: [...prev.playerHand].sort((a, b) =>
+				(SUIT_ORDER[a.suit ?? ""] ?? 0) - (SUIT_ORDER[b.suit ?? ""] ?? 0),
+			),
 		}));
 	};
 
@@ -302,15 +412,11 @@ export const useGame = () => {
 		persist(next);
 	};
 
-	// ─── Derivados ──────────────────────────────────────────────────────────────
-	const selectedCards = gameState.playerHand.filter((c) =>
-		selectedIds.has(c.id),
-	);
+	// ─── Derivados ────────────────────────────────────────────────────────────
+	const selectedCards = gameState.playerHand.filter((c) => selectedIds.has(c.id));
 	const selectedTotal = selectedCards.reduce((sum, c) => sum + c.value, 0);
 	const currentEnemy = gameState.castle[0] ?? null;
-	const currentHP = currentEnemy
-		? currentEnemy.health - gameState.currentDamage
-		: 0;
+	const currentHP = currentEnemy ? currentEnemy.health - gameState.currentDamage : 0;
 	const effectiveAttack = currentEnemy
 		? Math.max(0, currentEnemy.attack - gameState.spadesShield)
 		: 0;
@@ -329,6 +435,7 @@ export const useGame = () => {
 		playSelected,
 		yieldTurn,
 		confirmDiscard,
+		useJester,
 		sortHand,
 		sortHandByClass,
 		resetGame,

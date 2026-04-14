@@ -35,6 +35,7 @@ const es: Translations = {
     play: "Jugar",
     yield: "Ceder",
     discard: "Descartar ({{current}}/{{needed}})",
+    discard_label: "Descartar",
     newGame: "Nueva partida",
   },
   hand: {
@@ -100,6 +101,17 @@ const es: Translations = {
   defeat: {
     message: "El reino ha caído",
     newGame: "Nueva partida",
+    stats: {
+      time: "Tiempo",
+      turns: "Turnos",
+      enemies: "Enemigos derrotados",
+      discarded: "Cartas descartadas",
+    },
+  },
+  settings: {
+    title: "Configuración",
+    restart: "Reiniciar partida",
+    exit: "Salir al inicio",
   },
   victory: {
     title: "¡Victoria!",

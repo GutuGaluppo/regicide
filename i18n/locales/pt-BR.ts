@@ -33,6 +33,7 @@ const ptBR = {
     play: "Jogar",
     yield: "Ceder",
     discard: "Descartar ({{current}}/{{needed}})",
+    discard_label: "Descartar",
     newGame: "Novo jogo",
   },
   hand: {
@@ -98,6 +99,17 @@ const ptBR = {
   defeat: {
     message: "O reino caiu",
     newGame: "Novo jogo",
+    stats: {
+      time: "Tempo",
+      turns: "Turnos",
+      enemies: "Inimigos derrotados",
+      discarded: "Cartas descartadas",
+    },
+  },
+  settings: {
+    title: "Configurações",
+    restart: "Reiniciar partida",
+    exit: "Sair para o início",
   },
   victory: {
     title: "Vitória!",
