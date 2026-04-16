@@ -1,8 +1,21 @@
-import { Enemy, GameStats } from "@/data/types";
+import { Card, Enemy, GameStats } from "@/data/types";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { View } from "react-native";
+import { EnemyAccordionItem } from "./EnemyAccordionItem";
 import { StatItem } from "./StatItem";
 import { styles } from "./StatsPanel.styles";
+
+const HOURGLASS = require("@/assets/icons/hourglass.png");
+const SWORD = require("@/assets/icons/sword_outlined.png");
+const SKULL = require("@/assets/icons/skull.png");
+const SHIELD = require("@/assets/icons/shield.png");
+
+const SUIT_SYMBOL: Record<string, string> = {
+	hearts: "♥",
+	diamonds: "♦",
+	clubs: "♣",
+	spades: "♠",
+};
 
 const formatTime = (ms: number): string => {
 	const totalSec = Math.floor(ms / 1000);
@@ -14,58 +27,50 @@ const formatTime = (ms: number): string => {
 export const StatsPanel = ({
 	stats,
 	defeatedEnemies,
+	playerHand,
 }: {
 	stats: GameStats;
 	defeatedEnemies: Enemy[];
+	playerHand?: Card[];
 }) => {
 	const { t } = useTranslation();
 	const elapsed = Date.now() - stats.startTime;
 
-	const SUIT_SYMBOL: Record<string, string> = {
-		hearts: "♥",
-		diamonds: "♦",
-		clubs: "♣",
-		spades: "♠",
-	};
-
 	return (
 		<View style={styles.panel}>
-			<View style={styles.row}>
-				<StatItem
-					icon="⏱"
-					label={t("defeat.stats.time")}
-					value={formatTime(elapsed)}
-				/>
-				<StatItem
-					icon="⚔"
-					label={t("defeat.stats.turns")}
-					value={String(stats.turnsPlayed)}
-				/>
-				<StatItem
-					icon="💀"
-					label={t("defeat.stats.enemies")}
-					value={String(defeatedEnemies.length)}
-				/>
-				<StatItem
-					icon="🗑"
-					label={t("defeat.stats.discarded")}
-					value={String(stats.discardedCards.length)}
-				/>
+			<View style={styles.statList}>
+				<StatItem icon={HOURGLASS} label={t("defeat.stats.time")} value={formatTime(elapsed)} />
+				<StatItem icon={SWORD} label={t("defeat.stats.turns")} value={String(stats.turnsPlayed)} />
+				<StatItem icon={SKULL} label={t("defeat.stats.enemies")} value={String(defeatedEnemies.length)} />
+				<StatItem icon={SHIELD} label={t("defeat.stats.discarded")} value={String(stats.discardedCards.length)} />
 			</View>
-			{defeatedEnemies.length > 0 && (
-				<ScrollView
-					horizontal
-					showsHorizontalScrollIndicator={false}
-					style={styles.killList}
-				>
-					{defeatedEnemies.map((e) => (
-						<View key={e.id} style={styles.killChip}>
-							<Text style={styles.killText}>
-								{SUIT_SYMBOL[e.suit]} {e.rank}
-							</Text>
-						</View>
+
+			{stats.enemyKills.length > 0 && (
+				<View style={{ marginTop: 4 }}>
+					{stats.enemyKills.map(({ enemy, allCards }) => (
+						<EnemyAccordionItem
+							key={enemy.id}
+							enemy={enemy}
+							cards={allCards}
+							label={`${SUIT_SYMBOL[enemy.suit] ?? ""} ${enemy.rank}`}
+							emptyLabel={t("defeat.stats.noCards")}
+						/>
 					))}
-				</ScrollView>
+					<EnemyAccordionItem
+						sectionIcon={SHIELD}
+						cards={stats.discardedCards}
+						label={t("defeat.stats.discardPile")}
+						emptyLabel={t("defeat.stats.noCards")}
+					/>
+					{playerHand !== undefined && (
+						<EnemyAccordionItem
+							sectionIcon={SKULL}
+							cards={playerHand}
+							label={t("defeat.stats.hand")}
+							emptyLabel={t("defeat.stats.noCards")}
+						/>
+					)}
+				</View>
 			)}
 		</View>
 	);

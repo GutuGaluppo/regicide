@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Image, ImageSourcePropType, Text, View } from "react-native";
 import { styles } from "./StatsPanel.styles";
 
 export const StatItem = ({
@@ -6,12 +6,12 @@ export const StatItem = ({
 	label,
 	value,
 }: {
-	icon: string;
+	icon: ImageSourcePropType;
 	label: string;
 	value: string;
 }) => (
 	<View style={styles.item}>
-		<Text style={styles.itemIcon}>{icon}</Text>
+		<Image source={icon} style={styles.itemIcon} resizeMode="contain" />
 		<Text style={styles.itemValue}>{value}</Text>
 		<Text style={styles.itemLabel}>{label}</Text>
 	</View>
