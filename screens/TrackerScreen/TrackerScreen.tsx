@@ -1,7 +1,7 @@
 import MagicShield from "@/assets/icons/shield.png";
 import SkullIcon from "@/assets/icons/skull.png";
 import { CardSelectionInfo } from "@/components/AttackInput/AttackInput.constants";
-import { AttackControls } from "@/components/AttackControls";
+import { AttackFooter } from "@/components/AttackFooter";
 import { GameModal } from "@/components/GameModal";
 import { NumberSprite } from "@/components/NumberSprite";
 import { ProgressRing } from "@/components/ProgressRing";
@@ -278,7 +278,7 @@ export const TrackerScreen = () => {
 
 				{/* ── Footer (fixed) ── */}
 				<View style={styles.footer}>
-					<AttackControls
+					<AttackFooter
 						enemy={currentEnemy}
 						jesterActive={isJesterActive}
 						onApply={(suit, rank) => {
