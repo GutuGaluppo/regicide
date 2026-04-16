@@ -1,3 +1,4 @@
+import { getEnemyName } from "@/data/images";
 import { Card, Enemy, GameStats } from "@/data/types";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
@@ -9,13 +10,6 @@ const HOURGLASS = require("@/assets/icons/hourglass.png");
 const SWORD = require("@/assets/icons/sword_outlined.png");
 const SKULL = require("@/assets/icons/skull.png");
 const SHIELD = require("@/assets/icons/shield.png");
-
-const SUIT_SYMBOL: Record<string, string> = {
-	hearts: "♥",
-	diamonds: "♦",
-	clubs: "♣",
-	spades: "♠",
-};
 
 const formatTime = (ms: number): string => {
 	const totalSec = Math.floor(ms / 1000);
@@ -47,12 +41,13 @@ export const StatsPanel = ({
 
 			{stats.enemyKills.length > 0 && (
 				<View style={{ marginTop: 4 }}>
-					{stats.enemyKills.map(({ enemy, allCards }) => (
+					{stats.enemyKills.map(({ enemy, allCards, discardedCards }) => (
 						<EnemyAccordionItem
 							key={enemy.id}
 							enemy={enemy}
-							cards={allCards}
-							label={`${SUIT_SYMBOL[enemy.suit] ?? ""} ${enemy.rank}`}
+							attackCards={allCards}
+							discardedCards={discardedCards ?? []}
+							label={getEnemyName(enemy.rank, enemy.suit)}
 							emptyLabel={t("defeat.stats.noCards")}
 						/>
 					))}

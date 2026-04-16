@@ -48,30 +48,30 @@ export const styles = StyleSheet.create({
 	accordionHeader: {
 		flexDirection: "row",
 		alignItems: "center",
-		gap: 10,
-		paddingVertical: 8,
+		gap: 12,
+		paddingVertical: 12,
 	},
 	accordionThumb: {
-		width: 36,
-		height: 50,
-		borderRadius: 4,
+		width: 44,
+		height: 62,
+		borderRadius: 5,
 	},
 	accordionLabel: {
 		flex: 1,
 		color: "#F1F5F9",
-		fontSize: 13,
-		fontWeight: "600",
+		fontSize: 15,
+		fontWeight: "700",
 	},
 	accordionCount: {
 		color: "#64748B",
-		fontSize: 12,
+		fontSize: 13,
 		fontWeight: "700",
-		minWidth: 20,
+		minWidth: 22,
 		textAlign: "right",
 	},
 	accordionContent: {
-		paddingBottom: 12,
-		paddingLeft: 46,
+		paddingBottom: 14,
+		gap: 10,
 	},
 	accordionEmpty: {
 		color: "#475569",
@@ -86,8 +86,8 @@ export const styles = StyleSheet.create({
 		gap: 6,
 	},
 	cardImage: {
-		width: 46,
-		height: 64,
+		width: 52,
+		height: 73,
 		borderRadius: 4,
 	},
 
@@ -96,5 +96,33 @@ export const styles = StyleSheet.create({
 		width: 36,
 		height: 36,
 		opacity: 0.7,
+	},
+
+	// ─── Card sections (attack / discard) inside enemy accordion ─────────────
+	cardSection: {
+		gap: 8,
+	},
+	cardSectionHeader: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+	},
+	cardSectionIcon: {
+		width: 16,
+		height: 16,
+		opacity: 0.7,
+	},
+	cardSectionTitle: {
+		flex: 1,
+		color: "#94A3B8",
+		fontSize: 11,
+		fontWeight: "600",
+		letterSpacing: 0.5,
+		textTransform: "uppercase",
+	},
+	cardSectionCount: {
+		color: "#475569",
+		fontSize: 11,
+		fontWeight: "700",
 	},
 });
