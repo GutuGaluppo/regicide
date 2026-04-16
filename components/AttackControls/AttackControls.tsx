@@ -12,6 +12,7 @@ import {
 	SuitRank,
 	SUITS,
 } from "@/components/AttackInput/AttackInput.constants";
+import { ComboBar } from "@/components/ComboBar";
 import { styles } from "./AttackControls.styles";
 
 interface AttackControlsProps {
@@ -173,6 +174,15 @@ export const AttackControls = ({
 					);
 				})}
 			</View>
+
+			{/* Combo bar */}
+			<ComboBar
+				info={
+					selectedSuit && selectedRank && powerPreview
+						? { suit: selectedSuit, rank: selectedRank, damage, shieldAdded, powerPreview, immune }
+						: null
+				}
+			/>
 
 			{/* Card deck */}
 			{isJester ? (
