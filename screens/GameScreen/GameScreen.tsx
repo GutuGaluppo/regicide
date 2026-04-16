@@ -1,4 +1,6 @@
 import cardBack from "@/assets/images/cardBack.png";
+import { useAudio } from "@/contexts/AudioContext";
+import { useSoundtrack } from "@/hooks/useSoundtrack";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CastleFooter } from "@/components/CastleFooter";
 import { DefeatScreen } from "@/components/DefeatScreen";
@@ -11,7 +13,7 @@ import { VictoryScreen } from "@/components/VictoryScreen";
 import { useGame } from "@/hooks/useGame";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Image,
@@ -40,6 +42,8 @@ const StatusCard = ({ count, label }: { count: number; label: string }) => (
 
 export const GameScreen = () => {
 	const { t } = useTranslation();
+	const { playTap, playShuffleCards } = useAudio();
+	useSoundtrack(require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource);
 	const {
 		gameState,
 		selectedIds,
@@ -48,7 +52,10 @@ export const GameScreen = () => {
 		currentHP,
 		effectiveAttack,
 		selectedTotal,
+		previewDamage,
+		previewShieldGain,
 		defeatedEnemies,
+		cardsDrawnSignal,
 		toggleCard,
 		playSelected,
 		confirmDiscard,
@@ -57,6 +64,12 @@ export const GameScreen = () => {
 		sortHandByClass,
 		resetGame,
 	} = useGame();
+
+	useEffect(() => {
+		if (cardsDrawnSignal === 0) return;
+		playShuffleCards();
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [cardsDrawnSignal]);
 
 	const {
 		phase,
@@ -88,6 +101,7 @@ export const GameScreen = () => {
 				enemy={currentEnemy}
 				stats={gameState.stats}
 				defeatedEnemies={defeatedEnemies}
+				playerHand={gameState.playerHand}
 				onReset={resetGame}
 			/>
 		);
@@ -104,13 +118,13 @@ export const GameScreen = () => {
 				{/* Header */}
 				<View style={styles.header}>
 					<TouchableOpacity
-						onPress={() => router.back()}
+						onPress={() => { playTap(); router.back(); }}
 						style={styles.headerBtn}
 					>
 						<Ionicons name="chevron-back" size={26} color="#F1F5F9" />
 					</TouchableOpacity>
 					<TouchableOpacity
-						onPress={() => setSettingsVisible(true)}
+						onPress={() => { playTap(); setSettingsVisible(true); }}
 						style={styles.headerBtn}
 					>
 						<Ionicons name="settings-outline" size={24} color="#94A3B8" />
@@ -150,6 +164,8 @@ export const GameScreen = () => {
 								jestersUsed={gameState.jestersUsed}
 								onUseJester={phase === "player_turn" ? useJester : undefined}
 								onPress={() => setModalVisible(true)}
+								previewDamage={phase === "player_turn" ? previewDamage : 0}
+								previewShieldGain={phase === "player_turn" ? previewShieldGain : 0}
 							/>
 						)}
 				</View>

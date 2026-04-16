@@ -1,3 +1,4 @@
+import { useAudio } from "@/contexts/AudioContext";
 import MagicShield from "@/assets/icons/shield.png";
 import { getCardImage, getHandCardImage } from "@/data/images";
 import { Card, Enemy } from "@/data/types";
@@ -20,6 +21,8 @@ export const EnemyCard = ({
 	jestersUsed,
 	onUseJester,
 	onPress,
+	previewDamage = 0,
+	previewShieldGain = 0,
 }: {
 	enemy: Enemy;
 	currentHP: number;
@@ -31,10 +34,19 @@ export const EnemyCard = ({
 	jestersUsed?: number;
 	onUseJester?: () => void;
 	onPress?: () => void;
+	previewDamage?: number;
+	previewShieldGain?: number;
 }) => {
 	const { t } = useTranslation();
-	const hpPercent = Math.max(0, currentHP / enemy.health);
-	const attackPercent = Math.min(1, effectiveAttack / enemy.attack);
+	const { playTap } = useAudio();
+
+	const displayHP = previewDamage > 0 ? Math.max(0, currentHP - previewDamage) : currentHP;
+	const displayAttack = previewShieldGain > 0
+		? Math.max(0, effectiveAttack - previewShieldGain)
+		: effectiveAttack;
+
+	const hpPercent = Math.max(0, displayHP / enemy.health);
+	const attackPercent = Math.min(1, displayAttack / enemy.attack);
 	const hpColor =
 		hpPercent > 0.5 ? "#22C55E" : hpPercent > 0.25 ? "#FBBF24" : "#EF4444";
 	const shielded = effectiveAttack < enemy.attack;
@@ -171,7 +183,7 @@ export const EnemyCard = ({
 
 	return (
 		<TouchableOpacity
-			onPress={onPress}
+			onPress={onPress ? () => { playTap(); onPress(); } : undefined}
 			activeOpacity={onPress ? 0.85 : 1}
 			disabled={!onPress}
 		>
@@ -229,7 +241,7 @@ export const EnemyCard = ({
 							color="#b8860a"
 						>
 							<NumberSprite
-								value={effectiveAttack}
+								value={displayAttack}
 								type="deckstatus"
 								height={32}
 							/>
@@ -299,7 +311,7 @@ export const EnemyCard = ({
 							strokeWidth={6}
 							color={hpColor}
 						>
-							<NumberSprite value={currentHP} type="health" height={32} />
+							<NumberSprite value={displayHP} type="health" height={32} />
 						</ProgressRing>
 						<Text style={styles.badgeLabel}>{t("enemy.health")}</Text>
 					</View>
