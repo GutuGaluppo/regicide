@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "space-between",
-		paddingTop: 52,
+		paddingTop: 12,
 		paddingHorizontal: 12,
 		paddingBottom: 4,
 	},
@@ -55,6 +55,7 @@ export const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
+		paddingTop: 90,
 	},
 	error: {
 		color: "#FCA5A5",

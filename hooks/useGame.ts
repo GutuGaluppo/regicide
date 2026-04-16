@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createTavernDeck, HAND_SIZE } from "../data/deck";
 import { createCastleDeck } from "../data/enemies";
-import { Card, Enemy, GamePhase, GameState, GameStats } from "../data/types";
+import { Card, Enemy, GamePhase, GameState, GameStats, Suit } from "../data/types";
 import { loadGame, saveGame } from "../services/storage";
 import { enemyToCard, resolvePlay, validatePlay } from "../utils/gameLogic";
 import { shuffle } from "../utils/shuffle";
@@ -79,6 +79,8 @@ export const useGame = () => {
 	const [gameState, setGameState] = useState<GameState>(createInitialState);
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const [playError, setPlayError] = useState<string | null>(null);
+	const [cardsDrawnSignal, setCardsDrawnSignal] = useState(0);
+	const bumpDraw = () => setCardsDrawnSignal((s) => s + 1);
 
 	useEffect(() => {
 		let active = true;
@@ -173,6 +175,10 @@ export const useGame = () => {
 			return;
 		}
 
+		// Detectar compra de cartas via poder de Ouros
+		const handSizeAfterPlay = gameState.playerHand.length - selected.length;
+		if (result.newHand.length > handSizeAfterPlay) bumpDraw();
+
 		const newCurrentDamage = gameState.currentDamage + result.totalDamage;
 		const allPlayedCards = [...gameState.playedThisFight, ...selected];
 
@@ -225,6 +231,8 @@ export const useGame = () => {
 				)
 				: null;
 
+			if (emptyResolution && emptyResolution.playerHand.length > 0) bumpDraw();
+
 			const next: GameState = {
 				...gameState,
 				castle: restCastle,
@@ -255,6 +263,8 @@ export const useGame = () => {
 			const emptyResolution = result.newHand.length === 0
 				? resolveEmptyHand(gameState, result.newTavernDeck, result.newDiscardPile)
 				: null;
+
+			if (emptyResolution && emptyResolution.playerHand.length > 0) bumpDraw();
 
 			const next: GameState = {
 				...gameState,
@@ -344,6 +354,7 @@ export const useGame = () => {
 
 		if (newHand.length === 0) {
 			const emptyResolution = resolveEmptyHand(gameState, gameState.tavernDeck, newDiscard);
+			if (emptyResolution.playerHand.length > 0) bumpDraw();
 			const next: GameState = {
 				...gameState,
 				playerHand: emptyResolution.playerHand,
@@ -420,6 +431,27 @@ export const useGame = () => {
 		? Math.max(0, currentEnemy.attack - gameState.spadesShield)
 		: 0;
 
+	// ─── Preview de seleção (antes de jogar) ──────────────────────────────────
+	let previewDamage = 0;
+	let previewShieldGain = 0;
+	if (currentEnemy && selectedCards.length > 0 && gameState.phase === "player_turn") {
+		const isJesterSelected = selectedCards.some((c) => c.rank === "Jester");
+		if (!isJesterSelected) {
+			const attackValue = selectedTotal;
+			const suitsPlayed = new Set(
+				selectedCards.map((c) => c.suit).filter((s): s is Suit => s !== null),
+			);
+			const isImmune = (s: Suit) => !gameState.jesterActive && currentEnemy.suit === s;
+			let clubsMultiplier = 1;
+			for (const s of suitsPlayed) {
+				if (isImmune(s)) continue;
+				if (s === "clubs") clubsMultiplier = 2;
+				if (s === "spades") previewShieldGain = attackValue;
+			}
+			previewDamage = attackValue * clubsMultiplier;
+		}
+	}
+
 	return {
 		gameState,
 		selectedIds,
@@ -429,7 +461,10 @@ export const useGame = () => {
 		effectiveAttack,
 		selectedCards,
 		selectedTotal,
+		previewDamage,
+		previewShieldGain,
 		defeatedEnemies: gameState.defeatedEnemies,
+		cardsDrawnSignal,
 		toggleCard,
 		playSelected,
 		yieldTurn,
