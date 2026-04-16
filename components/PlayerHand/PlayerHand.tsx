@@ -6,6 +6,7 @@ import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+	Image,
 	LayoutAnimation,
 	ScrollView,
 	Text,
@@ -29,6 +30,8 @@ export const PlayerHand = ({
 	onSort,
 	onSortByClass,
 	onDiscard,
+	onPlay,
+	playDisabled,
 }: {
 	hand: Card[];
 	selectedIds: Set<string>;
@@ -41,12 +44,14 @@ export const PlayerHand = ({
 	onSort?: () => void;
 	onSortByClass?: () => void;
 	onDiscard?: () => void;
+	onPlay?: () => void;
+	playDisabled?: boolean;
 }) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
 	const [detailCard, setDetailCard] = useState<Card | null>(null);
 	const interactive = phase === "player_turn" || phase === "suffer_damage";
-	const { liftY } = useCardSize();
+	const { w, h, mx, liftY } = useCardSize();
 
 	const selectedCards = hand.filter((c) => selectedIds.has(c.id));
 	const compatibleIds =
@@ -81,7 +86,10 @@ export const PlayerHand = ({
 			{phase === "suffer_damage" && pending > 0 && onDiscard ? (
 				<TouchableOpacity
 					style={[styles.discardBtn, enough && styles.discardBtnActive]}
-					onPress={() => { playTap(); onDiscard?.(); }}
+					onPress={() => {
+						playTap();
+						onDiscard?.();
+					}}
 					disabled={!enough}
 					activeOpacity={0.8}
 				>
@@ -94,24 +102,53 @@ export const PlayerHand = ({
 				</TouchableOpacity>
 			) : (
 				<View style={styles.labelRow}>
-					{onSort && phase === "player_turn" && (
+					{phase === "player_turn" && onPlay && (
 						<TouchableOpacity
-							onPress={handleSort}
-							style={styles.sortBtn}
-							activeOpacity={0.7}
+							style={[
+								styles.playBtn,
+								{ width: w, height: h, marginHorizontal: mx },
+								playDisabled && styles.playBtnDisabled,
+							]}
+							onPress={() => {
+								playTap();
+								onPlay();
+							}}
+							disabled={playDisabled}
+							activeOpacity={0.8}
 						>
-							<Text style={styles.sortText}>{t("hand.sort")}</Text>
+							<View style={styles.playBtnInner}>
+								<Image
+									source={require("@/assets/icons/sword_outlined.png")}
+									style={{
+										width: 25,
+										height: 35,
+										transform: [{ rotate: "45deg" }],
+									}}
+									resizeMode="contain"
+								/>
+							</View>
 						</TouchableOpacity>
 					)}
-					{onSortByClass && phase === "player_turn" && (
-						<TouchableOpacity
-							onPress={handleSortByClass}
-							style={styles.sortBtn}
-							activeOpacity={0.7}
-						>
-							<Text style={styles.sortText}>{t("hand.sortByClass")}</Text>
-						</TouchableOpacity>
-					)}
+					<View style={{ marginLeft: "auto", gap: 4 }}>
+						{onSort && phase === "player_turn" && (
+							<TouchableOpacity
+								onPress={handleSort}
+								style={styles.sortBtn}
+								activeOpacity={0.7}
+							>
+								<Text style={styles.sortText}>{t("hand.sort")}</Text>
+							</TouchableOpacity>
+						)}
+						{onSortByClass && phase === "player_turn" && (
+							<TouchableOpacity
+								onPress={handleSortByClass}
+								style={styles.sortBtn}
+								activeOpacity={0.7}
+							>
+								<Text style={styles.sortText}>{t("hand.sortByClass")}</Text>
+							</TouchableOpacity>
+						)}
+					</View>
 				</View>
 			)}
 			<ScrollView

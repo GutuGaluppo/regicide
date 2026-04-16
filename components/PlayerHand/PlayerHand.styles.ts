@@ -9,7 +9,6 @@ export const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		gap: 10,
-		marginBottom: 6,
 		paddingHorizontal: 12,
 	},
 	label: {
@@ -18,16 +17,14 @@ export const styles = StyleSheet.create({
 		textAlign: "center",
 	},
 	sortBtn: {
-		paddingVertical: 3,
+		paddingVertical: 6,
 		paddingHorizontal: 10,
 		borderRadius: 8,
-		backgroundColor: "rgba(100,116,139,0.2)",
-		borderWidth: 1,
-		borderColor: "rgba(100,116,139,0.4)",
+		backgroundColor: "rgba(221, 235, 255, 0.69)",
 	},
 	sortText: {
-		color: "#94A3B8",
-		fontSize: 12,
+		color: "#191a1c",
+		fontSize: 14,
 		fontWeight: "600",
 	},
 	scroll: {
@@ -70,5 +67,22 @@ export const styles = StyleSheet.create({
 		fontSize: 18,
 		fontWeight: "600",
 		marginHorizontal: 2,
+	},
+	playBtn: {
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	playBtnDisabled: {
+		opacity: 0.35,
+	},
+	playBtnInner: {
+		width: 40,
+		height: 40,
+		backgroundColor: "#67826E",
+		borderWidth: 2,
+		borderColor: "#799881",
+		borderRadius: 10,
+		justifyContent: "center",
+		alignItems: "center",
 	},
 });
