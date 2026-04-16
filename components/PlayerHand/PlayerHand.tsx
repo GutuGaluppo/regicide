@@ -118,7 +118,7 @@ export const PlayerHand = ({
 						>
 							<View style={styles.playBtnInner}>
 								<Image
-									source={require("@/assets/icons/sword_outlined.png")}
+									source={require("@/assets/icons/sword.png")}
 									style={{
 										width: 25,
 										height: 35,

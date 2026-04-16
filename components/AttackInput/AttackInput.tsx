@@ -108,7 +108,7 @@ export const AttackInput = ({
 					<View style={styles.actionBtnWrapper}>
 						<Image
 							style={{ width: 25, height: 35, transform: "rotate(45deg)" }}
-							source={require("@/assets/icons/sword_outlined.png")}
+							source={require("@/assets/icons/sword.png")}
 						/>
 					</View>
 				</TouchableOpacity>
