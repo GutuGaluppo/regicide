@@ -106,4 +106,13 @@ export const styles = StyleSheet.create({
 	cardThumbDeck: {
 		opacity: 0.7,
 	},
+	cardBtnSelected: {
+		borderColor: "#FBBF24",
+	},
+	cardBtnDimmed: {
+		opacity: 0.25,
+	},
+	cardBtnLifted: {
+		transform: [{ translateY: -10 }],
+	},
 });
