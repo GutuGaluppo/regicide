@@ -134,6 +134,17 @@ const es: Translations = {
     confirmDefeat: "💀 Confirmar derrota",
     defeatEnemy: "Derrotar enemigo",
   },
+  modal: {
+    ok: "Entendido",
+    immuneWarning: {
+      title: "¡Enemigo inmune!",
+      body: "Este enemigo es inmune al poder de este palo. El daño se aplica igual, pero el poder especial no tiene efecto.",
+    },
+    hint: {
+      title: "Pista",
+      body: "Selecciona un palo y una carta para atacar. Tréboles duplican el daño, Corazones curan el descarte, Diamantes roban cartas y Picas acumulan escudo.",
+    },
+  },
   home: {
     play: {
       title: "JUGAR",

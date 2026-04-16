@@ -132,6 +132,17 @@ const ptBR = {
     confirmDefeat: "💀 Confirmar derrota",
     defeatEnemy: "Derrotar inimigo",
   },
+  modal: {
+    ok: "Entendido",
+    immuneWarning: {
+      title: "Inimigo imune!",
+      body: "Este inimigo é imune ao poder deste naipe. O dano ainda é aplicado, mas o poder especial não tem efeito.",
+    },
+    hint: {
+      title: "Dica",
+      body: "Selecione um naipe e uma carta para atacar. Cartas de Paus dobram o dano, Copas curam o descarte, Ouros compram cartas e Espadas acumulam escudo.",
+    },
+  },
   home: {
     play: {
       title: "PLAY",

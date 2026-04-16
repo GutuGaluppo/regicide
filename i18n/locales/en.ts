@@ -134,6 +134,17 @@ const en: Translations = {
     confirmDefeat: "💀 Confirm defeat",
     defeatEnemy: "Defeat enemy",
   },
+  modal: {
+    ok: "Got it",
+    immuneWarning: {
+      title: "Enemy immune!",
+      body: "This enemy is immune to this suit's power. Damage still applies, but the special power has no effect.",
+    },
+    hint: {
+      title: "Hint",
+      body: "Select a suit and a card to attack. Clubs double damage, Hearts heal the discard, Diamonds draw cards, and Spades accumulate shield.",
+    },
+  },
   home: {
     play: {
       title: "PLAY",

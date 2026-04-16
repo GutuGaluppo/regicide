@@ -27,6 +27,7 @@ import {
 	View,
 } from "react-native";
 import { AttackControls } from "@/components/AttackControls";
+import { GameModal } from "@/components/GameModal";
 import { SuitTracker } from "@/components/SuitTracker";
 import { SHIFT_PER_ENEMY_EXPORT, styles } from "./TrackerScreen.styles";
 import { ModalState, ScreenState } from "./TrackerScreen.types";
@@ -64,8 +65,6 @@ export const TrackerScreen = () => {
 	const [screenState, setScreenState] = useState<ScreenState>(
 		currentEnemy ? "IN_COMBAT" : "ENEMY_SELECTION",
 	);
-	// modalState is read by GameModal in a subsequent commit
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [modalState, setModalState] = useState<ModalState>(null);
 
 	const previewHP = selectedCardInfo
@@ -322,6 +321,14 @@ export const TrackerScreen = () => {
 				visible={settingsVisible}
 				onClose={() => setSettingsVisible(false)}
 				onReset={resetTracker}
+			/>
+
+			<GameModal
+				modalState={modalState}
+				onClose={() => setModalState(null)}
+				enemy={currentEnemy}
+				currentHP={currentHP}
+				effectiveAttack={effectiveAttack}
 			/>
 		</View>
 	);
