@@ -26,6 +26,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { AttackControls } from "@/components/AttackControls";
 import { SuitTracker } from "@/components/SuitTracker";
 import { SHIFT_PER_ENEMY_EXPORT, styles } from "./TrackerScreen.styles";
 import { ModalState, ScreenState } from "./TrackerScreen.types";
@@ -274,6 +275,12 @@ export const TrackerScreen = () => {
 
 				{/* ── Footer (fixed) ── */}
 				<View style={styles.footer}>
+					<AttackControls
+						enemy={currentEnemy}
+						jesterActive={isJesterActive}
+						onApply={applyAttack}
+						onSelectionChange={setSelectedCardInfo}
+					/>
 					<DefeatFooter
 						phase={footerPhase}
 						enemies={footerEnemies}
