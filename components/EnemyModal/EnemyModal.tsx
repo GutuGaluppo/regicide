@@ -1,3 +1,4 @@
+import { useAudio } from "@/contexts/AudioContext";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -42,6 +43,7 @@ export const EnemyModal = ({
 	onClose: () => void;
 }) => {
 	const { t } = useTranslation();
+	const { playTap } = useAudio();
 	const hpPercent = Math.max(0, currentHP / enemy.health);
 	const attackPercent = Math.min(1, effectiveAttack / enemy.attack);
 	const hpColor =
@@ -111,7 +113,7 @@ export const EnemyModal = ({
 				<View style={styles.handle} />
 
 				{/* Close button */}
-				<TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
+				<TouchableOpacity style={styles.closeBtn} onPress={() => { playTap(); onClose(); }} activeOpacity={0.7}>
 					<Image source={CROWN_ICON} style={styles.closeIcon} resizeMode="contain" />
 				</TouchableOpacity>
 

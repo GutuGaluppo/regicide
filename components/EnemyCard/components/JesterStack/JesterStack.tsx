@@ -1,3 +1,4 @@
+import { useAudio } from "@/contexts/AudioContext";
 import React, { useEffect, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { JesterCard } from "./JesterCard";
@@ -14,6 +15,7 @@ export const JesterStack = ({
 	jesterActive: boolean;
 	onUseJester?: () => void;
 }) => {
+	const { playTap } = useAudio();
 	const prevUsed = useRef(jestersUsed);
 	const [flips, setFlips] = useState<[boolean, boolean]>([false, false]);
 
@@ -45,7 +47,7 @@ export const JesterStack = ({
 	return (
 		<TouchableOpacity
 			style={[styles.stack, jesterActive && styles.stackActive]}
-			onPress={jestersAvailable > 0 ? onUseJester : undefined}
+			onPress={jestersAvailable > 0 && onUseJester ? () => { playTap(); onUseJester(); } : undefined}
 			activeOpacity={jestersAvailable > 0 ? 0.75 : 1}
 			disabled={!onUseJester || jestersAvailable === 0}
 		>

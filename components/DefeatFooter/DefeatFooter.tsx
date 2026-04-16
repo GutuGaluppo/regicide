@@ -1,3 +1,4 @@
+import { useAudio } from "@/contexts/AudioContext";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import LetterX from "@/assets/icons/letter-x.png";
@@ -26,6 +27,7 @@ export const DefeatFooter = ({
 	currentEnemyId,
 	onSelect,
 }: DefeatFooterPropsType) => {
+	const { playTap } = useAudio();
 	const defeatedCount = enemies.filter((e) =>
 		defeatedIds.includes(e.id),
 	).length;
@@ -43,7 +45,7 @@ export const DefeatFooter = ({
 						<TouchableOpacity
 							key={enemy.id}
 							style={[styles.slot, isCurrent && styles.slotCurrent]}
-							onPress={() => !defeated && onSelect(enemy.id)}
+							onPress={() => { if (!defeated) { playTap(); onSelect(enemy.id); } }}
 							activeOpacity={defeated ? 1 : 0.7}
 							disabled={defeated}
 						>

@@ -1,3 +1,4 @@
+import { useAudio } from "@/contexts/AudioContext";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,6 +44,7 @@ const LAYER_W = SCREEN_W + SCREEN_W * 2;
 
 export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 	const { t } = useTranslation();
+	const { playTap } = useAudio();
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 	const slideAnim = useRef(new Animated.Value(40)).current;
 	const scaleAnim = useRef(new Animated.Value(0.85)).current;
@@ -92,14 +94,14 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 					<View style={styles.actions}>
 						<TouchableOpacity
 							style={styles.btnReset}
-							onPress={onReset}
+							onPress={() => { playTap(); onReset(); }}
 							activeOpacity={0.8}
 						>
 							<Text style={styles.btnResetText}>{t("victory.playAgain")}</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={styles.btnHome}
-							onPress={() => router.back()}
+							onPress={() => { playTap(); router.back(); }}
 							activeOpacity={0.8}
 						>
 							<Text style={styles.btnHomeText}>{t("victory.home")}</Text>

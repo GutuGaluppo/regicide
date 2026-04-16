@@ -1,3 +1,4 @@
+import { useAudio } from "@/contexts/AudioContext";
 import { Text, TouchableOpacity } from "react-native";
 import { styles } from "../ActionBar.styles";
 
@@ -12,6 +13,7 @@ export default function Btn({
 	variant?: "default" | "warning";
 	disabled?: boolean;
 }) {
+	const { playTap } = useAudio();
 	const bg = variant === "warning" ? "#D5B377" : "#67826E";
 	return (
 		<TouchableOpacity
@@ -20,7 +22,7 @@ export default function Btn({
 				{ backgroundColor: bg },
 				disabled && styles.btnDisabled,
 			]}
-			onPress={onPress}
+			onPress={() => { playTap(); onPress(); }}
 			disabled={disabled}
 			activeOpacity={0.8}
 		>
