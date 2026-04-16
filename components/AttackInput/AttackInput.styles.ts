@@ -59,9 +59,10 @@ export const styles = StyleSheet.create({
 	},
 	rankRow: {
 		marginHorizontal: "auto",
-		height: 90,
+		height: 100,
 		gap: 8,
-		paddingVertical: 4,
+		paddingTop: 14,
+		paddingBottom: 4,
 	},
 	rankBtn: {
 		width: 40,
@@ -104,6 +105,11 @@ export const styles = StyleSheet.create({
 	previewPower: {
 		color: "#94A3B8",
 		fontSize: 13,
+	},
+	applyRow: {
+		flexDirection: "row",
+		justifyContent: "center",
+		gap: 15,
 	},
 	applyBtn: {
 		borderRadius: 10,
@@ -157,9 +163,10 @@ export const styles = StyleSheet.create({
 	jesterRow: {
 		flexDirection: "row",
 		justifyContent: "center",
-		height: 90,
+		height: 100,
 		gap: 12,
-		paddingVertical: 4,
+		paddingTop: 14,
+		paddingBottom: 4,
 	},
 	rankHint: {
 		color: "#64748B",

@@ -56,7 +56,14 @@ export const AttackInput = ({
 			onSelectionChange?.(null);
 			return;
 		}
-		onSelectionChange?.({ suit, rank, damage, shieldAdded, powerPreview, immune });
+		onSelectionChange?.({
+			suit,
+			rank,
+			damage,
+			shieldAdded,
+			powerPreview,
+			immune,
+		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [suit, rank, damage, immune, powerPreview]);
 
@@ -90,16 +97,8 @@ export const AttackInput = ({
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.label}>Carta jogada</Text>
-			{/* Botão aplicar */}
-			<View
-				style={{
-					display: "flex",
-					flexDirection: "row",
-					marginHorizontal: "auto",
-					gap: 15,
-				}}
-			>
+			{/* Botões aplicar */}
+			<View style={styles.applyRow}>
 				<TouchableOpacity
 					style={[styles.applyBtn, !canApply && styles.applyDisabled]}
 					onPress={handleApply}
