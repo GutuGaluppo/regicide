@@ -36,6 +36,7 @@ const createInitialState = (): GameState => {
 		discardPile: [],
 		playerHand,
 		playedThisFight: [],
+		discardedThisFight: [],
 		currentDamage: 0,
 		spadesShield: 0,
 		jesterActive: false,
@@ -94,6 +95,7 @@ export const useGame = () => {
 						defeatedEnemies: saved.defeatedEnemies ?? [],
 						jestersAvailable: (saved as GameState).jestersAvailable ?? 2,
 						jestersUsed: (saved as GameState).jestersUsed ?? 0,
+						discardedThisFight: (saved as GameState).discardedThisFight ?? [],
 						stats: (saved as GameState).stats ?? emptyStats(),
 					} as GameState);
 			} catch {
@@ -198,7 +200,7 @@ export const useGame = () => {
 			const [, ...restCastle] = gameState.castle;
 			const defeatedStats: GameStats = {
 				...newStats,
-				enemyKills: [...newStats.enemyKills, { enemy, allCards: allPlayedCards }],
+				enemyKills: [...newStats.enemyKills, { enemy, allCards: allPlayedCards, discardedCards: gameState.discardedThisFight }],
 			};
 
 			if (restCastle.length === 0) {
@@ -210,6 +212,7 @@ export const useGame = () => {
 					tavernDeck: newTavern,
 					discardPile: newDiscard,
 					playedThisFight: [],
+					discardedThisFight: [],
 					currentDamage: 0,
 					spadesShield: 0,
 					jesterActive: false,
@@ -241,6 +244,7 @@ export const useGame = () => {
 				tavernDeck: emptyResolution ? emptyResolution.tavernDeck : newTavern,
 				discardPile: emptyResolution ? emptyResolution.discardPile : newDiscard,
 				playedThisFight: [],
+				discardedThisFight: [],
 				currentDamage: 0,
 				spadesShield: 0,
 				jesterActive: false,
@@ -347,6 +351,7 @@ export const useGame = () => {
 
 		const newHand = gameState.playerHand.filter((c) => !selectedIds.has(c.id));
 		const newDiscard = [...gameState.discardPile, ...selected];
+		const newDiscardedThisFight = [...gameState.discardedThisFight, ...selected];
 		const newStats: GameStats = {
 			...gameState.stats,
 			discardedCards: [...gameState.stats.discardedCards, ...selected],
@@ -360,6 +365,7 @@ export const useGame = () => {
 				playerHand: emptyResolution.playerHand,
 				tavernDeck: emptyResolution.tavernDeck,
 				discardPile: emptyResolution.discardPile,
+				discardedThisFight: newDiscardedThisFight,
 				pendingDamage: 0,
 				phase: emptyResolution.phase,
 				jestersAvailable: emptyResolution.jestersAvailable,
@@ -375,6 +381,7 @@ export const useGame = () => {
 			...gameState,
 			playerHand: newHand,
 			discardPile: newDiscard,
+			discardedThisFight: newDiscardedThisFight,
 			pendingDamage: 0,
 			phase: "player_turn",
 			stats: newStats,

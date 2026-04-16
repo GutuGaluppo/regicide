@@ -37,7 +37,7 @@ export interface GameStats {
 	turnsPlayed: number;
 	cardsPerTurn: Card[][];
 	discardedCards: Card[];
-	enemyKills: { enemy: Enemy; allCards: Card[] }[];
+	enemyKills: { enemy: Enemy; allCards: Card[]; discardedCards: Card[] }[];
 }
 
 export interface GameState {
@@ -47,6 +47,7 @@ export interface GameState {
 	discardPile: Card[];
 	playerHand: Card[];
 	playedThisFight: Card[]; // cartas jogadas contra o inimigo atual
+	discardedThisFight: Card[]; // cartas descartadas sofrendo dano do inimigo atual
 	currentDamage: number; // dano acumulado no inimigo atual
 	spadesShield: number; // redução de ataque acumulada por espadas
 	jesterActive: boolean; // imunidade do inimigo cancelada
