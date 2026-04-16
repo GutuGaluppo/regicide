@@ -13,9 +13,9 @@ import {
 	SUITS,
 } from "@/components/AttackInput/AttackInput.constants";
 import { ComboBar } from "@/components/ComboBar";
-import { styles } from "./AttackControls.styles";
+import { styles } from "./AttackFooter.styles";
 
-interface AttackControlsProps {
+interface AttackFooterProps {
 	enemy: Enemy | null;
 	jesterActive?: boolean;
 	onApply: (suit: Suit, rank: CardRank) => void;
@@ -26,13 +26,13 @@ interface AttackControlsProps {
 // Default suit to display when nothing is selected (cards shown but disabled)
 const DEFAULT_DISPLAY_SUIT: RegularSuit = "hearts";
 
-export const AttackControls = ({
+export const AttackFooter = ({
 	enemy,
 	jesterActive = false,
 	onApply,
 	onSelectionChange,
 	onImmuneWarning,
-}: AttackControlsProps) => {
+}: AttackFooterProps) => {
 	const { playTap } = useAudio();
 	const [selectedSuit, setSelectedSuit] = useState<Suit | null>(null);
 	const [selectedRank, setSelectedRank] = useState<SuitRank | "Jester" | null>(null);
