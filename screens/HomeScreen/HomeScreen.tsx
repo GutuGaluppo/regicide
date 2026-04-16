@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import i18n from "i18next";
+
+import { useAudio } from "@/contexts/AudioContext";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -36,9 +37,10 @@ const NAV_ITEMS = [
 ] as const;
 
 export const HomeScreen = () => {
-	const { t } = useTranslation();
+	const { t, i18n: i18nHook } = useTranslation();
+	const { playTap } = useAudio();
 	const [langVisible, setLangVisible] = useState(false);
-	const currentLang = i18n.language;
+	const currentLang = i18nHook.language;
 
 	return (
 		<ImageBackground
@@ -50,7 +52,7 @@ export const HomeScreen = () => {
 			<View style={styles.overlay}>
 				<TouchableOpacity
 					style={styles.globeBtn}
-					onPress={() => setLangVisible(true)}
+					onPress={() => { playTap(); setLangVisible(true); }}
 					activeOpacity={0.7}
 				>
 					<Text style={styles.globeAbbr}>
@@ -68,11 +70,16 @@ export const HomeScreen = () => {
 					{NAV_ITEMS.map(({ route, tKey }) => (
 						<TouchableOpacity
 							key={route}
-							style={styles.navBtn}
-							onPress={() => router.push(route)}
+							onPress={() => { playTap(); router.push(route); }}
 							activeOpacity={0.8}
 						>
-							<Text style={styles.navLabel}>{t(tKey)}</Text>
+							<ImageBackground
+								source={require("@/assets/buttons/big-rock.png")}
+								style={styles.navBtn}
+								resizeMode="stretch"
+							>
+								<Text style={styles.navLabel}>{t(tKey)}</Text>
+							</ImageBackground>
 						</TouchableOpacity>
 					))}
 				</View>
@@ -86,7 +93,7 @@ export const HomeScreen = () => {
 					<TouchableOpacity
 						style={styles.modalOverlay}
 						activeOpacity={1}
-						onPress={() => setLangVisible(false)}
+						onPress={() => { playTap(); setLangVisible(false); }}
 					>
 						<View style={styles.langDropdown}>
 							{LANGUAGES.map(({ code, label }) => {
@@ -99,7 +106,8 @@ export const HomeScreen = () => {
 											active && styles.langOptionActive,
 										]}
 										onPress={() => {
-											i18n.changeLanguage(code);
+											playTap();
+											i18nHook.changeLanguage(code);
 											setLangVisible(false);
 										}}
 									>
