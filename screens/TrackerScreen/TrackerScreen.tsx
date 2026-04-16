@@ -1,10 +1,6 @@
 import MagicShield from "@/assets/icons/shield.png";
 import SkullIcon from "@/assets/icons/skull.png";
-import { AttackInput } from "@/components/AttackInput";
-import {
-	CardSelectionInfo,
-	SUITS,
-} from "@/components/AttackInput/AttackInput.constants";
+import { CardSelectionInfo } from "@/components/AttackInput/AttackInput.constants";
 import { DefeatFooter } from "@/components/DefeatFooter";
 import { NumberSprite } from "@/components/NumberSprite";
 import { ProgressRing } from "@/components/ProgressRing";
@@ -273,45 +269,6 @@ export const TrackerScreen = () => {
 									</Text>
 									<Text style={styles.resultPower}>{lastResult.powerText}</Text>
 								</View>
-							)}
-
-							{selectedCardInfo && (
-								<View
-									style={[
-										styles.cardSelectionInfo,
-										selectedCardInfo.immune && styles.cardSelectionInfoImmune,
-									]}
-								>
-									<View style={styles.cardSelectionRow}>
-										<Image
-											source={
-												SUITS.find((s) => s.suit === selectedCardInfo.suit)?.icon
-											}
-											style={styles.cardSelectionIcon}
-											resizeMode="contain"
-										/>
-										<Text style={styles.cardSelectionRank}>
-											{selectedCardInfo.rank}
-										</Text>
-										{selectedCardInfo.rank !== "Jester" && (
-											<Text style={styles.cardSelectionDamage}>
-												Dano: {selectedCardInfo.damage}
-											</Text>
-										)}
-									</View>
-									<Text style={styles.cardSelectionPower}>
-										{selectedCardInfo.powerPreview}
-									</Text>
-								</View>
-							)}
-
-							{currentEnemy && !isVictory && (
-								<AttackInput
-									enemy={currentEnemy}
-									onApply={applyAttack}
-									onSelectionChange={setSelectedCardInfo}
-									jesterActive={isJesterActive}
-								/>
 							)}
 
 							<View style={{ height: 16 }} />
