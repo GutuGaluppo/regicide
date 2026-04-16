@@ -1,13 +1,15 @@
 import SpellImmune from "@/assets/icons/spellImmune.png";
 import { useAudio } from "@/contexts/AudioContext";
 import { CardRank, Enemy, Suit } from "@/data/types";
-import React, { useState } from "react";
+import { cardValue } from "@/utils/gameLogic";
+import React, { useEffect, useState } from "react";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import {
 	CardSelectionInfo,
 	getCardsForSuit,
 	JESTER_CARDS,
 	RegularSuit,
+	SuitRank,
 	SUITS,
 } from "@/components/AttackInput/AttackInput.constants";
 import { styles } from "./AttackControls.styles";
@@ -29,6 +31,57 @@ export const AttackControls = ({
 }: AttackControlsProps) => {
 	const { playTap } = useAudio();
 	const [selectedSuit, setSelectedSuit] = useState<Suit | null>(null);
+	const [selectedRank, setSelectedRank] = useState<SuitRank | "Jester" | null>(null);
+	const [selectedJesterIndex, setSelectedJesterIndex] = useState<number | null>(null);
+
+	const isJester = selectedSuit === "jester";
+	const value = selectedRank && !isJester ? cardValue(selectedRank as SuitRank) : 0;
+	const immune = !jesterActive && selectedSuit !== null && selectedSuit === enemy?.suit;
+	const damage = value * (!immune && selectedSuit === "clubs" ? 2 : 1);
+	const shieldAdded = !immune && selectedSuit === "spades" ? value : 0;
+
+	const powerPreview =
+		selectedSuit && selectedRank
+			? isJester
+				? "🃏 Cancela o ataque inimigo nesta rodada"
+				: immune
+					? `Imunidade: poder de ${selectedSuit} não se aplica`
+					: selectedSuit === "hearts"
+						? `♥ Curar ${value} carta(s) do descarte`
+						: selectedSuit === "diamonds"
+							? `♦ Comprar ${value} carta(s)`
+							: selectedSuit === "clubs"
+								? `♣ Dano dobrado → ${damage}`
+								: `♠ Escudo +${value}`
+			: null;
+
+	const canApply = selectedSuit !== null && selectedRank !== null;
+	const canApplyJester = isJester && selectedRank === "Jester";
+
+	useEffect(() => {
+		if (!selectedSuit || !selectedRank || !powerPreview) {
+			onSelectionChange?.(null);
+			return;
+		}
+		onSelectionChange?.({
+			suit: selectedSuit,
+			rank: selectedRank,
+			damage,
+			shieldAdded,
+			powerPreview,
+			immune,
+		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [selectedSuit, selectedRank, damage, immune, powerPreview]);
+
+	const handleApply = () => {
+		if (!selectedSuit || !selectedRank) return;
+		playTap();
+		onApply(selectedSuit, selectedRank);
+		setSelectedSuit(null);
+		setSelectedRank(null);
+		setSelectedJesterIndex(null);
+	};
 
 	const handleSuitPress = (s: Suit) => {
 		playTap();
@@ -36,11 +89,24 @@ export const AttackControls = ({
 		if (isImmune) {
 			onImmuneWarning?.();
 		}
-		setSelectedSuit((prev) => (prev === s ? null : s));
+		setSelectedSuit((prev) => {
+			if (prev === s) return null;
+			setSelectedRank(null);
+			setSelectedJesterIndex(null);
+			return s;
+		});
 	};
 
-	const canApply = false; // wired in subsequent commits
-	const canApplyJester = false; // wired in subsequent commits
+	const handleCardPress = (r: SuitRank) => {
+		playTap();
+		setSelectedRank((prev) => (prev === r ? null : r));
+	};
+
+	const handleJesterCardPress = (index: number) => {
+		playTap();
+		setSelectedJesterIndex((prev) => (prev === index ? null : index));
+		setSelectedRank((prev) => (selectedJesterIndex === index ? null : "Jester"));
+	};
 
 	return (
 		<View style={styles.container}>
@@ -48,6 +114,7 @@ export const AttackControls = ({
 			<View style={styles.actionRow}>
 				<TouchableOpacity
 					style={[styles.actionBtn, !canApply && styles.actionBtnDisabled]}
+					onPress={handleApply}
 					disabled={!canApply}
 					activeOpacity={0.8}
 				>
@@ -60,6 +127,7 @@ export const AttackControls = ({
 				</TouchableOpacity>
 				<TouchableOpacity
 					style={[styles.actionBtn, !canApplyJester && styles.actionBtnDisabled]}
+					onPress={handleApply}
 					disabled={!canApplyJester}
 					activeOpacity={0.8}
 				>
@@ -107,16 +175,26 @@ export const AttackControls = ({
 			</View>
 
 			{/* Card deck */}
-			{selectedSuit === "jester" ? (
+			{isJester ? (
 				<View style={styles.jesterRow}>
 					{JESTER_CARDS.map(({ image }, i) => (
-						<View key={i} style={styles.cardBtn}>
+						<TouchableOpacity
+							key={i}
+							style={[
+								styles.cardBtn,
+								selectedJesterIndex === i && styles.cardBtnSelected,
+								selectedJesterIndex !== null && selectedJesterIndex !== i && styles.cardBtnDimmed,
+								selectedJesterIndex === i && styles.cardBtnLifted,
+							]}
+							onPress={() => handleJesterCardPress(i)}
+							activeOpacity={0.7}
+						>
 							<Image
 								source={image}
-								style={[styles.cardThumb, styles.cardThumbDeck]}
+								style={styles.cardThumb}
 								resizeMode="cover"
 							/>
-						</View>
+						</TouchableOpacity>
 					))}
 				</View>
 			) : selectedSuit !== null ? (
@@ -126,13 +204,23 @@ export const AttackControls = ({
 					contentContainerStyle={styles.rankRow}
 				>
 					{getCardsForSuit(selectedSuit as RegularSuit).map(({ rank: r, image }) => (
-						<View key={r} style={styles.cardBtn}>
+						<TouchableOpacity
+							key={r}
+							style={[
+								styles.cardBtn,
+								selectedRank === r && styles.cardBtnSelected,
+								selectedRank !== null && selectedRank !== r && styles.cardBtnDimmed,
+								selectedRank === r && styles.cardBtnLifted,
+							]}
+							onPress={() => handleCardPress(r)}
+							activeOpacity={0.7}
+						>
 							<Image
 								source={image}
-								style={[styles.cardThumb, styles.cardThumbDeck]}
+								style={styles.cardThumb}
 								resizeMode="cover"
 							/>
-						</View>
+						</TouchableOpacity>
 					))}
 				</ScrollView>
 			) : null}
