@@ -23,6 +23,9 @@ interface AttackControlsProps {
 	onImmuneWarning?: () => void;
 }
 
+// Default suit to display when nothing is selected (cards shown but disabled)
+const DEFAULT_DISPLAY_SUIT: RegularSuit = "hearts";
+
 export const AttackControls = ({
 	enemy,
 	jesterActive = false,
@@ -56,8 +59,13 @@ export const AttackControls = ({
 								: `♠ Escudo +${value}`
 			: null;
 
-	const canApply = selectedSuit !== null && selectedRank !== null;
+	const canApply = selectedSuit !== null && selectedRank !== null && !isJester;
 	const canApplyJester = isJester && selectedRank === "Jester";
+
+	// The suit to display in the card row (default to hearts when nothing selected)
+	const displaySuit: RegularSuit | "jester" = isJester
+		? "jester"
+		: (selectedSuit as RegularSuit | null) ?? DEFAULT_DISPLAY_SUIT;
 
 	useEffect(() => {
 		if (!selectedSuit || !selectedRank || !powerPreview) {
@@ -76,9 +84,9 @@ export const AttackControls = ({
 	}, [selectedSuit, selectedRank, damage, immune, powerPreview]);
 
 	const handleApply = () => {
-		if (!selectedSuit || !selectedRank) return;
+		if (isJester ? !canApplyJester : !canApply) return;
 		playTap();
-		onApply(selectedSuit, selectedRank);
+		onApply(selectedSuit!, selectedRank!);
 		setSelectedSuit(null);
 		setSelectedRank(null);
 		setSelectedJesterIndex(null);
@@ -99,6 +107,7 @@ export const AttackControls = ({
 	};
 
 	const handleCardPress = (r: SuitRank) => {
+		if (selectedSuit === null) return;
 		playTap();
 		setSelectedRank((prev) => (prev === r ? null : r));
 	};
@@ -109,39 +118,11 @@ export const AttackControls = ({
 		setSelectedRank((prev) => (selectedJesterIndex === index ? null : "Jester"));
 	};
 
+	const noSuit = selectedSuit === null;
+
 	return (
 		<View style={styles.container}>
-			{/* Action buttons */}
-			<View style={styles.actionRow}>
-				<TouchableOpacity
-					style={[styles.actionBtn, !canApply && styles.actionBtnDisabled]}
-					onPress={handleApply}
-					disabled={!canApply}
-					activeOpacity={0.8}
-				>
-					<View style={styles.actionBtnInner}>
-						<Image
-							style={styles.actionIcon}
-							source={require("@/assets/icons/sword.png")}
-						/>
-					</View>
-				</TouchableOpacity>
-				<TouchableOpacity
-					style={[styles.actionBtn, !canApplyJester && styles.actionBtnDisabled]}
-					onPress={handleApply}
-					disabled={!canApplyJester}
-					activeOpacity={0.8}
-				>
-					<View style={styles.actionBtnInner}>
-						<Image
-							style={styles.jesterIcon}
-							source={require("@/assets/icons/jester_icon.png")}
-						/>
-					</View>
-				</TouchableOpacity>
-			</View>
-
-			{/* Suit selection */}
+			{/* ── Suit selection ── */}
 			<View style={styles.suitRow}>
 				{SUITS.map(({ suit: s, icon, immuneIcon }) => {
 					const isImmune = !jesterActive && enemy !== null && s === enemy.suit;
@@ -175,17 +156,8 @@ export const AttackControls = ({
 				})}
 			</View>
 
-			{/* Combo bar */}
-			<ComboBar
-				info={
-					selectedSuit && selectedRank && powerPreview
-						? { suit: selectedSuit, rank: selectedRank, damage, shieldAdded, powerPreview, immune }
-						: null
-				}
-			/>
-
-			{/* Card deck */}
-			{isJester ? (
+			{/* ── Card deck (always visible) ── */}
+			{displaySuit === "jester" ? (
 				<View style={styles.jesterRow}>
 					{JESTER_CARDS.map(({ image }, i) => (
 						<TouchableOpacity
@@ -199,30 +171,28 @@ export const AttackControls = ({
 							onPress={() => handleJesterCardPress(i)}
 							activeOpacity={0.7}
 						>
-							<Image
-								source={image}
-								style={styles.cardThumb}
-								resizeMode="cover"
-							/>
+							<Image source={image} style={styles.cardThumb} resizeMode="cover" />
 						</TouchableOpacity>
 					))}
 				</View>
-			) : selectedSuit !== null ? (
+			) : (
 				<ScrollView
 					horizontal
 					showsHorizontalScrollIndicator={false}
 					contentContainerStyle={styles.rankRow}
 				>
-					{getCardsForSuit(selectedSuit as RegularSuit).map(({ rank: r, image }) => (
+					{getCardsForSuit(displaySuit).map(({ rank: r, image }) => (
 						<TouchableOpacity
 							key={r}
 							style={[
 								styles.cardBtn,
-								selectedRank === r && styles.cardBtnSelected,
-								selectedRank !== null && selectedRank !== r && styles.cardBtnDimmed,
-								selectedRank === r && styles.cardBtnLifted,
+								noSuit && styles.cardBtnDisabled,
+								!noSuit && selectedRank === r && styles.cardBtnSelected,
+								!noSuit && selectedRank !== null && selectedRank !== r && styles.cardBtnDimmed,
+								!noSuit && selectedRank === r && styles.cardBtnLifted,
 							]}
 							onPress={() => handleCardPress(r)}
+							disabled={noSuit}
 							activeOpacity={0.7}
 						>
 							<Image
@@ -233,7 +203,47 @@ export const AttackControls = ({
 						</TouchableOpacity>
 					))}
 				</ScrollView>
-			) : null}
+			)}
+
+			{/* ── Combo bar ── */}
+			<ComboBar
+				info={
+					selectedSuit && selectedRank && powerPreview
+						? { suit: selectedSuit, rank: selectedRank, damage, shieldAdded, powerPreview, immune }
+						: null
+				}
+				suitSelected={selectedSuit !== null}
+			/>
+
+			{/* ── Action buttons ── */}
+			<View style={styles.actionRow}>
+				<TouchableOpacity
+					style={[styles.actionBtn, !canApply && styles.actionBtnDisabled]}
+					onPress={handleApply}
+					disabled={!canApply}
+					activeOpacity={0.8}
+				>
+					<View style={styles.actionBtnInner}>
+						<Image
+							style={styles.actionIcon}
+							source={require("@/assets/icons/sword.png")}
+						/>
+					</View>
+				</TouchableOpacity>
+				<TouchableOpacity
+					style={[styles.actionBtn, !canApplyJester && styles.actionBtnDisabled]}
+					onPress={handleApply}
+					disabled={!canApplyJester}
+					activeOpacity={0.8}
+				>
+					<View style={styles.actionBtnInner}>
+						<Image
+							style={styles.jesterIcon}
+							source={require("@/assets/icons/jester_icon.png")}
+						/>
+					</View>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 };
