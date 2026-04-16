@@ -17,6 +17,7 @@ interface AttackControlsProps {
 	jesterActive?: boolean;
 	onApply: (suit: Suit, rank: CardRank) => void;
 	onSelectionChange?: (info: CardSelectionInfo | null) => void;
+	onImmuneWarning?: () => void;
 }
 
 export const AttackControls = ({
@@ -24,12 +25,17 @@ export const AttackControls = ({
 	jesterActive = false,
 	onApply,
 	onSelectionChange,
+	onImmuneWarning,
 }: AttackControlsProps) => {
 	const { playTap } = useAudio();
 	const [selectedSuit, setSelectedSuit] = useState<Suit | null>(null);
 
 	const handleSuitPress = (s: Suit) => {
 		playTap();
+		const isImmune = !jesterActive && enemy !== null && s === enemy.suit;
+		if (isImmune) {
+			onImmuneWarning?.();
+		}
 		setSelectedSuit((prev) => (prev === s ? null : s));
 	};
 
