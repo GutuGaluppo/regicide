@@ -1,10 +1,16 @@
 import "../i18n";
 import * as Font from "expo-font";
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { AudioProvider } from "@/contexts/AudioContext";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+	const [fontsLoaded, setFontsLoaded] = useState(false);
+
 	useEffect(() => {
 		const loadFonts = async () => {
 			try {
@@ -16,11 +22,20 @@ export default function RootLayout() {
 			} catch (e) {
 				console.warn(e);
 			} finally {
+				setFontsLoaded(true);
 				SplashScreen.hideAsync();
 			}
 		};
 
 		loadFonts();
 	}, []);
-	return <Stack screenOptions={{ headerShown: false }} />;
+
+	if (!fontsLoaded) return null;
+
+	return (
+		<AudioProvider>
+			<StatusBar hidden />
+			<Stack screenOptions={{ headerShown: false }} />
+		</AudioProvider>
+	);
 }
