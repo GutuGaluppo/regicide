@@ -2,9 +2,12 @@ import SpellImmune from "@/assets/icons/spellImmune.png";
 import { useAudio } from "@/contexts/AudioContext";
 import { CardRank, Enemy, Suit } from "@/data/types";
 import React, { useState } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import {
 	CardSelectionInfo,
+	getCardsForSuit,
+	JESTER_CARDS,
+	RegularSuit,
 	SUITS,
 } from "@/components/AttackInput/AttackInput.constants";
 import { styles } from "./AttackControls.styles";
@@ -96,6 +99,37 @@ export const AttackControls = ({
 					);
 				})}
 			</View>
+
+			{/* Card deck */}
+			{selectedSuit === "jester" ? (
+				<View style={styles.jesterRow}>
+					{JESTER_CARDS.map(({ image }, i) => (
+						<View key={i} style={styles.cardBtn}>
+							<Image
+								source={image}
+								style={[styles.cardThumb, styles.cardThumbDeck]}
+								resizeMode="cover"
+							/>
+						</View>
+					))}
+				</View>
+			) : selectedSuit !== null ? (
+				<ScrollView
+					horizontal
+					showsHorizontalScrollIndicator={false}
+					contentContainerStyle={styles.rankRow}
+				>
+					{getCardsForSuit(selectedSuit as RegularSuit).map(({ rank: r, image }) => (
+						<View key={r} style={styles.cardBtn}>
+							<Image
+								source={image}
+								style={[styles.cardThumb, styles.cardThumbDeck]}
+								resizeMode="cover"
+							/>
+						</View>
+					))}
+				</ScrollView>
+			) : null}
 		</View>
 	);
 };

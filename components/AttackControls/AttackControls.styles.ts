@@ -78,4 +78,32 @@ export const styles = StyleSheet.create({
 		width: 60,
 		height: 60,
 	},
+	rankRow: {
+		height: 100,
+		gap: 8,
+		paddingTop: 14,
+		paddingBottom: 4,
+	},
+	jesterRow: {
+		flexDirection: "row",
+		justifyContent: "center",
+		height: 100,
+		gap: 12,
+		paddingTop: 14,
+		paddingBottom: 4,
+	},
+	cardBtn: {
+		width: 58,
+		borderRadius: 10,
+		overflow: "hidden",
+		borderWidth: 2,
+		borderColor: "transparent",
+	},
+	cardThumb: {
+		width: "100%",
+		height: "100%",
+	},
+	cardThumbDeck: {
+		opacity: 0.7,
+	},
 });
