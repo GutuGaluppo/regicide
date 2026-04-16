@@ -12,12 +12,14 @@ export const styles = StyleSheet.create({
 	backIcon: { width: 30, height: 30 },
 	ghostTop: { alignItems: "center", paddingHorizontal: 16 },
 	center: {
-		flex: 1,
+		flexGrow: 1,
 		justifyContent: "center",
 		alignItems: "center",
 		gap: 16,
 		paddingHorizontal: 20,
+		paddingVertical: 24,
 	},
+	scroll: { flex: 1 },
 	enemyCard: { width: 220, height: 308, borderRadius: 14 },
 	defeatMsg: {
 		fontFamily: "IMFellEnglish-Regular",

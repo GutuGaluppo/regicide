@@ -1,17 +1,19 @@
+import { useAudio } from "@/contexts/AudioContext";
 import { router } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Animated,
 	Easing,
 	Image,
 	ImageBackground,
+	ScrollView,
 	Text,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { getCardImage } from "@/data/images";
-import { Enemy, GameStats } from "@/data/types";
+import { Enemy, GameStats, Card } from "@/data/types";
 import { styles } from "./DefeatScreen.styles";
 import {
 	GhostActions,
@@ -28,6 +30,7 @@ type DefeatScreenPropsType = {
 	enemy: Enemy;
 	stats?: GameStats;
 	defeatedEnemies?: Enemy[];
+	playerHand?: Card[];
 	onReset: () => void;
 };
 
@@ -35,10 +38,13 @@ export const DefeatScreen = ({
 	enemy,
 	stats,
 	defeatedEnemies,
+	playerHand,
 	onReset,
 }: DefeatScreenPropsType) => {
 	const { t } = useTranslation();
+	const { playTap } = useAudio();
 
+	const [ghostsVisible, setGhostsVisible] = useState(true);
 	const othersScale = useRef(new Animated.Value(1)).current;
 	const othersOpacity = useRef(new Animated.Value(1)).current;
 	const cardScale = useRef(new Animated.Value(0.6)).current;
@@ -79,7 +85,7 @@ export const DefeatScreen = ({
 				easing: Easing.linear,
 				useNativeDriver: true,
 			}),
-		]).start();
+		]).start(() => setGhostsVisible(false));
 	}, [cardOpacity, cardScale, msgOpacity, othersOpacity, othersScale]);
 
 	return (
@@ -92,7 +98,7 @@ export const DefeatScreen = ({
 			<View style={styles.overlay}>
 				<View style={styles.header}>
 					<TouchableOpacity
-						onPress={() => router.back()}
+						onPress={() => { playTap(); router.back(); }}
 						style={styles.backBtn}
 					>
 						<Image
@@ -103,16 +109,22 @@ export const DefeatScreen = ({
 					</TouchableOpacity>
 				</View>
 
-				<Animated.View
-					style={[
-						styles.ghostTop,
-						{ transform: [{ scale: othersScale }], opacity: othersOpacity },
-					]}
-				>
-					<GhostStatusBar />
-				</Animated.View>
+				{ghostsVisible && (
+					<Animated.View
+						style={[
+							styles.ghostTop,
+							{ transform: [{ scale: othersScale }], opacity: othersOpacity },
+						]}
+					>
+						<GhostStatusBar />
+					</Animated.View>
+				)}
 
-				<View style={styles.center}>
+				<ScrollView
+					style={styles.scroll}
+					contentContainerStyle={styles.center}
+					showsVerticalScrollIndicator={false}
+				>
 					<Animated.View
 						style={{ transform: [{ scale: cardScale }], opacity: cardOpacity }}
 					>
@@ -132,6 +144,7 @@ export const DefeatScreen = ({
 							<StatsPanel
 								stats={stats}
 								defeatedEnemies={defeatedEnemies ?? []}
+								playerHand={playerHand}
 							/>
 						</Animated.View>
 					)}
@@ -139,24 +152,26 @@ export const DefeatScreen = ({
 					<Animated.View style={{ opacity: msgOpacity }}>
 						<TouchableOpacity
 							style={styles.newGameBtn}
-							onPress={onReset}
+							onPress={() => { playTap(); onReset(); }}
 							activeOpacity={0.8}
 						>
 							<Text style={styles.newGameText}>{t("defeat.newGame")}</Text>
 						</TouchableOpacity>
 					</Animated.View>
-				</View>
+				</ScrollView>
 
-				<Animated.View
-					style={[
-						styles.ghostBottom,
-						{ transform: [{ scale: othersScale }], opacity: othersOpacity },
-					]}
-				>
-					<GhostHand />
-					<GhostActions />
-					<GhostFooter />
-				</Animated.View>
+				{ghostsVisible && (
+					<Animated.View
+						style={[
+							styles.ghostBottom,
+							{ transform: [{ scale: othersScale }], opacity: othersOpacity },
+						]}
+					>
+						<GhostHand />
+						<GhostActions />
+						<GhostFooter />
+					</Animated.View>
+				)}
 			</View>
 		</ImageBackground>
 	);

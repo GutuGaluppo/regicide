@@ -11,41 +11,90 @@ export const styles = StyleSheet.create({
 		gap: 10,
 		width: "100%",
 	},
-	row: {
-		flexDirection: "row",
-		justifyContent: "space-around",
+
+	// ─── Vertical stat list ───────────────────────────────────────────────────
+	statList: {
+		gap: 6,
 	},
 	item: {
+		flexDirection: "row",
 		alignItems: "center",
-		gap: 2,
+		gap: 10,
+		paddingVertical: 3,
 	},
-	itemIcon: { fontSize: 18 },
+	itemIcon: {
+		width: 22,
+		height: 22,
+		opacity: 0.85,
+	},
 	itemValue: {
 		color: "#F1F5F9",
-		fontSize: 18,
+		fontSize: 15,
 		fontWeight: "700",
+		minWidth: 52,
 	},
 	itemLabel: {
 		color: "#64748B",
-		fontSize: 9,
+		fontSize: 12,
 		fontWeight: "600",
-		letterSpacing: 0.5,
-		textTransform: "uppercase",
-		textAlign: "center",
+		letterSpacing: 0.3,
 	},
-	killList: { marginTop: 2 },
-	killChip: {
-		paddingHorizontal: 10,
-		paddingVertical: 4,
-		borderRadius: 20,
-		backgroundColor: "rgba(239,68,68,0.12)",
-		borderWidth: 1,
-		borderColor: "rgba(239,68,68,0.3)",
-		marginRight: 6,
+
+	// ─── Accordion ────────────────────────────────────────────────────────────
+	accordionItem: {
+		borderTopWidth: 1,
+		borderTopColor: "rgba(148,163,184,0.1)",
 	},
-	killText: {
-		color: "#FCA5A5",
+	accordionHeader: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 10,
+		paddingVertical: 8,
+	},
+	accordionThumb: {
+		width: 36,
+		height: 50,
+		borderRadius: 4,
+	},
+	accordionLabel: {
+		flex: 1,
+		color: "#F1F5F9",
+		fontSize: 13,
+		fontWeight: "600",
+	},
+	accordionCount: {
+		color: "#64748B",
 		fontSize: 12,
 		fontWeight: "700",
+		minWidth: 20,
+		textAlign: "right",
+	},
+	accordionContent: {
+		paddingBottom: 12,
+		paddingLeft: 46,
+	},
+	accordionEmpty: {
+		color: "#475569",
+		fontSize: 12,
+		fontStyle: "italic",
+	},
+
+	// ─── Mini card images inside accordion ───────────────────────────────────
+	cardImageRow: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		gap: 6,
+	},
+	cardImage: {
+		width: 46,
+		height: 64,
+		borderRadius: 4,
+	},
+
+	// ─── Non-enemy accordion icon ─────────────────────────────────────────────
+	accordionIcon: {
+		width: 36,
+		height: 36,
+		opacity: 0.7,
 	},
 });
