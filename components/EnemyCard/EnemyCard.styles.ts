@@ -14,6 +14,11 @@ export const styles = StyleSheet.create({
 		height: 320,
 		borderRadius: 12,
 	},
+	defeatedOverlay: {
+		...StyleSheet.absoluteFillObject,
+		backgroundColor: "rgba(0,0,0,0.55)",
+		borderRadius: 12,
+	},
 	damageFlash: {
 		...StyleSheet.absoluteFillObject,
 		backgroundColor: "#EF4444",

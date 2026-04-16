@@ -23,6 +23,7 @@ export const EnemyCard = ({
 	onPress,
 	previewDamage = 0,
 	previewShieldGain = 0,
+	defeated = false,
 }: {
 	enemy: Enemy;
 	currentHP: number;
@@ -36,6 +37,7 @@ export const EnemyCard = ({
 	onPress?: () => void;
 	previewDamage?: number;
 	previewShieldGain?: number;
+	defeated?: boolean;
 }) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
@@ -191,7 +193,7 @@ export const EnemyCard = ({
 				style={[
 					styles.card,
 					{
-						opacity: entryOpacity,
+						opacity: defeated ? 0.4 : entryOpacity,
 						transform: [
 							{ scale: entryScale },
 							{ translateY: entryY },
@@ -217,6 +219,11 @@ export const EnemyCard = ({
 								onUseJester={onUseJester}
 							/>
 						</View>
+					)}
+
+					{/* Defeated overlay */}
+					{defeated && (
+						<View style={styles.defeatedOverlay} pointerEvents="none" />
 					)}
 
 					{/* Red damage flash */}
