@@ -20,25 +20,7 @@ export const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "rgba(0,0,0,0.6)",
 	},
-	header: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingTop: 12,
-		paddingHorizontal: 16,
-		paddingBottom: 12,
-	},
-	headerLeft: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 10,
-	},
 	backBtn: { padding: 4 },
-	headerRight: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 4,
-	},
 	skullBtn: {
 		position: "absolute",
 		top: 120,

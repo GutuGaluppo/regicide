@@ -1,24 +1,22 @@
 import cardBack from "@/assets/images/cardBack.png";
-import { useAudio } from "@/contexts/AudioContext";
-import { useSoundtrack } from "@/hooks/useSoundtrack";
 import { CastleFooter } from "@/components/CastleFooter";
 import { DefeatScreen } from "@/components/DefeatScreen";
 import { EnemyCard } from "@/components/EnemyCard";
 import { EnemyModal } from "@/components/EnemyModal";
 import { NumberSprite } from "@/components/NumberSprite";
 import { PlayerHand } from "@/components/PlayerHand";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { VictoryScreen } from "@/components/VictoryScreen";
+import { useAudio } from "@/contexts/AudioContext";
 import { useGame } from "@/hooks/useGame";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useSoundtrack } from "@/hooks/useSoundtrack";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Image,
 	ImageBackground,
 	Text,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import { styles } from "./GameScreen.styles";
@@ -41,7 +39,7 @@ const StatusCard = ({ count, label }: { count: number; label: string }) => (
 
 export const GameScreen = () => {
 	const { t } = useTranslation();
-	const { playTap, playShuffleCards } = useAudio();
+	const { playShuffleCards } = useAudio();
 	useSoundtrack(require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource);
 	const {
 		gameState,
@@ -115,20 +113,7 @@ export const GameScreen = () => {
 		>
 			<View style={styles.overlay}>
 				{/* Header */}
-				<View style={styles.header}>
-					<TouchableOpacity
-						onPress={() => { playTap(); router.back(); }}
-						style={styles.headerBtn}
-					>
-						<Ionicons name="chevron-back" size={26} color="#F1F5F9" />
-					</TouchableOpacity>
-					<TouchableOpacity
-						onPress={() => { playTap(); setSettingsVisible(true); }}
-						style={styles.headerBtn}
-					>
-						<Ionicons name="settings-outline" size={24} color="#94A3B8" />
-					</TouchableOpacity>
-				</View>
+				<ScreenHeader onSettingsPress={() => setSettingsVisible(true)} />
 
 				{/* Status bar */}
 				<View style={styles.statusBar}>

@@ -6,22 +6,6 @@ export const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "rgba(0,0,0,0.65)",
 	},
-	header: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingTop: 52,
-		paddingHorizontal: 16,
-		paddingBottom: 12,
-	},
-	backBtn: { padding: 4, width: 60 },
-	backText: { color: "#94A3B8", fontSize: 14 },
-	headerTitle: {
-		color: "#F1F5F9",
-		fontFamily: "IMFellEnglish-Regular",
-		fontSize: 20,
-		fontWeight: "700",
-	},
 	scroll: { flex: 1 },
 	scrollContent: {
 		paddingHorizontal: 16,
