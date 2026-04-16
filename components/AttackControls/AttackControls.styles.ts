@@ -112,6 +112,9 @@ export const styles = StyleSheet.create({
 	cardBtnDimmed: {
 		opacity: 0.25,
 	},
+	cardBtnDisabled: {
+		opacity: 0.35,
+	},
 	cardBtnLifted: {
 		transform: [{ translateY: -10 }],
 	},

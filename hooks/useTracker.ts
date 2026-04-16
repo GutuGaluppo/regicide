@@ -46,7 +46,7 @@ const createInitial = (): TrackerState => {
 	const allEnemies = buildEnemies();
 	return {
 		allEnemies,
-		currentEnemyId: allEnemies[0]?.id ?? null,
+		currentEnemyId: null, // start in ENEMY_SELECTION so player chooses first enemy
 		damageMap: {},
 		shieldMap: {},
 		defeatedIds: [],
@@ -250,15 +250,12 @@ export const useTracker = () => {
 		snapshot(state, lastResult);
 
 		const newDefeated = [...state.defeatedIds, currentEnemy.id];
-		const nextEnemy = state.allEnemies.find(
-			(e) => !newDefeated.includes(e.id)
-		);
 
 		setLastResult(null);
 		setState((s) => ({
 			...s,
 			defeatedIds: newDefeated,
-			currentEnemyId: nextEnemy?.id ?? null,
+			currentEnemyId: null, // return to ENEMY_SELECTION to let player choose next enemy
 		}));
 	};
 

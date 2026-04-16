@@ -1,11 +1,13 @@
 import MagicShield from "@/assets/icons/shield.png";
 import SkullIcon from "@/assets/icons/skull.png";
 import { CardSelectionInfo } from "@/components/AttackInput/AttackInput.constants";
-import { DefeatFooter } from "@/components/DefeatFooter";
+import { AttackControls } from "@/components/AttackControls";
+import { GameModal } from "@/components/GameModal";
 import { NumberSprite } from "@/components/NumberSprite";
 import { ProgressRing } from "@/components/ProgressRing";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
+import { SuitTracker } from "@/components/SuitTracker";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
 import { getCardImage } from "@/data/images";
@@ -22,9 +24,6 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { AttackControls } from "@/components/AttackControls";
-import { GameModal } from "@/components/GameModal";
-import { SuitTracker } from "@/components/SuitTracker";
 import { SHIFT_PER_ENEMY_EXPORT, styles } from "./TrackerScreen.styles";
 import { ModalState, ScreenState } from "./TrackerScreen.types";
 
@@ -42,7 +41,6 @@ export const TrackerScreen = () => {
 		currentShield,
 		effectiveAttack,
 		defeatedIds,
-		footerPhase,
 		footerEnemies,
 		isVictory,
 		isJesterActive,
@@ -81,9 +79,13 @@ export const TrackerScreen = () => {
 		? Math.min(1, previewAttack / currentEnemy.attack)
 		: 0;
 
+	// Guard against overriding screenState during defeat transition animation
+	const isDefeatingRef = useRef(false);
+
 	// Keep screenState in sync with tracker state (dep on id, not object reference)
 	useEffect(() => {
 		if (isVictory) return;
+		if (isDefeatingRef.current) return;
 		setScreenState(currentEnemy ? "IN_COMBAT" : "ENEMY_SELECTION");
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentEnemy?.id, isVictory]);
@@ -92,6 +94,7 @@ export const TrackerScreen = () => {
 
 	const handleDefeatWithTransition = () => {
 		playTap();
+		isDefeatingRef.current = true;
 		setScreenState("ENEMY_DEFEATED_TRANSITION");
 		defeatFade.setValue(1);
 		Animated.sequence([
@@ -102,13 +105,13 @@ export const TrackerScreen = () => {
 				useNativeDriver: true,
 			}),
 		]).start(() => {
+			isDefeatingRef.current = false;
 			defeatCurrentEnemy();
 			defeatFade.setValue(1);
 		});
 	};
 
 	const bgShift = useRef(new Animated.Value(0)).current;
-	const prevCount = useRef(defeatedIds.length);
 
 	useEffect(() => {
 		const count = defeatedIds.length;
@@ -119,7 +122,6 @@ export const TrackerScreen = () => {
 			tension: 30,
 			friction: 10,
 		}).start();
-		prevCount.current = count;
 	}, [defeatedIds.length, bgShift]);
 
 	if (isVictory) {
@@ -197,19 +199,17 @@ export const TrackerScreen = () => {
 											style={styles.enemyImage}
 											resizeMode="contain"
 										/>
-										{currentEnemy && !isVictory && (
-											<TouchableOpacity
-												style={styles.skullBtn}
-												onPress={handleDefeatWithTransition}
-												activeOpacity={0.7}
-											>
-												<Image
-													source={SkullIcon}
-													style={styles.skullIcon}
-													resizeMode="contain"
-												/>
-											</TouchableOpacity>
-										)}
+										<TouchableOpacity
+											style={styles.skullBtn}
+											onPress={handleDefeatWithTransition}
+											activeOpacity={0.7}
+										>
+											<Image
+												source={SkullIcon}
+												style={styles.skullIcon}
+												resizeMode="contain"
+											/>
+										</TouchableOpacity>
 										{/* ATK — topo direito */}
 										<View style={styles.atkBadge}>
 											<Text style={styles.badgeLabel}>{t("enemy.attack")}</Text>
@@ -281,16 +281,12 @@ export const TrackerScreen = () => {
 					<AttackControls
 						enemy={currentEnemy}
 						jesterActive={isJesterActive}
-						onApply={applyAttack}
+						onApply={(suit, rank) => {
+							applyAttack(suit, rank);
+							setSelectedCardInfo(null);
+						}}
 						onSelectionChange={setSelectedCardInfo}
 						onImmuneWarning={() => setModalState("IMMUNE_WARNING")}
-					/>
-					<DefeatFooter
-						phase={footerPhase}
-						enemies={footerEnemies}
-						defeatedIds={defeatedIds}
-						currentEnemyId={currentEnemy?.id ?? null}
-						onSelect={selectEnemy}
 					/>
 				</View>
 			</View>
