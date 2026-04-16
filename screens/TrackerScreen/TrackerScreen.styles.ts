@@ -163,6 +163,34 @@ export const styles = StyleSheet.create({
 		color: "#94A3B8",
 		fontSize: 13,
 	},
+	enemyGrid: {
+		flex: 1,
+		flexDirection: "row",
+		flexWrap: "wrap",
+		justifyContent: "center",
+		alignItems: "center",
+		gap: 12,
+		paddingHorizontal: 16,
+		paddingVertical: 12,
+	},
+	enemyGridCell: {
+		position: "relative",
+		width: "44%",
+		aspectRatio: 0.67,
+	},
+	enemyGridCard: {
+		width: "100%",
+		height: "100%",
+		borderRadius: 8,
+	},
+	enemyGridCardDefeated: {
+		opacity: 0.35,
+	},
+	enemyGridOverlay: {
+		...StyleSheet.absoluteFillObject,
+		backgroundColor: "rgba(0,0,0,0.5)",
+		borderRadius: 8,
+	},
 	defeatBtn: {
 		marginHorizontal: 16,
 		backgroundColor: "rgba(104,50,55,0.5)",
