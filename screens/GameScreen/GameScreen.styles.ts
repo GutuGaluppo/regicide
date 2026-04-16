@@ -7,17 +7,6 @@ export const styles = StyleSheet.create({
 		backgroundColor: "rgba(0, 0, 0, 0.55)",
 		justifyContent: "space-between",
 	},
-	header: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingTop: 12,
-		paddingHorizontal: 12,
-		paddingBottom: 4,
-	},
-	headerBtn: {
-		padding: 8,
-	},
 	statusBar: {
 		position: "absolute",
 		top: 50,

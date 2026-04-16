@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -6,7 +6,6 @@ import {
 	ImageBackground,
 	ScrollView,
 	Text,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import { styles } from "./InstructionsScreen.styles";
@@ -108,16 +107,7 @@ export const InstructionsScreen = () => {
 		>
 			<View style={styles.overlay}>
 				{/* Header */}
-				<View style={styles.header}>
-					<TouchableOpacity
-						onPress={() => router.back()}
-						style={styles.backBtn}
-					>
-						<Text style={styles.backText}>{t("common.back")}</Text>
-					</TouchableOpacity>
-					<Text style={styles.headerTitle}>{t("instructions.header")}</Text>
-					<View style={{ width: 60 }} />
-				</View>
+				<ScreenHeader />
 
 				<ScrollView
 					style={styles.scroll}

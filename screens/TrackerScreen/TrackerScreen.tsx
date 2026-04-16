@@ -8,6 +8,7 @@ import {
 import { DefeatFooter } from "@/components/DefeatFooter";
 import { NumberSprite } from "@/components/NumberSprite";
 import { ProgressRing } from "@/components/ProgressRing";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
@@ -15,7 +16,6 @@ import { getCardImage } from "@/data/images";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
 import { useTracker } from "@/hooks/useTracker";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -105,44 +105,18 @@ export const TrackerScreen = () => {
 			/>
 			<View style={styles.overlay}>
 				{/* Header */}
-				<View style={styles.header}>
-					<View style={styles.headerLeft}>
+				<ScreenHeader
+					onSettingsPress={() => setSettingsVisible(true)}
+					rightExtra={
 						<TouchableOpacity
-							onPress={() => {
-								playTap();
-								router.back();
-							}}
-							style={styles.backBtn}
-						>
-							<Image
-								source={require("@/assets/icons/tavern_silver.png")}
-								style={{ width: 30, height: 30 }}
-								resizeMode="contain"
-							/>
-						</TouchableOpacity>
-					</View>
-					<View style={styles.headerRight}>
-						<TouchableOpacity
-							onPress={() => {
-								playTap();
-								undo();
-							}}
+							onPress={() => { playTap(); undo(); }}
 							style={[styles.backBtn, !canUndo && { opacity: 0.3 }]}
 							disabled={!canUndo}
 						>
 							<Ionicons name="arrow-undo" size={26} color="#F1F5F9" />
 						</TouchableOpacity>
-						<TouchableOpacity
-							onPress={() => {
-								playTap();
-								setSettingsVisible(true);
-							}}
-							style={styles.backBtn}
-						>
-							<Ionicons name="settings-outline" size={24} color="#94A3B8" />
-						</TouchableOpacity>
-					</View>
-				</View>
+					}
+				/>
 
 				<ScrollView
 					style={styles.scroll}
