@@ -1,5 +1,22 @@
+import MagicShield from "@/assets/icons/shield.png";
+import SkullIcon from "@/assets/icons/skull.png";
+import { AttackInput } from "@/components/AttackInput";
+import { useAudio } from "@/contexts/AudioContext";
+import {
+	CardSelectionInfo,
+	SUITS,
+} from "@/components/AttackInput/AttackInput.constants";
+import { DefeatFooter } from "@/components/DefeatFooter";
+import { SettingsDrawer } from "@/components/SettingsDrawer";
+import { NumberSprite } from "@/components/NumberSprite";
+import { ProgressRing } from "@/components/ProgressRing";
+import { VictoryScreen } from "@/components/VictoryScreen";
+import { getCardImage } from "@/data/images";
+import { useTracker } from "@/hooks/useTracker";
+import { useSoundtrack } from "@/hooks/useSoundtrack";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Animated,
@@ -9,21 +26,14 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import MagicShield from "@/assets/icons/magicShield.png";
-import { AttackInput } from "@/components/AttackInput";
-import { DefeatFooter } from "@/components/DefeatFooter";
-import { NumberSprite } from "@/components/NumberSprite";
-import { ProgressRing } from "@/components/ProgressRing";
-import { VictoryScreen } from "@/components/VictoryScreen";
-import { getCardImage } from "@/data/images";
-import { CardRank, Suit } from "@/data/types";
-import { useTracker } from "@/hooks/useTracker";
-import { BG_WIDTH, SHIFT_PER_ENEMY_EXPORT, styles } from "./TrackerScreen.styles";
+import { SHIFT_PER_ENEMY_EXPORT, styles } from "./TrackerScreen.styles";
 
 const BG = require("@/assets/backgrounds/bg_cave.webp");
 
 export const TrackerScreen = () => {
 	const { t } = useTranslation();
+	const { playTap } = useAudio();
+	useSoundtrack(require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource);
 	const {
 		currentEnemy,
 		currentHP,
@@ -33,27 +43,35 @@ export const TrackerScreen = () => {
 		footerPhase,
 		footerEnemies,
 		isVictory,
+		isJesterActive,
+		canUndo,
 		lastResult,
+		undo,
 		selectEnemy,
 		applyAttack,
 		defeatCurrentEnemy,
 		resetTracker,
 	} = useTracker();
 
-	const hpPercent = currentEnemy
-		? Math.max(0, currentHP / currentEnemy.health)
-		: 0;
+	const [settingsVisible, setSettingsVisible] = useState(false);
+	const [selectedCardInfo, setSelectedCardInfo] =
+		useState<CardSelectionInfo | null>(null);
+
+	const previewHP = selectedCardInfo
+		? Math.max(0, currentHP - selectedCardInfo.damage)
+		: currentHP;
+	const previewAttack = selectedCardInfo
+		? Math.max(0, effectiveAttack - selectedCardInfo.shieldAdded)
+		: effectiveAttack;
+
+	const hpPercent = currentEnemy ? Math.max(0, previewHP / currentEnemy.health) : 0;
 	const hpColor =
 		hpPercent > 0.5 ? "#22C55E" : hpPercent > 0.25 ? "#FBBF24" : "#EF4444";
 	const isDead = currentHP <= 0;
 
 	const attackPercent = currentEnemy
-		? Math.min(1, effectiveAttack / currentEnemy.attack)
+		? Math.min(1, previewAttack / currentEnemy.attack)
 		: 0;
-
-	const handleAttack = (suit: Suit, rank: CardRank) => {
-		applyAttack(suit, rank);
-	};
 
 	const bgShift = useRef(new Animated.Value(0)).current;
 	const prevCount = useRef(defeatedIds.length);
@@ -84,20 +102,33 @@ export const TrackerScreen = () => {
 			<View style={styles.overlay}>
 				{/* Header */}
 				<View style={styles.header}>
-					<TouchableOpacity
-						onPress={() => router.back()}
-						style={styles.backBtn}
-					>
-						<Image
-							source={require("@/assets/icons/crown_white.png")}
-							style={{ width: 30, height: 30 }}
-							resizeMode="contain"
-						/>
-					</TouchableOpacity>
-					<Text style={styles.title}>{t("tracker.title")}</Text>
-					<TouchableOpacity onPress={resetTracker} style={styles.resetBtn}>
-						<Text style={styles.resetText}>{t("tracker.reset")}</Text>
-					</TouchableOpacity>
+					<View style={styles.headerLeft}>
+						<TouchableOpacity
+							onPress={() => { playTap(); router.back(); }}
+							style={styles.backBtn}
+						>
+							<Image
+								source={require("@/assets/icons/crown_white.png")}
+								style={{ width: 30, height: 30 }}
+								resizeMode="contain"
+							/>
+						</TouchableOpacity>
+					</View>
+					<View style={styles.headerRight}>
+						<TouchableOpacity
+							onPress={() => { playTap(); undo(); }}
+							style={[styles.backBtn, !canUndo && { opacity: 0.3 }]}
+							disabled={!canUndo}
+						>
+							<Ionicons name="arrow-undo" size={26} color="#F1F5F9" />
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={() => { playTap(); setSettingsVisible(true); }}
+							style={styles.backBtn}
+						>
+							<Ionicons name="settings-outline" size={24} color="#94A3B8" />
+						</TouchableOpacity>
+					</View>
 				</View>
 
 				<ScrollView
@@ -115,6 +146,19 @@ export const TrackerScreen = () => {
 									style={styles.enemyImage}
 									resizeMode="contain"
 								/>
+								{currentEnemy && !isVictory && (
+									<TouchableOpacity
+										style={styles.skullBtn}
+										onPress={() => { playTap(); defeatCurrentEnemy(); }}
+										activeOpacity={0.7}
+									>
+										<Image
+											source={SkullIcon}
+											style={styles.skullIcon}
+											resizeMode="contain"
+										/>
+									</TouchableOpacity>
+								)}
 								{/* ATK — topo direito */}
 								<View style={styles.atkBadge}>
 									<Text style={styles.badgeLabel}>{t("enemy.attack")}</Text>
@@ -125,7 +169,7 @@ export const TrackerScreen = () => {
 										color="#FBBF24"
 									>
 										<NumberSprite
-											value={effectiveAttack}
+											value={previewAttack}
 											type="attack"
 											height={32}
 										/>
@@ -149,7 +193,7 @@ export const TrackerScreen = () => {
 										strokeWidth={6}
 										color={hpColor}
 									>
-										<NumberSprite value={currentHP} type="health" height={32} />
+										<NumberSprite value={previewHP} type="health" height={32} />
 									</ProgressRing>
 									<Text style={styles.badgeLabel}>{t("enemy.health")}</Text>
 								</View>
@@ -176,20 +220,43 @@ export const TrackerScreen = () => {
 						</View>
 					)}
 
-					{currentEnemy && !isVictory && (
-						<AttackInput enemy={currentEnemy} onApply={handleAttack} />
+					{selectedCardInfo && (
+						<View
+							style={[
+								styles.cardSelectionInfo,
+								selectedCardInfo.immune && styles.cardSelectionInfoImmune,
+							]}
+						>
+							<View style={styles.cardSelectionRow}>
+								<Image
+									source={
+										SUITS.find((s) => s.suit === selectedCardInfo.suit)?.icon
+									}
+									style={styles.cardSelectionIcon}
+									resizeMode="contain"
+								/>
+								<Text style={styles.cardSelectionRank}>
+									{selectedCardInfo.rank}
+								</Text>
+								{selectedCardInfo.rank !== "Jester" && (
+									<Text style={styles.cardSelectionDamage}>
+										Dano: {selectedCardInfo.damage}
+									</Text>
+								)}
+							</View>
+							<Text style={styles.cardSelectionPower}>
+								{selectedCardInfo.powerPreview}
+							</Text>
+						</View>
 					)}
 
 					{currentEnemy && !isVictory && (
-						<TouchableOpacity
-							style={[styles.defeatBtn, isDead && styles.defeatBtnActive]}
-							onPress={defeatCurrentEnemy}
-							activeOpacity={0.8}
-						>
-							<Text style={styles.defeatBtnText}>
-								{isDead ? t("tracker.confirmDefeat") : t("tracker.defeatEnemy")}
-							</Text>
-						</TouchableOpacity>
+						<AttackInput
+							enemy={currentEnemy}
+							onApply={applyAttack}
+							onSelectionChange={setSelectedCardInfo}
+							jesterActive={isJesterActive}
+						/>
 					)}
 
 					<View style={{ height: 16 }} />
@@ -203,6 +270,12 @@ export const TrackerScreen = () => {
 					onSelect={selectEnemy}
 				/>
 			</View>
+
+			<SettingsDrawer
+				visible={settingsVisible}
+				onClose={() => setSettingsVisible(false)}
+				onReset={resetTracker}
+			/>
 		</View>
 	);
 };
