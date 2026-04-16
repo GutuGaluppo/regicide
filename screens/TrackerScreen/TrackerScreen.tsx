@@ -27,6 +27,7 @@ import {
 	View,
 } from "react-native";
 import { SHIFT_PER_ENEMY_EXPORT, styles } from "./TrackerScreen.styles";
+import { ModalState, ScreenState } from "./TrackerScreen.types";
 
 const BG = require("@/assets/backgrounds/bg_cave.webp");
 
@@ -58,6 +59,12 @@ export const TrackerScreen = () => {
 	const [settingsVisible, setSettingsVisible] = useState(false);
 	const [selectedCardInfo, setSelectedCardInfo] =
 		useState<CardSelectionInfo | null>(null);
+	const [screenState, setScreenState] = useState<ScreenState>(
+		currentEnemy ? "IN_COMBAT" : "ENEMY_SELECTION",
+	);
+	// modalState and setModalState are wired in subsequent commits
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [modalState, setModalState] = useState<ModalState>(null);
 
 	const previewHP = selectedCardInfo
 		? Math.max(0, currentHP - selectedCardInfo.damage)
@@ -76,6 +83,12 @@ export const TrackerScreen = () => {
 	const attackPercent = currentEnemy
 		? Math.min(1, previewAttack / currentEnemy.attack)
 		: 0;
+
+	// Keep screenState in sync with tracker state
+	useEffect(() => {
+		if (isVictory) return;
+		setScreenState(currentEnemy ? "IN_COMBAT" : "ENEMY_SELECTION");
+	}, [currentEnemy?.id, isVictory]);
 
 	const bgShift = useRef(new Animated.Value(0)).current;
 	const prevCount = useRef(defeatedIds.length);
