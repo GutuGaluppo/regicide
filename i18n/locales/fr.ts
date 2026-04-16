@@ -135,6 +135,17 @@ const fr: Translations = {
     confirmDefeat: "💀 Confirmer la défaite",
     defeatEnemy: "Vaincre l'ennemi",
   },
+  modal: {
+    ok: "Compris",
+    immuneWarning: {
+      title: "Ennemi immunisé!",
+      body: "Cet ennemi est immunisé contre le pouvoir de cette couleur. Les dégâts s'appliquent quand même, mais le pouvoir spécial n'a aucun effet.",
+    },
+    hint: {
+      title: "Conseil",
+      body: "Choisissez une couleur et une carte pour attaquer. Trèfle double les dégâts, Cœur soigne la défausse, Carreau pioche des cartes et Pique accumule un bouclier.",
+    },
+  },
   home: {
     play: {
       title: "JOUER",
