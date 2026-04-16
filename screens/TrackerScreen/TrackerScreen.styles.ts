@@ -19,6 +19,16 @@ export const styles = StyleSheet.create({
 	overlay: {
 		flex: 1,
 		backgroundColor: "rgba(0,0,0,0.6)",
+		flexDirection: "column",
+	},
+	top: {
+		flexShrink: 0,
+	},
+	center: {
+		flex: 1,
+	},
+	footer: {
+		flexShrink: 0,
 	},
 	backBtn: { padding: 4 },
 	skullBtn: {
