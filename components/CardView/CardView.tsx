@@ -1,3 +1,4 @@
+import { useAudio } from "@/contexts/AudioContext";
 import React, { useEffect, useRef } from "react";
 import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
 import SpellIcon from "@/assets/icons/spellImmune_shadow.png";
@@ -30,6 +31,7 @@ export const CardView = ({
 	discarding,
 	sufferMode,
 }: CardViewPropsTypes) => {
+	const { playTap } = useAudio();
 	const isImmune = !!card.suit && card.suit === immuneSuit;
 	const cardImage = getHandCardImage(card.rank, card.suit, card.id);
 	const { w, h, mx, liftY, icon } = useCardSize();
@@ -89,7 +91,7 @@ export const CardView = ({
 					disabled && styles.disabled,
 					isImmune && styles.cardImmune,
 				]}
-				onPress={onPress}
+				onPress={onPress ? () => { playTap(); onPress(); } : undefined}
 				onLongPress={onLongPress}
 				delayLongPress={250}
 				activeOpacity={0.7}

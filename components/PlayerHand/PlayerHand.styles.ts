@@ -53,6 +53,9 @@ export const styles = StyleSheet.create({
 		paddingVertical: 10,
 		paddingHorizontal: 20,
 		borderRadius: 10,
+		backgroundColor: "#68323797",
+	},
+	discardBtnActive: {
 		backgroundColor: "#683237",
 	},
 	discardLabel: {
@@ -60,6 +63,7 @@ export const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: "700",
 		letterSpacing: 0.5,
+		opacity: 1,
 	},
 	discardSep: {
 		color: "#475569",

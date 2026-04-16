@@ -1,3 +1,7 @@
+import { useAudio } from "@/contexts/AudioContext";
+import { Card, GamePhase, Suit } from "@/data/types";
+import { getCompatibleCardIds } from "@/utils/gameLogic";
+import { useCardSize } from "@/utils/responsive";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,9 +12,6 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { Card, GamePhase, Suit } from "@/data/types";
-import { getCompatibleCardIds } from "@/utils/gameLogic";
-import { useCardSize } from "@/utils/responsive";
 import { CardDetailModal } from "../CardDetailModal";
 import { CardView } from "../CardView";
 import { SvgNumberSprite } from "../SvgNumberSprite";
@@ -42,6 +43,7 @@ export const PlayerHand = ({
 	onDiscard?: () => void;
 }) => {
 	const { t } = useTranslation();
+	const { playTap } = useAudio();
 	const [detailCard, setDetailCard] = useState<Card | null>(null);
 	const interactive = phase === "player_turn" || phase === "suffer_damage";
 	const { liftY } = useCardSize();
@@ -58,10 +60,12 @@ export const PlayerHand = ({
 	};
 
 	const handleSort = () => {
+		playTap();
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		onSort?.();
 	};
 	const handleSortByClass = () => {
+		playTap();
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		onSortByClass?.();
 	};
@@ -76,12 +80,12 @@ export const PlayerHand = ({
 		<View style={styles.container}>
 			{phase === "suffer_damage" && pending > 0 && onDiscard ? (
 				<TouchableOpacity
-					style={styles.discardBtn}
-					onPress={onDiscard}
+					style={[styles.discardBtn, enough && styles.discardBtnActive]}
+					onPress={() => { playTap(); onDiscard?.(); }}
 					disabled={!enough}
 					activeOpacity={0.8}
 				>
-					<Text style={styles.discardLabel}>{t("action.discard_label")}</Text>
+					<Text style={styles.discardLabel}>{t("action.discard_label")}:</Text>
 					<SvgNumberSprite
 						value={damageSubtraction}
 						height={26}
@@ -113,30 +117,29 @@ export const PlayerHand = ({
 			<ScrollView
 				horizontal
 				showsHorizontalScrollIndicator={false}
-				contentContainerStyle={[
-					styles.scroll,
-					{ paddingTop: liftY + 4 },
-				]}
+				contentContainerStyle={[styles.scroll, { paddingTop: liftY + 4 }]}
 			>
-				{hand.map((card) => (
-					<CardView
-						key={card.id}
-						card={card}
-						selected={selectedIds.has(card.id)}
-						onPress={() => onCardPress(card)}
-						onLongPress={() => handleLongPress(card)}
-						disabled={!interactive}
-						immuneSuit={immuneSuit}
-						discarding={discardingIds?.has(card.id)}
-						sufferMode={phase === "suffer_damage"}
-						dimmed={
-							phase === "player_turn" &&
-							selectedIds.size > 0 &&
-							!selectedIds.has(card.id) &&
-							!(compatibleIds?.has(card.id) ?? true)
-						}
-					/>
-				))}
+				{hand.map((card) => {
+					const isDimmed =
+						phase === "player_turn" &&
+						selectedIds.size > 0 &&
+						!selectedIds.has(card.id) &&
+						!(compatibleIds?.has(card.id) ?? true);
+					return (
+						<CardView
+							key={card.id}
+							card={card}
+							selected={selectedIds.has(card.id)}
+							onPress={() => onCardPress(card)}
+							onLongPress={() => handleLongPress(card)}
+							disabled={!interactive || isDimmed}
+							immuneSuit={immuneSuit}
+							discarding={discardingIds?.has(card.id)}
+							sufferMode={phase === "suffer_damage"}
+							dimmed={isDimmed}
+						/>
+					);
+				})}
 				{hand.length === 0 && (
 					<Text style={styles.empty}>{t("hand.empty")}</Text>
 				)}
