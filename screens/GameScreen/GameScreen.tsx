@@ -1,7 +1,6 @@
 import cardBack from "@/assets/images/cardBack.png";
 import { useAudio } from "@/contexts/AudioContext";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
-import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CastleFooter } from "@/components/CastleFooter";
 import { DefeatScreen } from "@/components/DefeatScreen";
 import { EnemyCard } from "@/components/EnemyCard";
@@ -187,16 +186,10 @@ export const GameScreen = () => {
 						onDiscard={handleConfirmDiscard}
 						onSort={sortHand}
 						onSortByClass={sortHandByClass}
+						onPlay={playSelected}
+						playDisabled={selectedIds.size === 0}
 					/>
 				)}
-
-				{/* Action buttons (only player_turn) */}
-				<ActionBar
-					phase={phase}
-					onPlay={playSelected}
-					// onYield={yieldTurn}
-					playDisabled={selectedIds.size === 0}
-				/>
 
 				<CastleFooter
 					castle={gameState.castle}
