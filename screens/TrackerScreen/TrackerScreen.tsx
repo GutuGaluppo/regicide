@@ -64,7 +64,7 @@ export const TrackerScreen = () => {
 	const [screenState, setScreenState] = useState<ScreenState>(
 		currentEnemy ? "IN_COMBAT" : "ENEMY_SELECTION",
 	);
-	// modalState and setModalState are wired in subsequent commits
+	// modalState is read by GameModal in a subsequent commit
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [modalState, setModalState] = useState<ModalState>(null);
 
@@ -280,6 +280,7 @@ export const TrackerScreen = () => {
 						jesterActive={isJesterActive}
 						onApply={applyAttack}
 						onSelectionChange={setSelectedCardInfo}
+						onImmuneWarning={() => setModalState("IMMUNE_WARNING")}
 					/>
 					<DefeatFooter
 						phase={footerPhase}
