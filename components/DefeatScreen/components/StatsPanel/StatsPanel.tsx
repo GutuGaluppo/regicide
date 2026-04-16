@@ -7,7 +7,7 @@ import { StatItem } from "./StatItem";
 import { styles } from "./StatsPanel.styles";
 
 const HOURGLASS = require("@/assets/icons/hourglass.png");
-const SWORD = require("@/assets/icons/sword_outlined.png");
+const SWORD = require("@/assets/icons/sword.png");
 const SKULL = require("@/assets/icons/skull.png");
 const SHIELD = require("@/assets/icons/shield.png");
 
@@ -33,10 +33,26 @@ export const StatsPanel = ({
 	return (
 		<View style={styles.panel}>
 			<View style={styles.statList}>
-				<StatItem icon={HOURGLASS} label={t("defeat.stats.time")} value={formatTime(elapsed)} />
-				<StatItem icon={SWORD} label={t("defeat.stats.turns")} value={String(stats.turnsPlayed)} />
-				<StatItem icon={SKULL} label={t("defeat.stats.enemies")} value={String(defeatedEnemies.length)} />
-				<StatItem icon={SHIELD} label={t("defeat.stats.discarded")} value={String(stats.discardedCards.length)} />
+				<StatItem
+					icon={HOURGLASS}
+					label={t("defeat.stats.time")}
+					value={formatTime(elapsed)}
+				/>
+				<StatItem
+					icon={SWORD}
+					label={t("defeat.stats.turns")}
+					value={String(stats.turnsPlayed)}
+				/>
+				<StatItem
+					icon={SKULL}
+					label={t("defeat.stats.enemies")}
+					value={String(defeatedEnemies.length)}
+				/>
+				<StatItem
+					icon={SHIELD}
+					label={t("defeat.stats.discarded")}
+					value={String(stats.discardedCards.length)}
+				/>
 			</View>
 
 			{stats.enemyKills.length > 0 && (

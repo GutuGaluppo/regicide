@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { styles } from "./StatsPanel.styles";
 
-const SWORD = require("@/assets/icons/sword_outlined.png");
+const SWORD = require("@/assets/icons/sword.png");
 const SHIELD = require("@/assets/icons/shield.png");
 
 const MiniCard = ({ card }: { card: Card }) => {
@@ -35,7 +35,11 @@ const CardSection = ({
 }) => (
 	<View style={styles.cardSection}>
 		<View style={styles.cardSectionHeader}>
-			<Image source={icon} style={styles.cardSectionIcon} resizeMode="contain" />
+			<Image
+				source={icon}
+				style={styles.cardSectionIcon}
+				resizeMode="contain"
+			/>
 			<Text style={styles.cardSectionTitle}>{title}</Text>
 			<Text style={styles.cardSectionCount}>{cards.length}</Text>
 		</View>
@@ -83,19 +87,25 @@ export const EnemyAccordionItem = ({
 		setExpanded((v) => !v);
 	};
 
-	const rotate = rotation.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "180deg"] });
+	const rotate = rotation.interpolate({
+		inputRange: [0, 1],
+		outputRange: ["0deg", "180deg"],
+	});
 
-	const thumbSrc = enemy
-		? getHandCardImage(enemy.rank, enemy.suit)
-		: null;
+	const thumbSrc = enemy ? getHandCardImage(enemy.rank, enemy.suit) : null;
 
-	const totalCount = attackCards !== undefined
-		? (attackCards.length + (discardedCards?.length ?? 0))
-		: (cards?.length ?? 0);
+	const totalCount =
+		attackCards !== undefined
+			? attackCards.length + (discardedCards?.length ?? 0)
+			: (cards?.length ?? 0);
 
 	return (
 		<View style={styles.accordionItem}>
-			<TouchableOpacity style={styles.accordionHeader} onPress={toggle} activeOpacity={0.7}>
+			<TouchableOpacity
+				style={styles.accordionHeader}
+				onPress={toggle}
+				activeOpacity={0.7}
+			>
 				{thumbSrc ? (
 					<Image
 						source={thumbSrc}
