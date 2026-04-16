@@ -1,19 +1,19 @@
 import MagicShield from "@/assets/icons/shield.png";
 import SkullIcon from "@/assets/icons/skull.png";
 import { AttackInput } from "@/components/AttackInput";
-import { useAudio } from "@/contexts/AudioContext";
 import {
 	CardSelectionInfo,
 	SUITS,
 } from "@/components/AttackInput/AttackInput.constants";
 import { DefeatFooter } from "@/components/DefeatFooter";
-import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { NumberSprite } from "@/components/NumberSprite";
 import { ProgressRing } from "@/components/ProgressRing";
+import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { VictoryScreen } from "@/components/VictoryScreen";
+import { useAudio } from "@/contexts/AudioContext";
 import { getCardImage } from "@/data/images";
-import { useTracker } from "@/hooks/useTracker";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
+import { useTracker } from "@/hooks/useTracker";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -33,7 +33,9 @@ const BG = require("@/assets/backgrounds/bg_cave.webp");
 export const TrackerScreen = () => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
-	useSoundtrack(require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource);
+	useSoundtrack(
+		require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource,
+	);
 	const {
 		currentEnemy,
 		currentHP,
@@ -64,7 +66,9 @@ export const TrackerScreen = () => {
 		? Math.max(0, effectiveAttack - selectedCardInfo.shieldAdded)
 		: effectiveAttack;
 
-	const hpPercent = currentEnemy ? Math.max(0, previewHP / currentEnemy.health) : 0;
+	const hpPercent = currentEnemy
+		? Math.max(0, previewHP / currentEnemy.health)
+		: 0;
 	const hpColor =
 		hpPercent > 0.5 ? "#22C55E" : hpPercent > 0.25 ? "#FBBF24" : "#EF4444";
 	const isDead = currentHP <= 0;
@@ -104,11 +108,14 @@ export const TrackerScreen = () => {
 				<View style={styles.header}>
 					<View style={styles.headerLeft}>
 						<TouchableOpacity
-							onPress={() => { playTap(); router.back(); }}
+							onPress={() => {
+								playTap();
+								router.back();
+							}}
 							style={styles.backBtn}
 						>
 							<Image
-								source={require("@/assets/icons/crown_white.png")}
+								source={require("@/assets/icons/tavern_silver.png")}
 								style={{ width: 30, height: 30 }}
 								resizeMode="contain"
 							/>
@@ -116,14 +123,20 @@ export const TrackerScreen = () => {
 					</View>
 					<View style={styles.headerRight}>
 						<TouchableOpacity
-							onPress={() => { playTap(); undo(); }}
+							onPress={() => {
+								playTap();
+								undo();
+							}}
 							style={[styles.backBtn, !canUndo && { opacity: 0.3 }]}
 							disabled={!canUndo}
 						>
 							<Ionicons name="arrow-undo" size={26} color="#F1F5F9" />
 						</TouchableOpacity>
 						<TouchableOpacity
-							onPress={() => { playTap(); setSettingsVisible(true); }}
+							onPress={() => {
+								playTap();
+								setSettingsVisible(true);
+							}}
 							style={styles.backBtn}
 						>
 							<Ionicons name="settings-outline" size={24} color="#94A3B8" />
@@ -149,7 +162,10 @@ export const TrackerScreen = () => {
 								{currentEnemy && !isVictory && (
 									<TouchableOpacity
 										style={styles.skullBtn}
-										onPress={() => { playTap(); defeatCurrentEnemy(); }}
+										onPress={() => {
+											playTap();
+											defeatCurrentEnemy();
+										}}
 										activeOpacity={0.7}
 									>
 										<Image
