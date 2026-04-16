@@ -85,11 +85,31 @@ export const TrackerScreen = () => {
 		? Math.min(1, previewAttack / currentEnemy.attack)
 		: 0;
 
-	// Keep screenState in sync with tracker state
+	// Keep screenState in sync with tracker state (dep on id, not object reference)
 	useEffect(() => {
 		if (isVictory) return;
 		setScreenState(currentEnemy ? "IN_COMBAT" : "ENEMY_SELECTION");
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentEnemy?.id, isVictory]);
+
+	const defeatFade = useRef(new Animated.Value(1)).current;
+
+	const handleDefeatWithTransition = () => {
+		playTap();
+		setScreenState("ENEMY_DEFEATED_TRANSITION");
+		defeatFade.setValue(1);
+		Animated.sequence([
+			Animated.delay(300),
+			Animated.timing(defeatFade, {
+				toValue: 0,
+				duration: 500,
+				useNativeDriver: true,
+			}),
+		]).start(() => {
+			defeatCurrentEnemy();
+			defeatFade.setValue(1);
+		});
+	};
 
 	const bgShift = useRef(new Animated.Value(0)).current;
 	const prevCount = useRef(defeatedIds.length);
@@ -168,8 +188,12 @@ export const TrackerScreen = () => {
 							showsVerticalScrollIndicator={false}
 						>
 							{currentEnemy && !isVictory && (
-								<View
-									style={[styles.enemySection, isDead && styles.enemySectionDead]}
+								<Animated.View
+									style={[
+										styles.enemySection,
+										isDead && styles.enemySectionDead,
+										screenState === "ENEMY_DEFEATED_TRANSITION" && { opacity: defeatFade },
+									]}
 								>
 									<View style={styles.enemyImageWrapper}>
 										<Image
@@ -180,10 +204,7 @@ export const TrackerScreen = () => {
 										{currentEnemy && !isVictory && (
 											<TouchableOpacity
 												style={styles.skullBtn}
-												onPress={() => {
-													playTap();
-													defeatCurrentEnemy();
-												}}
+												onPress={handleDefeatWithTransition}
 												activeOpacity={0.7}
 											>
 												<Image
@@ -236,7 +257,7 @@ export const TrackerScreen = () => {
 									{isDead && (
 										<Text style={styles.deadBadge}>{t("tracker.dead")}</Text>
 									)}
-								</View>
+								</Animated.View>
 							)}
 
 							{lastResult && !isVictory && (
