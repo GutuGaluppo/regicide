@@ -103,11 +103,17 @@ const ptBR = {
       time: "Tempo",
       turns: "Turnos",
       enemies: "Inimigos derrotados",
-      discarded: "Cartas descartadas",
+      discarded: "Descartadas",
+      defeated: "Derrotado",
+      discardPile: "🗑 Descarte",
+      hand: "🃏 Mão disponível",
+      noCards: "Nenhuma carta",
     },
   },
   settings: {
     title: "Configurações",
+    music: "Música",
+    sfx: "Efeitos sonoros",
     restart: "Reiniciar partida",
     exit: "Sair para o início",
   },
@@ -238,7 +244,7 @@ const ptBR = {
       },
     },
   },
-} as const;
+};
 
 export default ptBR;
 export type Translations = typeof ptBR;
