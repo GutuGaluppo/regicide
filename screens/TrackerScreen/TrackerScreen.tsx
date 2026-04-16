@@ -26,6 +26,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { SuitTracker } from "@/components/SuitTracker";
 import { SHIFT_PER_ENEMY_EXPORT, styles } from "./TrackerScreen.styles";
 import { ModalState, ScreenState } from "./TrackerScreen.types";
 
@@ -117,6 +118,8 @@ export const TrackerScreen = () => {
 				resizeMode="cover"
 			/>
 			<View style={styles.overlay}>
+				<SuitTracker enemies={footerEnemies} defeatedIds={defeatedIds} />
+
 				{/* Header */}
 				<ScreenHeader
 					onSettingsPress={() => setSettingsVisible(true)}
