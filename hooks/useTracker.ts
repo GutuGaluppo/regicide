@@ -11,6 +11,8 @@ export interface AttackResult {
 	immune: boolean;
 }
 
+export type AttackCard = { suit: Suit; rank: CardRank };
+
 interface BlockedCard {
 	suit: Suit;
 	value: number;
@@ -121,13 +123,13 @@ export const useTracker = () => {
 		setState((s) => ({ ...s, currentEnemyId: id }));
 	};
 
-	const applyAttack = (suit: Suit, rank: CardRank) => {
+	const applyAttack = (cards: AttackCard[]) => {
 		if (!currentEnemy) return;
 
 		snapshot(state, lastResult);
 
-		// ── Jester: cancela imunidade e aplica retroativamente poderes bloqueados ──
-		if (suit === "jester") {
+		// ── Jester (always played alone) ─────────────────────────────────────────
+		if (cards.length === 1 && cards[0].suit === "jester") {
 			const blocked = state.blockedCardsMap[currentEnemy.id] ?? [];
 			let retroShield = 0;
 			let retroDamage = 0;
@@ -165,68 +167,53 @@ export const useTracker = () => {
 				blockedCardsMap: { ...s.blockedCardsMap, [currentEnemy.id]: [] },
 				damageMap:
 					retroDamage > 0
-						? {
-								...s.damageMap,
-								[currentEnemy.id]: (s.damageMap[currentEnemy.id] ?? 0) + retroDamage,
-						  }
+						? { ...s.damageMap, [currentEnemy.id]: (s.damageMap[currentEnemy.id] ?? 0) + retroDamage }
 						: s.damageMap,
 				shieldMap:
 					retroShield > 0
-						? {
-								...s.shieldMap,
-								[currentEnemy.id]: (s.shieldMap[currentEnemy.id] ?? 0) + retroShield,
-						  }
+						? { ...s.shieldMap, [currentEnemy.id]: (s.shieldMap[currentEnemy.id] ?? 0) + retroShield }
 						: s.shieldMap,
 			}));
 			return;
 		}
 
-		// ── Carta normal ────────────────────────────────────────────────────────
+		// ── Normal cards (single or combo) ───────────────────────────────────────
 		const jesterActive = state.jesterActiveIds.includes(currentEnemy.id);
-		const immune = !jesterActive && suit === currentEnemy.suit;
-		const value = cardValue(rank);
 
-		if (immune) {
-			const powerText = `Imunidade: poder de ${suit} não se aplica`;
-			setLastResult({ damage: value, shieldAdded: 0, powerText, immune: true });
+		// Total base value of all cards
+		const totalValue = cards.reduce((sum, c) => sum + cardValue(c.rank), 0);
 
-			setState((s) => ({
-				...s,
-				damageMap: {
-					...s.damageMap,
-					[currentEnemy.id]: (s.damageMap[currentEnemy.id] ?? 0) + value,
-				},
-				blockedCardsMap: {
-					...s.blockedCardsMap,
-					[currentEnemy.id]: [
-						...(s.blockedCardsMap[currentEnemy.id] ?? []),
-						{ suit, value },
-					],
-				},
-			}));
-			return;
+		// Classify each card as immune or active
+		const newBlockedCards: BlockedCard[] = [];
+		const activeSuits = new Set<Suit>();
+
+		for (const card of cards) {
+			const isImmune = !jesterActive && card.suit === currentEnemy.suit;
+			if (isImmune) {
+				newBlockedCards.push({ suit: card.suit, value: cardValue(card.rank) });
+			} else {
+				activeSuits.add(card.suit);
+			}
 		}
 
-		const damage = value * (suit === "clubs" ? 2 : 1);
-		const shieldAdded = suit === "spades" ? value : 0;
+		// Suit effects use totalValue (matching resolvePlay behaviour in gameLogic.ts)
+		const clubsDouble = activeSuits.has("clubs");
+		const damage = totalValue * (clubsDouble ? 2 : 1);
+		const shieldAdded = activeSuits.has("spades") ? totalValue : 0;
 
-		let powerText = "";
-		switch (suit) {
-			case "hearts":
-				powerText = `♥ Curar: mover ${value} carta(s) do descarte para a taverna`;
-				break;
-			case "diamonds":
-				powerText = `♦ Comprar: ${value} carta(s)`;
-				break;
-			case "clubs":
-				powerText = `♣ Dano dobrado: ${value} × 2 = ${damage}`;
-				break;
-			case "spades":
-				powerText = `♠ Escudo: ataque reduzido em ${value} (total: ${currentShield + value})`;
-				break;
-		}
+		const powerParts: string[] = [];
+		if (newBlockedCards.length > 0) powerParts.push("Imunidade: poder não se aplica");
+		if (activeSuits.has("hearts")) powerParts.push(`♥ Curar: mover ${totalValue} carta(s) do descarte para a taverna`);
+		if (activeSuits.has("diamonds")) powerParts.push(`♦ Comprar: ${totalValue} carta(s)`);
+		if (clubsDouble) powerParts.push(`♣ Dano dobrado: ${totalValue} × 2 = ${damage}`);
+		if (activeSuits.has("spades")) powerParts.push(`♠ Escudo: ataque reduzido em ${totalValue} (total: ${currentShield + shieldAdded})`);
 
-		setLastResult({ damage, shieldAdded, powerText, immune: false });
+		setLastResult({
+			damage,
+			shieldAdded,
+			powerText: powerParts.join(" | ") || `Ataque: ${damage}`,
+			immune: newBlockedCards.length > 0,
+		});
 
 		setState((s) => ({
 			...s,
@@ -236,11 +223,18 @@ export const useTracker = () => {
 			},
 			shieldMap:
 				shieldAdded > 0
-					? {
-							...s.shieldMap,
-							[currentEnemy.id]: (s.shieldMap[currentEnemy.id] ?? 0) + shieldAdded,
-					  }
+					? { ...s.shieldMap, [currentEnemy.id]: (s.shieldMap[currentEnemy.id] ?? 0) + shieldAdded }
 					: s.shieldMap,
+			blockedCardsMap:
+				newBlockedCards.length > 0
+					? {
+							...s.blockedCardsMap,
+							[currentEnemy.id]: [
+								...(s.blockedCardsMap[currentEnemy.id] ?? []),
+								...newBlockedCards,
+							],
+					  }
+					: s.blockedCardsMap,
 		}));
 	};
 
