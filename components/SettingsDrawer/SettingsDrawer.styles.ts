@@ -85,11 +85,14 @@ export const styles = StyleSheet.create({
 		minWidth: 36,
 		textAlign: "right",
 	},
+	sliderHitArea: {
+		height: 44,
+		justifyContent: "center",
+	},
 	sliderTrack: {
 		height: 6,
 		borderRadius: 3,
 		backgroundColor: "rgba(148,163,184,0.2)",
-		justifyContent: "center",
 	},
 	sliderFill: {
 		position: "absolute",

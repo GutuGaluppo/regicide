@@ -23,9 +23,10 @@ const VolumeSlider = ({
 	value: number;
 	onChange: (v: number) => void;
 }) => {
-	// useRef instead of useState so PanResponder handlers always see the current width
 	const trackWidthRef = useRef(0);
-	const startValRef = useRef(value);
+	// Absolute pageX of the hit area — avoids locationX being relative to a child view (thumb)
+	const trackPageXRef = useRef(0);
+	const hitAreaRef = useRef<View>(null);
 
 	const clamp = (v: number) => Math.max(0, Math.min(1, v));
 
@@ -37,13 +38,11 @@ const VolumeSlider = ({
 			onPanResponderTerminationRequest: () => false,
 			onPanResponderGrant: (evt) => {
 				if (trackWidthRef.current === 0) return;
-				const tapped = clamp(evt.nativeEvent.locationX / trackWidthRef.current);
-				startValRef.current = tapped;
-				onChange(tapped);
+				onChange(clamp((evt.nativeEvent.pageX - trackPageXRef.current) / trackWidthRef.current));
 			},
-			onPanResponderMove: (_, gestureState) => {
+			onPanResponderMove: (evt) => {
 				if (trackWidthRef.current === 0) return;
-				onChange(clamp(startValRef.current + gestureState.dx / trackWidthRef.current));
+				onChange(clamp((evt.nativeEvent.pageX - trackPageXRef.current) / trackWidthRef.current));
 			},
 		}),
 	).current;
@@ -52,12 +51,21 @@ const VolumeSlider = ({
 
 	return (
 		<View
+			ref={hitAreaRef}
+			collapsable={false}
 			{...panResponder.panHandlers}
-			onLayout={(e) => { trackWidthRef.current = e.nativeEvent.layout.width; }}
-			style={styles.sliderTrack}
+			onLayout={(e) => {
+				trackWidthRef.current = e.nativeEvent.layout.width;
+				hitAreaRef.current?.measure((_x, _y, _w, _h, pageX) => {
+					if (pageX !== undefined) trackPageXRef.current = pageX;
+				});
+			}}
+			style={styles.sliderHitArea}
 		>
-			<View style={[styles.sliderFill, { width: fillPct as `${number}%` }]} />
-			<View style={[styles.sliderThumb, { left: fillPct as `${number}%` }]} />
+			<View style={styles.sliderTrack} pointerEvents="none">
+				<View style={[styles.sliderFill, { width: fillPct as `${number}%` }]} />
+				<View style={[styles.sliderThumb, { left: fillPct as `${number}%` }]} />
+			</View>
 		</View>
 	);
 };
