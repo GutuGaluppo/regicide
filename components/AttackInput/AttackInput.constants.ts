@@ -8,6 +8,7 @@ import HeartsIconShadow from "@/assets/classes/hearts_shadow.png";
 import SpadesIconShadow from "@/assets/classes/spades_shadow.png";
 import JesterIcon from "@/assets/icons/jasper_circle.png";
 import { CardRank, Suit } from "@/data/types";
+import { cardValue } from "@/utils/gameLogic";
 import { ImageSourcePropType } from "react-native";
 
 export const SUITS: {
@@ -127,3 +128,72 @@ export type CardSelectionInfo = {
 	powerPreview: string;
 	immune: boolean;
 };
+
+// Playable non-jester ranks (player hand cards)
+const PLAYER_RANKS: SuitRank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+export const REGULAR_SUITS: RegularSuit[] = ["hearts", "diamonds", "clubs", "spades"];
+
+export type ComboOption = {
+	suit: RegularSuit;
+	rank: SuitRank;
+	image: ImageSourcePropType;
+};
+
+/**
+ * Returns true if `candidateRank` can be added to `[mainRank, ...alreadyComboRanks]`
+ * to form a valid combo per rulebook page 7.
+ *
+ * Rules:
+ * - Ace (Animal Companion) pairs with exactly 1 other card (can be another Ace).
+ * - Same-rank combos: 2–4 cards of identical rank, total value ≤ 10. No Aces allowed.
+ */
+function isValidComboAddition(
+	mainRank: SuitRank,
+	alreadyComboRanks: SuitRank[],
+	candidateRank: SuitRank,
+): boolean {
+	const allRanks = [mainRank, ...alreadyComboRanks, candidateRank];
+	const aces = allRanks.filter((r) => r === "A");
+	const nonAces = allRanks.filter((r) => r !== "A");
+
+	if (aces.length >= 1) {
+		// Ace pairing: Ace + 1 card, or Ace + Ace
+		if (aces.length === 1 && nonAces.length === 1) return true;
+		if (aces.length === 2 && nonAces.length === 0) return true;
+		return false;
+	}
+
+	// Same-rank combination
+	const rankSet = new Set(allRanks);
+	if (rankSet.size !== 1) return false;
+	const total = allRanks.reduce((sum, r) => sum + cardValue(r), 0);
+	return total <= 10 && allRanks.length <= 4;
+}
+
+/**
+ * Returns cards that can still be added to the current selection to form a valid combo.
+ * Already-selected cards are excluded from the result.
+ */
+export function getComboOptions(
+	mainSuit: RegularSuit,
+	mainRank: SuitRank,
+	comboCards: Array<{ suit: RegularSuit; rank: SuitRank }>,
+): ComboOption[] {
+	const alreadySelected = new Set([
+		`${mainSuit}-${mainRank}`,
+		...comboCards.map((c) => `${c.suit}-${c.rank}`),
+	]);
+	const comboRanks = comboCards.map((c) => c.rank);
+	const result: ComboOption[] = [];
+
+	for (const suit of REGULAR_SUITS) {
+		for (const rank of PLAYER_RANKS) {
+			if (alreadySelected.has(`${suit}-${rank}`)) continue;
+			if (isValidComboAddition(mainRank, comboRanks, rank)) {
+				result.push({ suit, rank, image: CHOSEN_CARDS[suit][rank] });
+			}
+		}
+	}
+
+	return result;
+}

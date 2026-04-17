@@ -78,8 +78,10 @@ export const styles = StyleSheet.create({
 		width: 60,
 		height: 60,
 	},
-	rankRow: {
+	rankScrollView: {
 		height: 100,
+	},
+	rankRow: {
 		gap: 8,
 		paddingTop: 14,
 		paddingBottom: 4,
@@ -94,6 +96,7 @@ export const styles = StyleSheet.create({
 	},
 	cardBtn: {
 		width: 58,
+		height: 82,
 		borderRadius: 10,
 		overflow: "hidden",
 		borderWidth: 2,
