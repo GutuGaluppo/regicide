@@ -1,40 +1,32 @@
-import MagicShield from "@/assets/icons/shield.png";
-import SkullIcon from "@/assets/icons/skull.png";
-import { CardSelectionInfo } from "@/components/AttackInput/AttackInput.constants";
 import { AttackFooter } from "@/components/AttackFooter";
+import { CardSelectionInfo } from "@/components/AttackInput/AttackInput.constants";
 import { GameModal } from "@/components/GameModal";
-import { NumberSprite } from "@/components/NumberSprite";
-import { ProgressRing } from "@/components/ProgressRing";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { SuitTracker } from "@/components/SuitTracker";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
-import { getCardImage } from "@/data/images";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
 import { useTracker } from "@/hooks/useTracker";
+import { EnemySelectionScreen } from "@/screens/EnemySelectionScreen/EnemySelectionScreen";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import {
-	Animated,
-	Image,
-	ScrollView,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
-import { SHIFT_PER_ENEMY_EXPORT, styles } from "./TrackerScreen.styles";
+import React, { useEffect, useState } from "react";
+import { Animated, ScrollView, TouchableOpacity, View } from "react-native";
+import { EnemyStatsCard } from "./components/EnemyStatsCard/EnemyStatsCard";
+import { LastResultBadge } from "./components/LastResultBadge/LastResultBadge";
+import { useBgShift } from "./hooks/useBgShift";
+import { useDefeatTransition } from "./hooks/useDefeatTransition";
+import { styles } from "./TrackerScreen.styles";
 import { ModalState, ScreenState } from "./TrackerScreen.types";
 
 const BG = require("@/assets/backgrounds/bg_cave.webp");
 
 export const TrackerScreen = () => {
-	const { t } = useTranslation();
 	const { playTap } = useAudio();
 	useSoundtrack(
 		require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource,
 	);
+
 	const {
 		currentEnemy,
 		currentHP,
@@ -61,26 +53,13 @@ export const TrackerScreen = () => {
 	);
 	const [modalState, setModalState] = useState<ModalState>(null);
 
-	const previewHP = selectedCardInfo
-		? Math.max(0, currentHP - selectedCardInfo.damage)
-		: currentHP;
-	const previewAttack = selectedCardInfo
-		? Math.max(0, effectiveAttack - selectedCardInfo.shieldAdded)
-		: effectiveAttack;
-
-	const hpPercent = currentEnemy
-		? Math.max(0, previewHP / currentEnemy.health)
-		: 0;
-	const hpColor =
-		hpPercent > 0.5 ? "#22C55E" : hpPercent > 0.25 ? "#FBBF24" : "#EF4444";
-	const isDead = currentHP <= 0;
-
-	const attackPercent = currentEnemy
-		? Math.min(1, previewAttack / currentEnemy.attack)
-		: 0;
-
-	// Guard against overriding screenState during defeat transition animation
-	const isDefeatingRef = useRef(false);
+	const bgShift = useBgShift(defeatedIds.length);
+	const { isDefeatingRef, defeatFade, handleDefeatWithTransition } =
+		useDefeatTransition({
+			defeatCurrentEnemy,
+			playTap,
+			setScreenState,
+		});
 
 	// Keep screenState in sync with tracker state (dep on id, not object reference)
 	useEffect(() => {
@@ -90,42 +69,40 @@ export const TrackerScreen = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentEnemy?.id, isVictory]);
 
-	const defeatFade = useRef(new Animated.Value(1)).current;
+	// ── Derived display values ────────────────────────────────────────────────
+	const previewHP = selectedCardInfo
+		? Math.max(0, currentHP - selectedCardInfo.damage)
+		: currentHP;
+	const previewAttack = selectedCardInfo
+		? Math.max(0, effectiveAttack - selectedCardInfo.shieldAdded)
+		: effectiveAttack;
+	const hpPercent = currentEnemy
+		? Math.max(0, previewHP / currentEnemy.health)
+		: 0;
+	const hpColor =
+		hpPercent > 0.5 ? "#22C55E" : hpPercent > 0.25 ? "#FBBF24" : "#EF4444";
+	const attackPercent = currentEnemy
+		? Math.min(1, previewAttack / currentEnemy.attack)
+		: 0;
+	const isDead = currentHP <= 0;
 
-	const handleDefeatWithTransition = () => {
-		playTap();
-		isDefeatingRef.current = true;
-		setScreenState("ENEMY_DEFEATED_TRANSITION");
-		defeatFade.setValue(1);
-		Animated.sequence([
-			Animated.delay(300),
-			Animated.timing(defeatFade, {
-				toValue: 0,
-				duration: 500,
-				useNativeDriver: true,
-			}),
-		]).start(() => {
-			isDefeatingRef.current = false;
-			defeatCurrentEnemy();
-			defeatFade.setValue(1);
-		});
-	};
-
-	const bgShift = useRef(new Animated.Value(0)).current;
-
-	useEffect(() => {
-		const count = defeatedIds.length;
-		const toValue = count === 0 ? 0 : -(count * SHIFT_PER_ENEMY_EXPORT);
-		Animated.spring(bgShift, {
-			toValue,
-			useNativeDriver: true,
-			tension: 30,
-			friction: 10,
-		}).start();
-	}, [defeatedIds.length, bgShift]);
-
+	// ── Early returns ─────────────────────────────────────────────────────────
 	if (isVictory) {
 		return <VictoryScreen onReset={resetTracker} />;
+	}
+
+	if (screenState === "ENEMY_SELECTION") {
+		return (
+			<EnemySelectionScreen
+				enemies={footerEnemies}
+				defeatedIds={defeatedIds}
+				bgShift={bgShift}
+				onSelectEnemy={(id) => {
+					playTap();
+					selectEnemy(id);
+				}}
+			/>
+		);
 	}
 
 	return (
@@ -143,7 +120,10 @@ export const TrackerScreen = () => {
 						onSettingsPress={() => setSettingsVisible(true)}
 						rightExtra={
 							<TouchableOpacity
-								onPress={() => { playTap(); undo(); }}
+								onPress={() => {
+									playTap();
+									undo();
+								}}
 								style={[styles.backBtn, !canUndo && { opacity: 0.3 }]}
 								disabled={!canUndo}
 							>
@@ -155,125 +135,33 @@ export const TrackerScreen = () => {
 
 				{/* ── Center (flex) ── */}
 				<View style={styles.center}>
-					{screenState === "ENEMY_SELECTION" ? (
-						/* 2×2 enemy selection grid */
-						<View style={styles.enemyGrid}>
-							{footerEnemies.map((enemy) => {
-								const defeated = defeatedIds.includes(enemy.id);
-								return (
-									<TouchableOpacity
-										key={enemy.id}
-										style={styles.enemyGridCell}
-										onPress={() => { playTap(); selectEnemy(enemy.id); }}
-										disabled={defeated}
-										activeOpacity={0.75}
-									>
-										<Image
-											source={getCardImage(enemy.rank, enemy.suit)}
-											style={[styles.enemyGridCard, defeated && styles.enemyGridCardDefeated]}
-											resizeMode="contain"
-										/>
-										{defeated && <View style={styles.enemyGridOverlay} />}
-									</TouchableOpacity>
-								);
-							})}
-						</View>
-					) : (
-						/* Single enemy view (IN_COMBAT / ENEMY_DEFEATED_TRANSITION) */
-						<ScrollView
-							style={styles.scroll}
-							contentContainerStyle={styles.scrollContent}
-							showsVerticalScrollIndicator={false}
-						>
-							{currentEnemy && !isVictory && (
-								<Animated.View
-									style={[
-										styles.enemySection,
-										isDead && styles.enemySectionDead,
-										screenState === "ENEMY_DEFEATED_TRANSITION" && { opacity: defeatFade },
-									]}
-								>
-									<View style={styles.enemyImageWrapper}>
-										<Image
-											source={getCardImage(currentEnemy.rank, currentEnemy.suit)}
-											style={styles.enemyImage}
-											resizeMode="contain"
-										/>
-										<TouchableOpacity
-											style={styles.skullBtn}
-											onPress={handleDefeatWithTransition}
-											activeOpacity={0.7}
-										>
-											<Image
-												source={SkullIcon}
-												style={styles.skullIcon}
-												resizeMode="contain"
-											/>
-										</TouchableOpacity>
-										{/* ATK — topo direito */}
-										<View style={styles.atkBadge}>
-											<Text style={styles.badgeLabel}>{t("enemy.attack")}</Text>
-											<ProgressRing
-												percent={attackPercent}
-												size={80}
-												strokeWidth={6}
-												color="#FBBF24"
-											>
-												<NumberSprite
-													value={previewAttack}
-													type="attack"
-													height={32}
-												/>
-											</ProgressRing>
-											{currentShield > 0 && (
-												<View style={styles.shieldedWrapper}>
-													<Image source={MagicShield} style={styles.shieldIconBg} />
-													<NumberSprite
-														value={currentShield}
-														type="attack"
-														height={22}
-													/>
-												</View>
-											)}
-										</View>
-										{/* HP — base esquerda */}
-										<View style={styles.hpBadge}>
-											<ProgressRing
-												percent={hpPercent}
-												size={80}
-												strokeWidth={6}
-												color={hpColor}
-											>
-												<NumberSprite value={previewHP} type="health" height={32} />
-											</ProgressRing>
-											<Text style={styles.badgeLabel}>{t("enemy.health")}</Text>
-										</View>
-									</View>
+					<ScrollView
+						style={styles.scroll}
+						contentContainerStyle={styles.scrollContent}
+						showsVerticalScrollIndicator={false}
+					>
+						{currentEnemy && (
+							<EnemyStatsCard
+								enemy={currentEnemy}
+								isDead={isDead}
+								defeatFade={defeatFade}
+								isDefeatingTransition={
+									screenState === "ENEMY_DEFEATED_TRANSITION"
+								}
+								previewHP={previewHP}
+								hpPercent={hpPercent}
+								hpColor={hpColor}
+								previewAttack={previewAttack}
+								attackPercent={attackPercent}
+								currentShield={currentShield}
+								onDefeat={handleDefeatWithTransition}
+							/>
+						)}
 
-									{isDead && (
-										<Text style={styles.deadBadge}>{t("tracker.dead")}</Text>
-									)}
-								</Animated.View>
-							)}
+						{lastResult && <LastResultBadge result={lastResult} />}
 
-							{lastResult && !isVictory && (
-								<View
-									style={[
-										styles.resultBadge,
-										lastResult.immune && styles.resultImmune,
-									]}
-								>
-									<Text style={styles.resultDamage}>
-										{lastResult.immune ? t("tracker.immune") : ""}
-										{t("tracker.damage", { value: lastResult.damage })}
-									</Text>
-									<Text style={styles.resultPower}>{lastResult.powerText}</Text>
-								</View>
-							)}
-
-							<View style={{ height: 16 }} />
-						</ScrollView>
-					)}
+						<View style={{ height: 16 }} />
+					</ScrollView>
 				</View>
 
 				{/* ── Footer (fixed) ── */}
@@ -281,8 +169,8 @@ export const TrackerScreen = () => {
 					<AttackFooter
 						enemy={currentEnemy}
 						jesterActive={isJesterActive}
-						onApply={(suit, rank) => {
-							applyAttack(suit, rank);
+						onApply={(cards) => {
+							applyAttack(cards);
 							setSelectedCardInfo(null);
 						}}
 						onSelectionChange={setSelectedCardInfo}
