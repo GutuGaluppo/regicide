@@ -143,8 +143,9 @@ export const EnemyStatsCard = ({
 							<Image
 								source={MagicShield}
 								style={{ position: "absolute", top: 0, left: 0, width: r.shield, height: r.shield }}
+								resizeMode="contain"
 							/>
-							<NumberSprite value={currentShield} type="attack" height={r.numShieldH} />
+							<NumberSprite value={currentShield} type="attack" height={r.numShieldH} color="#FFFFFF" />
 						</View>
 					)}
 				</View>
