@@ -63,22 +63,17 @@ export const styles = StyleSheet.create({
 		textShadowRadius: 3,
 	},
 	shieldedWrapper: {
-		width: 88,
-		height: 88,
+		width: 60,
+		height: 60,
 		justifyContent: "center",
 		alignItems: "center",
 	},
 	shieldIconBg: {
 		position: "absolute",
-		top: -8,
+		top: 0,
 		left: 0,
-		width: 88,
-		height: 88,
-	},
-	shieldNumber: {
-		position: "absolute",
-		top: 25, // (88/2 - 8) - 22/2 = center of shifted shield image
-		alignSelf: "center",
+		width: 60,
+		height: 60,
 	},
 	shieldPile: {
 		position: "relative",
