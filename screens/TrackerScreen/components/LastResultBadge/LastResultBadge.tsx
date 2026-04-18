@@ -1,38 +1,51 @@
 import { AttackResult } from "@/hooks/useTracker";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface LastResultBadgeProps {
 	result: AttackResult;
+	onDismiss: () => void;
 }
 
-export const LastResultBadge = ({ result }: LastResultBadgeProps) => {
+export const LastResultBadge = ({ result, onDismiss }: LastResultBadgeProps) => {
 	const { t } = useTranslation();
 
 	return (
 		<View style={[styles.badge, result.immune && styles.badgeImmune]}>
-			<Text style={styles.damage}>
-				{result.immune ? t("tracker.immune") : ""}
-				{t("tracker.damage", { value: result.damage })}
-			</Text>
-			<Text style={styles.power}>{result.powerText}</Text>
+			<View style={styles.content}>
+				<Text style={styles.damage}>
+					{result.immune ? t("tracker.immune") : ""}
+					{t("tracker.damage", { value: result.damage })}
+				</Text>
+				<Text style={styles.power}>{result.powerText}</Text>
+			</View>
+			<TouchableOpacity onPress={onDismiss} style={styles.closeBtn} hitSlop={8}>
+				<Text style={styles.closeIcon}>✕</Text>
+			</TouchableOpacity>
 		</View>
 	);
 };
 
 const styles = StyleSheet.create({
 	badge: {
-		marginHorizontal: 16,
-		backgroundColor: "rgba(30,41,59,0.8)",
-		borderRadius: 10,
-		padding: 10,
+		marginHorizontal: 4,
+		backgroundColor: "rgba(30,41,59,0.9)",
+		borderRadius: 8,
+		paddingHorizontal: 10,
+		paddingVertical: 7,
 		borderLeftWidth: 3,
 		borderLeftColor: "#22C55E",
-		gap: 2,
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
 	},
 	badgeImmune: {
 		borderLeftColor: "#EF4444",
+	},
+	content: {
+		flex: 1,
+		gap: 2,
 	},
 	damage: {
 		color: "#FBBF24",
@@ -42,5 +55,13 @@ const styles = StyleSheet.create({
 	power: {
 		color: "#94A3B8",
 		fontSize: 12,
+	},
+	closeBtn: {
+		padding: 4,
+	},
+	closeIcon: {
+		color: "#475569",
+		fontSize: 14,
+		fontWeight: "700",
 	},
 });

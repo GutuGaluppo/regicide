@@ -52,6 +52,12 @@ export const TrackerScreen = () => {
 		currentEnemy ? "IN_COMBAT" : "ENEMY_SELECTION",
 	);
 	const [modalState, setModalState] = useState<ModalState>(null);
+	const [resultDismissed, setResultDismissed] = useState(false);
+
+	// Reset dismissal whenever a new attack result arrives
+	useEffect(() => {
+		setResultDismissed(false);
+	}, [lastResult]);
 
 	const bgShift = useBgShift(defeatedIds.length);
 	const { isDefeatingRef, defeatFade, handleDefeatWithTransition } =
@@ -157,15 +163,17 @@ export const TrackerScreen = () => {
 								onDefeat={handleDefeatWithTransition}
 							/>
 						)}
-
-						{lastResult && <LastResultBadge result={lastResult} />}
-
-						<View style={{ height: 16 }} />
 					</ScrollView>
 				</View>
 
 				{/* ── Footer (fixed) ── */}
 				<View style={styles.footer}>
+					{lastResult && !resultDismissed && selectedCardInfo === null && (
+						<LastResultBadge
+							result={lastResult}
+							onDismiss={() => setResultDismissed(true)}
+						/>
+					)}
 					<AttackFooter
 						enemy={currentEnemy}
 						jesterActive={isJesterActive}
