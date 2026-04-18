@@ -1,5 +1,5 @@
-import { useAudio } from "@/contexts/AudioContext";
 import MagicShield from "@/assets/icons/shield.png";
+import { useAudio } from "@/contexts/AudioContext";
 import { getCardImage, getHandCardImage } from "@/data/images";
 import { Card, Enemy } from "@/data/types";
 import React, { useEffect, useRef } from "react";
@@ -42,10 +42,12 @@ export const EnemyCard = ({
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
 
-	const displayHP = previewDamage > 0 ? Math.max(0, currentHP - previewDamage) : currentHP;
-	const displayAttack = previewShieldGain > 0
-		? Math.max(0, effectiveAttack - previewShieldGain)
-		: effectiveAttack;
+	const displayHP =
+		previewDamage > 0 ? Math.max(0, currentHP - previewDamage) : currentHP;
+	const displayAttack =
+		previewShieldGain > 0
+			? Math.max(0, effectiveAttack - previewShieldGain)
+			: effectiveAttack;
 
 	const hpPercent = Math.max(0, displayHP / enemy.health);
 	const attackPercent = Math.min(1, displayAttack / enemy.attack);
@@ -185,7 +187,14 @@ export const EnemyCard = ({
 
 	return (
 		<TouchableOpacity
-			onPress={onPress ? () => { playTap(); onPress(); } : undefined}
+			onPress={
+				onPress
+					? () => {
+							playTap();
+							onPress();
+						}
+					: undefined
+			}
 			activeOpacity={onPress ? 0.85 : 1}
 			disabled={!onPress}
 		>
@@ -255,14 +264,17 @@ export const EnemyCard = ({
 						</ProgressRing>
 						{shielded && (
 							<View style={styles.shieldedWrapper}>
-								<Image source={MagicShield} style={styles.shieldIconBg} />
-								<View style={styles.shieldNumber}>
-									<NumberSprite
-										value={enemy.attack - effectiveAttack}
-										type="shield"
-										height={22}
-									/>
-								</View>
+								<Image
+									source={MagicShield}
+									style={styles.shieldIconBg}
+									resizeMode="contain"
+								/>
+								<NumberSprite
+									value={enemy.attack - effectiveAttack}
+									type="attack"
+									height={20}
+									color="#FFFFFF"
+								/>
 							</View>
 						)}
 						{shieldCards &&
