@@ -145,11 +145,11 @@ const ptBR = {
 	},
 	home: {
 		play: {
-			title: "PLAY",
+			title: "JOGAR",
 			desc: "Versão digital completa — deck, mão e poderes dos naipes",
 		},
 		tracker: {
-			title: "TRACKER",
+			title: "MARCADOR",
 			desc: "Placar para o baralho físico — rastreie HP e ataque dos inimigos",
 		},
 		instructions: {
@@ -170,7 +170,11 @@ const ptBR = {
 			setup: {
 				title: "Preparação",
 				body: "Mistura os 4 Reis (K) e coloca-os na mesa, numa pilha com a face para baixo. Mistura as 4 Damas (Q) e coloca-as sobre os Reis. Mistura os 4 Valetes (J) e coloca-os sobre as Damas. Este é o Baralho Castelo. Coloca-o no centro da mesa e revela o Valete superior — este será o inimigo atual.\n\nMistura, em conjunto, todas as cartas numeradas de 2 a 10, os 4 Animais Companheiros (A) e um número de Joqueres (Curingas) conforme a tabela abaixo, para formar o Baralho Taverna.",
-				tableHeader: { players: "Jogadores", jesters: "Joqueres", hand: "Máx. de Mão" },
+				tableHeader: {
+					players: "Jogadores",
+					jesters: "Joqueres",
+					hand: "Máx. de Mão",
+				},
 				tableRows: [
 					{ players: "1", jesters: "0", hand: "8" },
 					{ players: "2", jesters: "0", hand: "7" },
@@ -181,7 +185,8 @@ const ptBR = {
 			},
 			howToPlay: {
 				title: "Como Jogar",
-				intro: "No seu turno, um jogador usa cartas da sua mão para infligir dano no inimigo atual, tentando derrotá-lo. Os valores das cartas determinam o dano, enquanto o naipe confere um poder especial.",
+				intro:
+					"No seu turno, um jogador usa cartas da sua mão para infligir dano no inimigo atual, tentando derrotá-lo. Os valores das cartas determinam o dano, enquanto o naipe confere um poder especial.",
 				stepsLabel: "Cada turno tem quatro passos:",
 				steps: [
 					"Passo 1 — Joga uma carta ou passa",
@@ -198,7 +203,8 @@ const ptBR = {
 			step2: {
 				title: "Passo 2 — Poderes dos Naipes",
 				subtitle: "Ativa o poder do naipe da carta jogada",
-				intro: "Usar uma carta para causar dano no inimigo também confere um poder associado ao naipe dessa carta. Os poderes dos naipes vermelhos (♥ ♦) são resolvidos imediatamente; os dos naipes pretos (♣ ♠) têm efeito em passos seguintes.",
+				intro:
+					"Usar uma carta para causar dano no inimigo também confere um poder associado ao naipe dessa carta. Os poderes dos naipes vermelhos (♥ ♦) são resolvidos imediatamente; os dos naipes pretos (♣ ♠) têm efeito em passos seguintes.",
 				suits: {
 					hearts: {
 						name: "COPAS",
@@ -270,13 +276,15 @@ const ptBR = {
 			},
 			pass: {
 				title: "Passar",
-				body: "Durante o Passo 1 pode ser vantajoso passar, em vez de jogar uma carta. Diz simplesmente \"Passo\" e vai diretamente para o Passo 4 (Sofrer dano do inimigo), saltando os Passos 2 e 3. Um jogador não pode passar se todos os outros jogadores passaram no seu último turno.",
+				body: 'Durante o Passo 1 pode ser vantajoso passar, em vez de jogar uma carta. Diz simplesmente "Passo" e vai diretamente para o Passo 4 (Sofrer dano do inimigo), saltando os Passos 2 e 3. Um jogador não pode passar se todos os outros jogadores passaram no seu último turno.',
 			},
 			communication: {
 				title: "Comunicação",
 				body: "Os jogadores não podem comunicar entre si qualquer informação que possa revelar ou sugerir o conteúdo das suas mãos. Podem, no entanto, lembrar outros jogadores de qualquer informação pública.",
-				allowed: "Permitido: \"Tenho duas cartas na mão\" · \"Sobram 3 cartas no Baralho Taverna!\"",
-				forbidden: "Proibido: \"Tenho um 10 de Paus\" · \"Espero que alguém jogue Ouros em breve!\"",
+				allowed:
+					'Permitido: "Tenho duas cartas na mão" · "Sobram 3 cartas no Baralho Taverna!"',
+				forbidden:
+					'Proibido: "Tenho um 10 de Paus" · "Espero que alguém jogue Ouros em breve!"',
 			},
 			endConditions: {
 				title: "Final do Jogo",
@@ -284,7 +292,8 @@ const ptBR = {
 				victoryTitle: "Vitória 👑",
 				victoryText: "Derrote todos os 12 nobres do Castelo.",
 				defeatTitle: "Derrota 💀",
-				defeatText: "Um jogador não consegue descartar cartas suficientes para cobrir o dano sofrido, ou precisa jogar uma carta e não tem nenhuma na mão.",
+				defeatText:
+					"Um jogador não consegue descartar cartas suficientes para cobrir o dano sofrido, ou precisa jogar uma carta e não tem nenhuma na mão.",
 			},
 			solo: {
 				title: "Jogo Solo",
