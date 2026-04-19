@@ -3,7 +3,8 @@ import TavernSilver from "@/assets/icons/tavern_silver.png";
 import { useAudio } from "@/contexts/AudioContext";
 import { router } from "expo-router";
 import React from "react";
-import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
+import { styles } from "./ScreenHeader.styles";
 
 interface ScreenHeaderProps {
 	onSettingsPress?: () => void;
@@ -11,13 +12,23 @@ interface ScreenHeaderProps {
 	rightExtra?: React.ReactNode;
 }
 
-export const ScreenHeader = ({ onSettingsPress, rightExtra }: ScreenHeaderProps) => {
+export const ScreenHeader = ({
+	onSettingsPress,
+	rightExtra,
+}: ScreenHeaderProps) => {
 	const { playTap } = useAudio();
 
 	return (
 		<View style={styles.header}>
 			<TouchableOpacity
-				onPress={() => { playTap(); router.back(); }}
+				onPress={() => {
+					playTap();
+					if (router.canGoBack()) {
+						router.back();
+					} else {
+						router.replace("/");
+					}
+				}}
 				style={styles.btn}
 				activeOpacity={0.7}
 			>
@@ -28,7 +39,10 @@ export const ScreenHeader = ({ onSettingsPress, rightExtra }: ScreenHeaderProps)
 				{rightExtra}
 				{onSettingsPress && (
 					<TouchableOpacity
-						onPress={() => { playTap(); onSettingsPress(); }}
+						onPress={() => {
+							playTap();
+							onSettingsPress();
+						}}
 						style={styles.btn}
 						activeOpacity={0.7}
 					>
@@ -39,26 +53,3 @@ export const ScreenHeader = ({ onSettingsPress, rightExtra }: ScreenHeaderProps)
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	header: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingTop: 12,
-		paddingHorizontal: 12,
-		paddingBottom: 4,
-	},
-	btn: {
-		padding: 6,
-	},
-	icon: {
-		width: 30,
-		height: 30,
-	},
-	rightGroup: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 4,
-	},
-});
