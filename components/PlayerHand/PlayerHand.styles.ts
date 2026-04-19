@@ -4,23 +4,10 @@ export const styles = StyleSheet.create({
 	container: {
 		paddingVertical: 8,
 	},
-	labelRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 10,
-		paddingHorizontal: 12,
-	},
 	label: {
 		color: "#94A3B8",
 		fontSize: 14,
 		textAlign: "center",
-	},
-	sortBtn: {
-		paddingVertical: 6,
-		paddingHorizontal: 10,
-		borderRadius: 8,
-		backgroundColor: "rgba(221, 235, 255, 0.69)",
 	},
 	sortText: {
 		color: "#191a1c",
@@ -67,22 +54,5 @@ export const styles = StyleSheet.create({
 		fontSize: 18,
 		fontWeight: "600",
 		marginHorizontal: 2,
-	},
-	playBtn: {
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	playBtnDisabled: {
-		opacity: 0.35,
-	},
-	playBtnInner: {
-		width: 40,
-		height: 40,
-		backgroundColor: "#67826E",
-		borderWidth: 2,
-		borderColor: "#799881",
-		borderRadius: 10,
-		justifyContent: "center",
-		alignItems: "center",
 	},
 });
