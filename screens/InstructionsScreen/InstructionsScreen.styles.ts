@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+	// ── Layout ────────────────────────────────────────────────────────────────
 	container: { flex: 1 },
 	overlay: {
 		flex: 1,
@@ -10,8 +11,10 @@ export const styles = StyleSheet.create({
 	scrollContent: {
 		paddingHorizontal: 16,
 		paddingBottom: 16,
-		gap: 20,
+		gap: 16,
 	},
+
+	// ── Intro block ───────────────────────────────────────────────────────────
 	introBlock: {
 		alignItems: "center",
 		paddingVertical: 20,
@@ -34,8 +37,32 @@ export const styles = StyleSheet.create({
 		fontSize: 13,
 		letterSpacing: 0.5,
 	},
+	gameInfoRow: {
+		flexDirection: "row",
+		gap: 12,
+		marginTop: 10,
+	},
+	gameInfoBadge: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 5,
+		backgroundColor: "rgba(15,23,42,0.8)",
+		borderRadius: 20,
+		paddingHorizontal: 12,
+		paddingVertical: 5,
+		borderWidth: 1,
+		borderColor: "rgba(148,163,184,0.2)",
+	},
+	gameInfoIcon: { fontSize: 13 },
+	gameInfoText: {
+		color: "#F1F5F9",
+		fontSize: 13,
+		fontWeight: "600",
+	},
+
+	// ── Section ───────────────────────────────────────────────────────────────
 	section: {
-		backgroundColor: "rgba(15,23,42,0.75)",
+		backgroundColor: "rgba(15,23,42,0.8)",
 		borderRadius: 14,
 		padding: 16,
 		gap: 12,
@@ -52,82 +79,155 @@ export const styles = StyleSheet.create({
 		borderBottomColor: "rgba(251,191,36,0.2)",
 		paddingBottom: 8,
 	},
+	divider: {
+		height: 1,
+		backgroundColor: "rgba(148,163,184,0.15)",
+	},
+
+	// ── Text variants ─────────────────────────────────────────────────────────
 	bodyText: {
 		color: "#CBD5E1",
 		fontSize: 14,
 		lineHeight: 22,
 	},
-	stepList: { gap: 12 },
-	step: {
-		flexDirection: "row",
-		gap: 12,
-		alignItems: "flex-start",
-	},
-	stepNum: {
-		width: 28,
-		height: 28,
-		borderRadius: 14,
-		backgroundColor: "rgba(251,191,36,0.2)",
-		borderWidth: 1,
-		borderColor: "#FBBF24",
-		justifyContent: "center",
-		alignItems: "center",
-		flexShrink: 0,
-	},
-	stepNumText: {
-		color: "#FBBF24",
+	stepSubtitle: {
+		color: "#F1F5F9",
+		fontSize: 14,
 		fontWeight: "700",
+		fontStyle: "italic",
+	},
+	labelText: {
+		color: "#94A3B8",
+		fontSize: 13,
+		fontWeight: "600",
+		letterSpacing: 0.2,
+	},
+	noteBlock: {
+		backgroundColor: "rgba(251,191,36,0.06)",
+		borderRadius: 8,
+		padding: 10,
+		borderLeftWidth: 3,
+		borderLeftColor: "rgba(251,191,36,0.4)",
+	},
+	noteText: {
+		color: "#CBD5E1",
+		fontSize: 13,
+		lineHeight: 19,
+		fontStyle: "italic",
+	},
+
+	// ── Setup / enemy table ───────────────────────────────────────────────────
+	table: {
+		borderRadius: 8,
+		overflow: "hidden",
+		borderWidth: 1,
+		borderColor: "rgba(148,163,184,0.15)",
+	},
+	tableRow: {
+		flexDirection: "row",
+		paddingVertical: 8,
+		paddingHorizontal: 10,
+	},
+	tableRowHeader: {
+		backgroundColor: "rgba(251,191,36,0.12)",
+	},
+	tableRowAlt: {
+		backgroundColor: "rgba(255,255,255,0.03)",
+	},
+	tableCell: {
+		flex: 1,
+		color: "#CBD5E1",
 		fontSize: 13,
 	},
-	stepBody: { flex: 1, gap: 2 },
-	stepTitle: {
-		color: "#F1F5F9",
+	tableCellHeader: {
+		color: "#FBBF24",
 		fontWeight: "700",
-		fontSize: 14,
+		fontSize: 12,
+		letterSpacing: 0.3,
+		textTransform: "uppercase",
 	},
-	stepDesc: {
-		color: "#94A3B8",
+	tableCellCenter: { textAlign: "center" },
+	tableCellRight: { textAlign: "right" },
+	tableCellBold: {
+		color: "#F1F5F9",
+		fontWeight: "600",
+	},
+	statHp: { color: "#4ADE80", fontWeight: "700" },
+	statAtk: { color: "#FBBF24", fontWeight: "700" },
+
+	// ── 4-passos summary ──────────────────────────────────────────────────────
+	stepSummaryList: {
+		gap: 6,
+		paddingLeft: 4,
+	},
+	stepSummaryText: {
+		color: "#F1F5F9",
+		fontSize: 14,
+		fontWeight: "600",
+		fontStyle: "italic",
+		lineHeight: 22,
+	},
+	stepSummaryFirst: {},
+
+	// ── Suit block ────────────────────────────────────────────────────────────
+	suitBlock: {
+		borderLeftWidth: 3,
+		paddingLeft: 12,
+		gap: 4,
+	},
+	suitBlockHeader: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+	},
+	suitBlockSymbol: {
+		fontSize: 18,
+		fontWeight: "700",
+	},
+	suitBlockName: {
+		fontSize: 13,
+		fontWeight: "800",
+		letterSpacing: 0.8,
+	},
+	suitBlockBody: {
+		color: "#CBD5E1",
 		fontSize: 13,
 		lineHeight: 20,
 	},
-	suitList: { gap: 12 },
-	suitRow: {
+
+	// ── Defeat steps (I, II, III, IV) ─────────────────────────────────────────
+	defeatStepList: { gap: 8 },
+	defeatStepRow: {
 		flexDirection: "row",
+		gap: 10,
 		alignItems: "flex-start",
-		gap: 12,
 	},
-	suitBadge: {
-		width: 40,
-		height: 40,
-		borderRadius: 10,
-		borderWidth: 1,
-		justifyContent: "center",
-		alignItems: "center",
+	defeatStepNum: {
+		color: "#FBBF24",
+		fontWeight: "700",
+		fontSize: 13,
+		width: 32,
 		flexShrink: 0,
 	},
-	suitSymbol: { fontSize: 20, fontWeight: "700" },
-	suitInfo: { flex: 1, gap: 2 },
-	suitName: { fontSize: 14, fontWeight: "700" },
-	suitPower: { color: "#94A3B8", fontSize: 13, lineHeight: 19 },
-	immuneExamples: { gap: 6 },
-	immuneRow: {
+	defeatStepText: {
+		flex: 1,
+		color: "#CBD5E1",
+		fontSize: 13,
+		lineHeight: 20,
+	},
+
+	// ── Defeated enemy value table ─────────────────────────────────────────────
+	defeatedTable: {
+		gap: 8,
+	},
+	defeatedRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		gap: 10,
+		gap: 12,
 	},
-	immuneSymbol: { fontSize: 18, fontWeight: "700", width: 24 },
-	immuneLabel: { color: "#94A3B8", fontSize: 13 },
-	enemyRow: {
-		flexDirection: "row",
-		alignItems: "flex-start",
-		gap: 14,
-		paddingVertical: 4,
-		borderBottomWidth: 1,
-		borderBottomColor: "rgba(148,163,184,0.1)",
-	},
-	enemyRankBadge: {
-		width: 36,
-		height: 36,
+	defeatedRankBadge: {
+		width: 32,
+		height: 32,
 		borderRadius: 8,
 		backgroundColor: "rgba(251,191,36,0.15)",
 		borderWidth: 1,
@@ -135,32 +235,45 @@ export const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 	},
-	enemyRankText: {
+	defeatedRankText: {
 		color: "#FBBF24",
 		fontFamily: "IMFellEnglish-Regular",
-		fontSize: 18,
+		fontSize: 16,
 		fontWeight: "700",
 	},
-	enemyInfo: { flex: 1, gap: 2 },
-	enemyLabel: { color: "#F1F5F9", fontWeight: "700", fontSize: 14 },
-	enemyStats: { fontSize: 13 },
-	statHp: { color: "#4ADE80" },
-	statAtk: { color: "#FBBF24" },
-	enemyImmunity: { color: "#64748B", fontSize: 12 },
-	comboExamples: {
-		gap: 6,
-		backgroundColor: "rgba(0,0,0,0.25)",
+	defeatedLabel: {
+		flex: 1,
+		color: "#F1F5F9",
+		fontWeight: "600",
+		fontSize: 14,
+	},
+	defeatedValue: {
+		color: "#FBBF24",
+		fontWeight: "800",
+		fontSize: 15,
+	},
+
+	// ── Communication examples ────────────────────────────────────────────────
+	commExample: {
 		borderRadius: 8,
-		padding: 10,
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+		borderLeftWidth: 3,
 	},
-	tableRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		paddingVertical: 3,
+	commAllowed: {
+		backgroundColor: "rgba(74,222,128,0.07)",
+		borderLeftColor: "#4ADE80",
 	},
-	tableLabel: { color: "#CBD5E1", fontSize: 13 },
-	tableValue: { color: "#94A3B8", fontSize: 13, flex: 1, textAlign: "right" },
-	endConditions: { gap: 10 },
+	commForbidden: {
+		backgroundColor: "rgba(248,113,113,0.07)",
+		borderLeftColor: "#F87171",
+	},
+	commText: {
+		fontSize: 13,
+		lineHeight: 19,
+	},
+
+	// ── Victory / defeat blocks ───────────────────────────────────────────────
 	victoryBlock: {
 		backgroundColor: "rgba(34,197,94,0.1)",
 		borderRadius: 10,
@@ -180,4 +293,29 @@ export const styles = StyleSheet.create({
 	},
 	defeatTitle: { color: "#EF4444", fontWeight: "700", fontSize: 15 },
 	endText: { color: "#CBD5E1", fontSize: 13, lineHeight: 20 },
+
+	// ── Solo tiers ────────────────────────────────────────────────────────────
+	soloTierList: {
+		gap: 6,
+	},
+	soloTierRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		paddingVertical: 6,
+		paddingHorizontal: 10,
+		borderRadius: 8,
+		backgroundColor: "rgba(255,255,255,0.04)",
+		borderWidth: 1,
+		borderColor: "rgba(148,163,184,0.1)",
+	},
+	soloTierLabel: {
+		color: "#94A3B8",
+		fontSize: 13,
+	},
+	soloTierValue: {
+		color: "#F1F5F9",
+		fontWeight: "700",
+		fontSize: 13,
+	},
 });

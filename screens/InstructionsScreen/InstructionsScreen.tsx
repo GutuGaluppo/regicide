@@ -1,102 +1,213 @@
 import { ScreenHeader } from "@/components/ScreenHeader";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {
-	Image,
-	ImageBackground,
-	ScrollView,
-	Text,
-	View,
-} from "react-native";
+import { Image, ImageBackground, ScrollView, Text, View } from "react-native";
 import { styles } from "./InstructionsScreen.styles";
 
 import BG from "@/assets/backgrounds/blue_mountains.webp";
 
-const Section = ({
-	title,
-	children,
-}: {
-	title: string;
-	children: React.ReactNode;
-}) => (
+// ── Primitives ────────────────────────────────────────────────────────────────
+
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
 	<View style={styles.section}>
 		<Text style={styles.sectionTitle}>{title}</Text>
 		{children}
 	</View>
 );
 
-const Row = ({ label, value }: { label: string; value: string }) => (
-	<View style={styles.tableRow}>
-		<Text style={styles.tableLabel}>{label}</Text>
-		<Text style={styles.tableValue}>{value}</Text>
+const Divider = () => <View style={styles.divider} />;
+
+// ── Setup table (Jogadores / Joqueres / Mão) ──────────────────────────────────
+
+const SetupTable = ({
+	header,
+	rows,
+}: {
+	header: { players: string; jesters: string; hand: string };
+	rows: { players: string; jesters: string; hand: string }[];
+}) => (
+	<View style={styles.table}>
+		<View style={[styles.tableRow, styles.tableRowHeader]}>
+			<Text style={[styles.tableCell, styles.tableCellHeader]}>{header.players}</Text>
+			<Text style={[styles.tableCell, styles.tableCellHeader, styles.tableCellCenter]}>{header.jesters}</Text>
+			<Text style={[styles.tableCell, styles.tableCellHeader, styles.tableCellRight]}>{header.hand}</Text>
+		</View>
+		{rows.map((r, i) => (
+			<View key={i} style={[styles.tableRow, i % 2 === 0 && styles.tableRowAlt]}>
+				<Text style={[styles.tableCell, styles.tableCellBold]}>{r.players}</Text>
+				<Text style={[styles.tableCell, styles.tableCellCenter]}>{r.jesters}</Text>
+				<Text style={[styles.tableCell, styles.tableCellRight]}>{r.hand}</Text>
+			</View>
+		))}
 	</View>
 );
 
-const SuitPower = ({
-	symbol,
-	color,
-	name,
-	power,
-}: {
-	symbol: string;
-	color: string;
-	name: string;
-	power: string;
-}) => (
-	<View style={styles.suitRow}>
-		<View
-			style={[
-				styles.suitBadge,
-				{ backgroundColor: color + "22", borderColor: color },
-			]}
-		>
-			<Text style={[styles.suitSymbol, { color }]}>{symbol}</Text>
-		</View>
-		<View style={styles.suitInfo}>
-			<Text style={[styles.suitName, { color }]}>{name}</Text>
-			<Text style={styles.suitPower}>{power}</Text>
-		</View>
-	</View>
-);
+// ── 4-passos summary list ─────────────────────────────────────────────────────
 
-const EnemyRow = ({
-	rank,
-	label,
-	hp,
-	atk,
-	immunity,
-}: {
-	rank: string;
-	label: string;
-	hp: number;
-	atk: number;
-	immunity: string;
-}) => (
-	<View style={styles.enemyRow}>
-		<View style={styles.enemyRankBadge}>
-			<Text style={styles.enemyRankText}>{rank}</Text>
-		</View>
-		<View style={styles.enemyInfo}>
-			<Text style={styles.enemyLabel}>{label}</Text>
-			<Text style={styles.enemyStats}>
-				<Text style={styles.statHp}>❤ {hp} HP</Text>
-				{"  "}
-				<Text style={styles.statAtk}>⚔ {atk} ATK</Text>
+const StepSummaryList = ({ steps }: { steps: string[] }) => (
+	<View style={styles.stepSummaryList}>
+		{steps.map((s, i) => (
+			<Text key={i} style={[styles.stepSummaryText, i === 0 && styles.stepSummaryFirst]}>
+				{s}
 			</Text>
-			<Text style={styles.enemyImmunity}>{immunity}</Text>
-		</View>
+		))}
 	</View>
 );
+
+// ── Suit power block ──────────────────────────────────────────────────────────
+
+const SUIT_META: Record<string, { symbol: string; color: string }> = {
+	hearts:   { symbol: "♥", color: "#EF4444" },
+	diamonds: { symbol: "♦", color: "#F59E0B" },
+	clubs:    { symbol: "♣", color: "#4ADE80" },
+	spades:   { symbol: "♠", color: "#60A5FA" },
+};
+
+const SuitBlock = ({
+	suit,
+	name,
+	body,
+}: {
+	suit: keyof typeof SUIT_META;
+	name: string;
+	body: string;
+}) => {
+	const { symbol, color } = SUIT_META[suit];
+	return (
+		<View style={[styles.suitBlock, { borderLeftColor: color }]}>
+			<View style={styles.suitBlockHeader}>
+				<Text style={[styles.suitBlockSymbol, { color }]}>{symbol}</Text>
+				<Text style={[styles.suitBlockName, { color }]}>{name}</Text>
+			</View>
+			<Text style={styles.suitBlockBody}>{body}</Text>
+		</View>
+	);
+};
+
+// ── Enemy stats table ─────────────────────────────────────────────────────────
+
+const EnemyTable = ({
+	header,
+	rows,
+}: {
+	header: { enemy: string; atk: string; hp: string };
+	rows: { enemy: string; atk: string; hp: string }[];
+}) => (
+	<View style={styles.table}>
+		<View style={[styles.tableRow, styles.tableRowHeader]}>
+			<Text style={[styles.tableCell, styles.tableCellHeader, { flex: 2 }]}>{header.enemy}</Text>
+			<Text style={[styles.tableCell, styles.tableCellHeader, styles.tableCellCenter]}>{header.atk}</Text>
+			<Text style={[styles.tableCell, styles.tableCellHeader, styles.tableCellRight]}>{header.hp}</Text>
+		</View>
+		{rows.map((r, i) => (
+			<View key={i} style={[styles.tableRow, i % 2 === 0 && styles.tableRowAlt]}>
+				<Text style={[styles.tableCell, styles.tableCellBold, { flex: 2 }]}>{r.enemy}</Text>
+				<Text style={[styles.tableCell, styles.tableCellCenter, styles.statAtk]}>{r.atk}</Text>
+				<Text style={[styles.tableCell, styles.tableCellRight, styles.statHp]}>{r.hp}</Text>
+			</View>
+		))}
+	</View>
+);
+
+// ── Defeat steps (I, II, III, IV) ─────────────────────────────────────────────
+
+const ROMAN = ["I", "II", "III", "IV"];
+
+const DefeatStepList = ({ steps }: { steps: string[] }) => (
+	<View style={styles.defeatStepList}>
+		{steps.map((s, i) => (
+			<View key={i} style={styles.defeatStepRow}>
+				<Text style={styles.defeatStepNum}>({ROMAN[i]})</Text>
+				<Text style={styles.defeatStepText}>{s}</Text>
+			</View>
+		))}
+	</View>
+);
+
+// ── Defeated enemy value table (J=10, Q=15, K=20) ────────────────────────────
+
+const DefeatedValueTable = ({
+	rows,
+}: {
+	rows: { rank: string; label: string; value: string }[];
+}) => (
+	<View style={styles.defeatedTable}>
+		{rows.map((r, i) => (
+			<View key={i} style={styles.defeatedRow}>
+				<View style={styles.defeatedRankBadge}>
+					<Text style={styles.defeatedRankText}>{r.rank}</Text>
+				</View>
+				<Text style={styles.defeatedLabel}>{r.label}</Text>
+				<Text style={styles.defeatedValue}>{r.value}</Text>
+			</View>
+		))}
+	</View>
+);
+
+// ── Communication examples ────────────────────────────────────────────────────
+
+const CommExample = ({
+	text,
+	allowed,
+}: {
+	text: string;
+	allowed: boolean;
+}) => (
+	<View style={[styles.commExample, allowed ? styles.commAllowed : styles.commForbidden]}>
+		<Text style={[styles.commText, { color: allowed ? "#4ADE80" : "#F87171" }]}>{text}</Text>
+	</View>
+);
+
+// ── Solo victory tiers ────────────────────────────────────────────────────────
+
+const SoloTierList = ({
+	tiers,
+}: {
+	tiers: { label: string; value: string }[];
+}) => (
+	<View style={styles.soloTierList}>
+		{tiers.map((t, i) => (
+			<View key={i} style={styles.soloTierRow}>
+				<Text style={styles.soloTierLabel}>{t.label}</Text>
+				<Text style={styles.soloTierValue}>{t.value}</Text>
+			</View>
+		))}
+	</View>
+);
+
+// ── Screen ────────────────────────────────────────────────────────────────────
 
 export const InstructionsScreen = () => {
 	const { t } = useTranslation();
+	const s = (key: string) => `instructions.sections.${key}`;
 
-	const steps = t("instructions.sections.turn.steps", {
-		returnObjects: true,
-	}) as {
-		title: string;
-		desc: string;
+	const setupRows = t(`${s("setup")}.tableRows`, { returnObjects: true }) as {
+		players: string; jesters: string; hand: string;
 	}[];
+	const setupHeader = t(`${s("setup")}.tableHeader`, { returnObjects: true }) as {
+		players: string; jesters: string; hand: string;
+	};
+	const howToPlaySteps = t(`${s("howToPlay")}.steps`, { returnObjects: true }) as string[];
+
+	const enemyRows = t(`${s("step3")}.enemyRows`, { returnObjects: true }) as {
+		enemy: string; atk: string; hp: string;
+	}[];
+	const enemyHeader = t(`${s("step3")}.enemyHeader`, { returnObjects: true }) as {
+		enemy: string; atk: string; hp: string;
+	};
+	const defeatSteps = t(`${s("step3")}.defeatSteps`, { returnObjects: true }) as string[];
+
+	const defeatedRows = t(`${s("defeatedEnemy")}.tableRows`, { returnObjects: true }) as {
+		rank: string; label: string; value: string;
+	}[];
+
+	const soloTiers = t(`${s("solo")}.tiers`, { returnObjects: true }) as {
+		label: string; value: string;
+	}[];
+
+	const gameInfo = t("instructions.gameInfo", { returnObjects: true }) as {
+		players: string; age: string; time: string;
+	};
 
 	return (
 		<ImageBackground
@@ -106,7 +217,6 @@ export const InstructionsScreen = () => {
 			imageStyle={{ width: "100%", height: "100%" }}
 		>
 			<View style={styles.overlay}>
-				{/* Header */}
 				<ScreenHeader />
 
 				<ScrollView
@@ -114,6 +224,7 @@ export const InstructionsScreen = () => {
 					contentContainerStyle={styles.scrollContent}
 					showsVerticalScrollIndicator={false}
 				>
+					{/* ── Intro ── */}
 					<View style={styles.introBlock}>
 						<Image
 							source={require("@/assets/images/crown.png")}
@@ -121,177 +232,142 @@ export const InstructionsScreen = () => {
 							resizeMode="contain"
 						/>
 						<Text style={styles.gameName}>{t("instructions.gameName")}</Text>
-						<Text style={styles.gameSubtitle}>
-							{t("instructions.gameSubtitle")}
-						</Text>
+						<Text style={styles.gameSubtitle}>{t("instructions.gameSubtitle")}</Text>
+						<View style={styles.gameInfoRow}>
+							<View style={styles.gameInfoBadge}>
+								<Text style={styles.gameInfoIcon}>👥</Text>
+								<Text style={styles.gameInfoText}>{gameInfo.players}</Text>
+							</View>
+							<View style={styles.gameInfoBadge}>
+								<Text style={styles.gameInfoIcon}>📅</Text>
+								<Text style={styles.gameInfoText}>{gameInfo.age}</Text>
+							</View>
+							<View style={styles.gameInfoBadge}>
+								<Text style={styles.gameInfoIcon}>⏱</Text>
+								<Text style={styles.gameInfoText}>{gameInfo.time}</Text>
+							</View>
+						</View>
 					</View>
 
-					<Section title={t("instructions.sections.objective.title")}>
-						<Text style={styles.bodyText}>
-							{t("instructions.sections.objective.body")}
-						</Text>
+					{/* ── Objetivo do Jogo ── */}
+					<Section title={t(`${s("objective")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("objective")}.body`)}</Text>
 					</Section>
 
-					<Section title={t("instructions.sections.setup.title")}>
-						<Text style={styles.bodyText}>
-							{t("instructions.sections.setup.body")}
-						</Text>
-					</Section>
-
-					<Section title={t("instructions.sections.turn.title")}>
-						<View style={styles.stepList}>
-							{steps.map((step, index) => (
-								<View key={index} style={styles.step}>
-									<View style={styles.stepNum}>
-										<Text style={styles.stepNumText}>{index + 1}</Text>
-									</View>
-									<View style={styles.stepBody}>
-										<Text style={styles.stepTitle}>{step.title}</Text>
-										<Text style={styles.stepDesc}>{step.desc}</Text>
-									</View>
-								</View>
-							))}
+					{/* ── Preparação ── */}
+					<Section title={t(`${s("setup")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("setup")}.body`)}</Text>
+						<SetupTable header={setupHeader} rows={setupRows} />
+						<View style={styles.noteBlock}>
+							<Text style={styles.noteText}>{t(`${s("setup")}.startNote`)}</Text>
 						</View>
 					</Section>
 
-					<Section title={t("instructions.sections.suitPowersSection.title")}>
-						<View style={styles.suitList}>
-							<SuitPower
-								symbol="♥"
-								color="#EF4444"
-								name={t("instructions.sections.suitPowersSection.hearts.name")}
-								power={t(
-									"instructions.sections.suitPowersSection.hearts.power",
-								)}
+					{/* ── Como Jogar — 4 passos ── */}
+					<Section title={t(`${s("howToPlay")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("howToPlay")}.intro`)}</Text>
+						<Text style={styles.labelText}>{t(`${s("howToPlay")}.stepsLabel`)}</Text>
+						<StepSummaryList steps={howToPlaySteps} />
+					</Section>
+
+					{/* ── Passo 1 ── */}
+					<Section title={t(`${s("step1")}.title`)}>
+						<Text style={styles.stepSubtitle}>{t(`${s("step1")}.subtitle`)}</Text>
+						<Text style={styles.bodyText}>{t(`${s("step1")}.body`)}</Text>
+					</Section>
+
+					{/* ── Passo 2 — Poderes dos Naipes ── */}
+					<Section title={t(`${s("step2")}.title`)}>
+						<Text style={styles.stepSubtitle}>{t(`${s("step2")}.subtitle`)}</Text>
+						<Text style={styles.bodyText}>{t(`${s("step2")}.intro`)}</Text>
+						<Divider />
+						{(["hearts", "diamonds", "clubs", "spades"] as const).map((suit) => (
+							<SuitBlock
+								key={suit}
+								suit={suit}
+								name={t(`${s("step2")}.suits.${suit}.name`)}
+								body={t(`${s("step2")}.suits.${suit}.body`)}
 							/>
-							<SuitPower
-								symbol="♦"
-								color="#F59E0B"
-								name={t(
-									"instructions.sections.suitPowersSection.diamonds.name",
-								)}
-								power={t(
-									"instructions.sections.suitPowersSection.diamonds.power",
-								)}
-							/>
-							<SuitPower
-								symbol="♣"
-								color="#4ADE80"
-								name={t("instructions.sections.suitPowersSection.clubs.name")}
-								power={t("instructions.sections.suitPowersSection.clubs.power")}
-							/>
-							<SuitPower
-								symbol="♠"
-								color="#60A5FA"
-								name={t("instructions.sections.suitPowersSection.spades.name")}
-								power={t(
-									"instructions.sections.suitPowersSection.spades.power",
-								)}
-							/>
+						))}
+						<View style={styles.noteBlock}>
+							<Text style={styles.noteText}>{t(`${s("step2")}.note`)}</Text>
 						</View>
 					</Section>
 
-					<Section title={t("instructions.sections.immunities.title")}>
-						<Text style={styles.bodyText}>
-							{t("instructions.sections.immunities.body")}
-						</Text>
-						<View style={styles.immuneExamples}>
-							{(["hearts", "diamonds", "clubs", "spades"] as const).map(
-								(suit, i) => {
-									const colors = ["#EF4444", "#F59E0B", "#4ADE80", "#60A5FA"];
-									const symbols = ["♥", "♦", "♣", "♠"];
-									return (
-										<View key={suit} style={styles.immuneRow}>
-											<Text style={[styles.immuneSymbol, { color: colors[i] }]}>
-												{symbols[i]}
-											</Text>
-											<Text style={styles.immuneLabel}>
-												{t(`instructions.sections.immunities.examples.${suit}`)}
-											</Text>
-										</View>
-									);
-								},
-							)}
+					{/* ── Passo 3 — Dano e Derrota ── */}
+					<Section title={t(`${s("step3")}.title`)}>
+						<Text style={styles.stepSubtitle}>{t(`${s("step3")}.subtitle`)}</Text>
+						<Text style={styles.bodyText}>{t(`${s("step3")}.body`)}</Text>
+						<EnemyTable header={enemyHeader} rows={enemyRows} />
+						<Text style={styles.labelText}>{t(`${s("step3")}.defeatTitle`)}</Text>
+						<DefeatStepList steps={defeatSteps} />
+					</Section>
+
+					{/* ── Passo 4 ── */}
+					<Section title={t(`${s("step4")}.title`)}>
+						<Text style={styles.stepSubtitle}>{t(`${s("step4")}.subtitle`)}</Text>
+						<Text style={styles.bodyText}>{t(`${s("step4")}.body`)}</Text>
+					</Section>
+
+					{/* ── Animais Companheiros ── */}
+					<Section title={t(`${s("companions")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("companions")}.body`)}</Text>
+					</Section>
+
+					{/* ── Combinações ── */}
+					<Section title={t(`${s("combos")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("combos")}.body`)}</Text>
+					</Section>
+
+					{/* ── Imunidade Inimiga ── */}
+					<Section title={t(`${s("immunity")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("immunity")}.body`)}</Text>
+					</Section>
+
+					{/* ── Usando o Jóquer ── */}
+					<Section title={t(`${s("jester")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("jester")}.body`)}</Text>
+						<View style={styles.noteBlock}>
+							<Text style={styles.noteText}>{t(`${s("jester")}.note`)}</Text>
 						</View>
 					</Section>
 
-					<Section title={t("instructions.sections.enemies.title")}>
-						<EnemyRow
-							rank="J"
-							label={t("instructions.sections.enemies.jack")}
-							hp={20}
-							atk={10}
-							immunity={t("instructions.sections.enemies.immuneTo", {
-								suit: t("instructions.sections.enemies.ownSuit"),
-							})}
-						/>
-						<EnemyRow
-							rank="Q"
-							label={t("instructions.sections.enemies.queen")}
-							hp={30}
-							atk={15}
-							immunity={t("instructions.sections.enemies.immuneTo", {
-								suit: t("instructions.sections.enemies.ownSuit"),
-							})}
-						/>
-						<EnemyRow
-							rank="K"
-							label={t("instructions.sections.enemies.king")}
-							hp={40}
-							atk={20}
-							immunity={t("instructions.sections.enemies.immuneTo", {
-								suit: t("instructions.sections.enemies.ownSuit"),
-							})}
-						/>
+					{/* ── Aproveitando Inimigos Derrotados ── */}
+					<Section title={t(`${s("defeatedEnemy")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("defeatedEnemy")}.body`)}</Text>
+						<DefeatedValueTable rows={defeatedRows} />
 					</Section>
 
-					<Section title={t("instructions.sections.companions.title")}>
-						<Text style={styles.bodyText}>
-							{t("instructions.sections.companions.body")}
-						</Text>
-						<View style={styles.comboExamples}>
-							<Row
-								label="Ex: 4 + 6"
-								value={t("instructions.sections.companions.examples.fourSix")}
-							/>
-							<Row
-								label="Ex: 3 + 3 + 3"
-								value={t(
-									"instructions.sections.companions.examples.threeThrees",
-								)}
-							/>
-							<Row
-								label="Ex: A + A"
-								value={t("instructions.sections.companions.examples.twoAces")}
-							/>
+					{/* ── Passar ── */}
+					<Section title={t(`${s("pass")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("pass")}.body`)}</Text>
+					</Section>
+
+					{/* ── Comunicação ── */}
+					<Section title={t(`${s("communication")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("communication")}.body`)}</Text>
+						<CommExample text={t(`${s("communication")}.allowed`)} allowed />
+						<CommExample text={t(`${s("communication")}.forbidden`)} allowed={false} />
+					</Section>
+
+					{/* ── Final do Jogo ── */}
+					<Section title={t(`${s("endConditions")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("endConditions")}.body`)}</Text>
+						<View style={styles.victoryBlock}>
+							<Text style={styles.victoryTitle}>{t(`${s("endConditions")}.victoryTitle`)}</Text>
+							<Text style={styles.endText}>{t(`${s("endConditions")}.victoryText`)}</Text>
+						</View>
+						<View style={styles.defeatBlock}>
+							<Text style={styles.defeatTitle}>{t(`${s("endConditions")}.defeatTitle`)}</Text>
+							<Text style={styles.endText}>{t(`${s("endConditions")}.defeatText`)}</Text>
 						</View>
 					</Section>
 
-					<Section title={t("instructions.sections.defeating.title")}>
-						<Text style={styles.bodyText}>
-							{t("instructions.sections.defeating.body")}
-						</Text>
-					</Section>
-
-					<Section title={t("instructions.sections.endConditions.title")}>
-						<View style={styles.endConditions}>
-							<View style={styles.victoryBlock}>
-								<Text style={styles.victoryTitle}>
-									{t("instructions.sections.endConditions.victoryTitle")}
-								</Text>
-								<Text style={styles.endText}>
-									{t("instructions.sections.endConditions.victoryText")}
-								</Text>
-							</View>
-							<View style={styles.defeatBlock}>
-								<Text style={styles.defeatTitle}>
-									{t("instructions.sections.endConditions.defeatTitle")}
-								</Text>
-								<Text style={styles.endText}>
-									{t("instructions.sections.endConditions.defeatText")}
-								</Text>
-							</View>
-						</View>
+					{/* ── Jogo Solo ── */}
+					<Section title={t(`${s("solo")}.title`)}>
+						<Text style={styles.bodyText}>{t(`${s("solo")}.body`)}</Text>
+						<Text style={styles.labelText}>{t(`${s("solo")}.tiersLabel`)}</Text>
+						<SoloTierList tiers={soloTiers} />
 					</Section>
 
 					<View style={{ height: 32 }} />
