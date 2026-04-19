@@ -101,12 +101,12 @@ export const TrackerScreen = () => {
 		return (
 			<EnemySelectionScreen
 				enemies={footerEnemies}
-				defeatedIds={defeatedIds}
 				bgShift={bgShift}
 				onSelectEnemy={(id) => {
 					playTap();
 					selectEnemy(id);
 				}}
+				onSettingsPress={() => setSettingsVisible(true)}
 			/>
 		);
 	}
