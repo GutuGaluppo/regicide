@@ -26,5 +26,5 @@ export const styles = StyleSheet.create({
 	},
 	backBtn: { padding: 4 },
 	scroll: { flex: 1 },
-	scrollContent: { flexGrow: 1, justifyContent: "flex-end", paddingBottom: 8 },
+	scrollContent: { flexGrow: 1, justifyContent: "center", paddingBottom: 8 },
 });
