@@ -19,7 +19,7 @@ export const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	playBtnDisabled: {
-		opacity: 0.35,
+		opacity: 0.65,
 	},
 	playBtnInner: {
 		width: 45,

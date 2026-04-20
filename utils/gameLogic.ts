@@ -163,7 +163,7 @@ export const resolvePlay = (
 			maxHandSize - handAfterDraw.length
 		);
 		if (canDraw > 0) {
-			handAfterDraw = [...handAfterDraw, ...newTavern.slice(0, canDraw)];
+			handAfterDraw = [...newTavern.slice(0, canDraw), ...handAfterDraw];
 			newTavern = newTavern.slice(canDraw);
 		}
 	}
