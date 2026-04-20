@@ -55,7 +55,7 @@ export const styles = StyleSheet.create({
 	},
 	immuneIcon: {
 		position: "absolute",
-		top: -2,
-		right: -2,
+		bottom: 2,
+		left: 2,
 	},
 });

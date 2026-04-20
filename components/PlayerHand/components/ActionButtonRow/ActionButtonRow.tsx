@@ -11,6 +11,7 @@ type PropsType = {
 	onSortByClass?: () => void;
 	onPlay?: () => void;
 	playDisabled?: boolean;
+	locked?: boolean;
 };
 export const ActionButtonRow = ({
 	phase,
@@ -18,15 +19,18 @@ export const ActionButtonRow = ({
 	onSortByClass,
 	onPlay,
 	playDisabled,
+	locked,
 }: PropsType) => {
 	const { playTap } = useAudio();
 
 	const handleSort = () => {
+		if (locked) return;
 		playTap();
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		onSort?.();
 	};
 	const handleSortByClass = () => {
+		if (locked) return;
 		playTap();
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		onSortByClass?.();
@@ -41,7 +45,7 @@ export const ActionButtonRow = ({
 						playTap();
 						onPlay();
 					}}
-					disabled={playDisabled}
+					disabled={playDisabled || locked}
 					activeOpacity={0.8}
 				>
 					<View style={styles.playBtnInner}>
@@ -62,12 +66,14 @@ export const ActionButtonRow = ({
 					<SortButton
 						icon={require("@/assets/icons/sort_icon.png")}
 						handleSort={handleSort}
+						disabled={locked}
 					/>
 				)}
 				{onSortByClass && phase === "player_turn" && (
 					<SortButton
 						icon={require("@/assets/icons/suits-sort.png")}
 						handleSort={handleSortByClass}
+						disabled={locked}
 					/>
 				)}
 			</View>

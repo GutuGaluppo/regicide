@@ -8,11 +8,13 @@ type PropsType = {
 	enough: boolean;
 	damageSubtraction: number;
 	onDiscard: () => void;
+	locked?: boolean;
 };
 export const DiscardButton = ({
 	enough,
 	damageSubtraction,
 	onDiscard,
+	locked,
 }: PropsType) => {
 	const { playTap } = useAudio();
 	const totalColor = "#fff";
@@ -24,7 +26,7 @@ export const DiscardButton = ({
 				playTap();
 				onDiscard?.();
 			}}
-			disabled={!enough}
+			disabled={!enough || locked}
 			activeOpacity={0.8}
 		>
 			<Text style={styles.discardLabel}>{t("action.discard_label")}:</Text>

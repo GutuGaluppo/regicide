@@ -1,22 +1,40 @@
+import { CardDetailModal } from "@/components/CardDetailModal";
+import { CardView } from "@/components/CardView";
 import { Card, GamePhase, Suit } from "@/data/types";
-import { getCompatibleCardIds } from "@/utils/gameLogic";
 import { useCardSize } from "@/hooks/useCardSize";
+import { getCompatibleCardIds } from "@/utils/gameLogic";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
-import { CardDetailModal } from "@/components/CardDetailModal";
-import { CardView } from "@/components/CardView";
+import { Text, View } from "react-native";
 import { styles } from "./PlayerHand.styles";
 import { ActionButtonRow } from "./components/ActionButtonRow";
 import { DiscardButton } from "./components/DiscardButton/DiscardButton";
+
+type ScreenRect = {
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+};
 
 type PropsType = {
 	hand: Card[];
 	selectedIds: Set<string>;
 	phase: GamePhase;
 	immuneSuit?: Suit | null;
-	discardingIds?: Set<string>;
+	dealingIds?: Set<string>;
+	activeDeal?: {
+		id: number;
+		source: ScreenRect;
+		orderById: Map<string, number>;
+	} | null;
+	activeDiscard?: {
+		id: number;
+		dest: ScreenRect;
+		orderById: Map<string, number>;
+	} | null;
+	locked?: boolean;
 	pendingDamage?: number;
 	selectedTotal?: number;
 	onCardPress: (card: Card) => void;
@@ -25,6 +43,8 @@ type PropsType = {
 	onDiscard?: () => void;
 	onPlay?: () => void;
 	playDisabled?: boolean;
+	onCardDealComplete?: (dealId: number, cardId: string) => void;
+	onCardDiscardComplete?: (discardId: number, cardId: string) => void;
 };
 
 export const PlayerHand = ({
@@ -32,7 +52,10 @@ export const PlayerHand = ({
 	selectedIds,
 	phase,
 	immuneSuit,
-	discardingIds,
+	dealingIds,
+	activeDeal,
+	activeDiscard,
+	locked,
 	pendingDamage,
 	selectedTotal,
 	onCardPress,
@@ -41,10 +64,16 @@ export const PlayerHand = ({
 	onDiscard,
 	onPlay,
 	playDisabled,
+	onCardDealComplete,
+	onCardDiscardComplete,
 }: PropsType) => {
 	const { t } = useTranslation();
 	const [detailCard, setDetailCard] = useState<Card | null>(null);
-	const interactive = phase === "player_turn" || phase === "suffer_damage";
+	const isDealing = (dealingIds?.size ?? 0) > 0;
+	const interactive =
+		(phase === "player_turn" || phase === "suffer_damage") &&
+		!isDealing &&
+		!locked;
 	const { liftY } = useCardSize();
 
 	const selectedCards = hand.filter((c) => selectedIds.has(c.id));
@@ -70,6 +99,7 @@ export const PlayerHand = ({
 					enough={enough}
 					damageSubtraction={damageSubtraction}
 					onDiscard={onDiscard}
+					locked={locked || isDealing}
 				/>
 			) : (
 				<ActionButtonRow
@@ -77,20 +107,19 @@ export const PlayerHand = ({
 					onSort={onSort}
 					onSortByClass={onSortByClass}
 					onPlay={onPlay}
-					playDisabled={playDisabled}
+					playDisabled={playDisabled || isDealing}
+					locked={locked || isDealing}
 				/>
 			)}
-			<ScrollView
-				horizontal
-				showsHorizontalScrollIndicator={false}
-				contentContainerStyle={[styles.scroll, { paddingTop: liftY + 4 }]}
-			>
+			<View style={[styles.handRow, { paddingTop: liftY + 4 }]}>
 				{hand.map((card) => {
 					const isDimmed =
 						phase === "player_turn" &&
 						selectedIds.size > 0 &&
 						!selectedIds.has(card.id) &&
 						!(compatibleIds?.has(card.id) ?? true);
+					const dealOrder = activeDeal?.orderById.get(card.id);
+					const discardOrder = activeDiscard?.orderById.get(card.id);
 					return (
 						<CardView
 							key={card.id}
@@ -98,9 +127,28 @@ export const PlayerHand = ({
 							selected={selectedIds.has(card.id)}
 							onPress={() => onCardPress(card)}
 							onLongPress={() => handleLongPress(card)}
-							disabled={!interactive || isDimmed}
+							onDealComplete={onCardDealComplete}
+							onDiscardComplete={onCardDiscardComplete}
+							dealAnimation={
+								activeDeal && dealOrder !== undefined
+									? {
+											id: activeDeal.id,
+											order: dealOrder,
+											source: activeDeal.source,
+										}
+									: undefined
+							}
+							discardAnimation={
+								activeDiscard && discardOrder !== undefined
+									? {
+											id: activeDiscard.id,
+											order: discardOrder,
+											dest: activeDiscard.dest,
+										}
+									: undefined
+							}
+							pressDisabled={!interactive || isDimmed}
 							immuneSuit={immuneSuit}
-							discarding={discardingIds?.has(card.id)}
 							sufferMode={phase === "suffer_damage"}
 							dimmed={isDimmed}
 						/>
@@ -109,7 +157,7 @@ export const PlayerHand = ({
 				{hand.length === 0 && (
 					<Text style={styles.empty}>{t("hand.empty")}</Text>
 				)}
-			</ScrollView>
+			</View>
 
 			<CardDetailModal
 				card={detailCard}

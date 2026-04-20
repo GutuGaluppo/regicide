@@ -73,6 +73,9 @@ export const useGame = () => {
 	const [playError, setPlayError] = useState<string | null>(null);
 	const [cardsDrawnSignal, setCardsDrawnSignal] = useState(0);
 	const bumpDraw = () => setCardsDrawnSignal((s) => s + 1);
+	// Fires when cards should be dealt with full animation (new game or reset)
+	const [dealSignal, setDealSignal] = useState(0);
+	const bumpDeal = () => setDealSignal((s) => s + 1);
 
 	useEffect(() => {
 		let active = true;
@@ -80,7 +83,7 @@ export const useGame = () => {
 			try {
 				const saved = await loadGame();
 				if (!active) return;
-				if (saved)
+				if (saved) {
 					setGameState({
 						...saved,
 						defeatedEnemies: saved.defeatedEnemies ?? [],
@@ -89,12 +92,18 @@ export const useGame = () => {
 						discardedThisFight: (saved as GameState).discardedThisFight ?? [],
 						stats: (saved as GameState).stats ?? emptyStats(),
 					} as GameState);
+				} else {
+					// Fresh start — signal to animate the initial deal
+					bumpDeal();
+				}
 			} catch {
-				// usa estado inicial
+				// usa estado inicial — still animate
+				bumpDeal();
 			}
 		};
 		init();
 		return () => { active = false; };
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const persist = async (state: GameState) => {
@@ -417,6 +426,7 @@ export const useGame = () => {
 		setSelectedIds(new Set());
 		setPlayError(null);
 		setGameState(next);
+		bumpDeal();
 		persist(next);
 	};
 
@@ -463,6 +473,7 @@ export const useGame = () => {
 		previewShieldGain,
 		defeatedEnemies: gameState.defeatedEnemies,
 		cardsDrawnSignal,
+		dealSignal,
 		toggleCard,
 		playSelected,
 		yieldTurn,

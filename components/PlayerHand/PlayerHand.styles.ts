@@ -14,8 +14,9 @@ export const styles = StyleSheet.create({
 		fontSize: 14,
 		fontWeight: "600",
 	},
-	scroll: {
-		flexGrow: 1,
+	handRow: {
+		width: "100%",
+		flexDirection: "row",
 		justifyContent: "center",
 		alignItems: "flex-end",
 		paddingHorizontal: 12,

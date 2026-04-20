@@ -33,6 +33,9 @@ export const EnemyCard = ({
 	previewDamage = 0,
 	previewShieldGain = 0,
 	defeated = false,
+	hideShieldPile = false,
+	onShieldPileMeasure,
+	onJesterAnimationStateChange,
 }: {
 	enemy: Enemy;
 	currentHP: number;
@@ -47,6 +50,14 @@ export const EnemyCard = ({
 	previewDamage?: number;
 	previewShieldGain?: number;
 	defeated?: boolean;
+	hideShieldPile?: boolean;
+	onShieldPileMeasure?: (rect: {
+		x: number;
+		y: number;
+		w: number;
+		h: number;
+	}) => void;
+	onJesterAnimationStateChange?: (isAnimating: boolean) => void;
 }) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
@@ -73,6 +84,7 @@ export const EnemyCard = ({
 
 	const prevHP = useRef(currentHP);
 	const prevShield = useRef(spadesShield ?? 0);
+	const shieldPileRef = useRef<View>(null);
 
 	// ─── Entry animation ──────────────────────────────────────────────────────
 	useEffect(() => {
@@ -125,6 +137,17 @@ export const EnemyCard = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [spadesShield]);
 
+	useEffect(() => {
+		if (!shieldCards || shieldCards.length === 0 || hideShieldPile) return;
+
+		requestAnimationFrame(() => {
+			shieldPileRef.current?.measureInWindow((x, y, w, h) => {
+				if (w === 0 || h === 0) return;
+				onShieldPileMeasure?.({ x, y, w, h });
+			});
+		});
+	}, [hideShieldPile, onShieldPileMeasure, shieldCards]);
+
 	// ─── Animated styles ──────────────────────────────────────────────────────
 	const cardAnimStyle = useAnimatedStyle(() => ({
 		opacity: defeated ? 0.4 : entryOpacity.value,
@@ -172,6 +195,7 @@ export const EnemyCard = ({
 								jestersUsed={jestersUsed ?? 0}
 								jesterActive={!!jesterActive}
 								onUseJester={onUseJester}
+								onAnimationStateChange={onJesterAnimationStateChange}
 							/>
 						</View>
 					)}
@@ -223,13 +247,16 @@ export const EnemyCard = ({
 								/>
 							</View>
 						)}
-						{shieldCards &&
+						{!hideShieldPile &&
+							shieldCards &&
 							shieldCards.length > 0 &&
 							(() => {
 								const visible = shieldCards.slice(-3);
 								const n = visible.length;
 								return (
 									<View
+										ref={shieldPileRef}
+										collapsable={false}
 										style={[
 											styles.shieldPile,
 											{ width: 40 + (n - 1) * 6, height: 56 + (n - 1) * 6 },

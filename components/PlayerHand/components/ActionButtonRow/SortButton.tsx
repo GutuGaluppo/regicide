@@ -5,15 +5,18 @@ import { styles } from "./ActionButtonRow.styles";
 export const SortButton = ({
 	icon,
 	handleSort,
+	disabled,
 }: {
 	icon: number;
 	handleSort: () => void;
+	disabled?: boolean;
 }) => {
 	return (
 		<TouchableOpacity
 			onPress={handleSort}
-			style={styles.sortBtn}
+			style={[styles.sortBtn, disabled && { opacity: 0.5 }]}
 			activeOpacity={0.7}
+			disabled={disabled}
 		>
 			<Image
 				source={icon}
