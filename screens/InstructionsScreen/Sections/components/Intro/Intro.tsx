@@ -1,5 +1,6 @@
 import { t } from "i18next";
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { Image } from "expo-image";
 import { styles } from "./Intro.styles";
 
 export default function Intro() {
@@ -13,7 +14,7 @@ export default function Intro() {
 			<Image
 				source={require("@/assets/images/crown.png")}
 				style={styles.crownImage}
-				resizeMode="contain"
+				contentFit="contain"
 			/>
 			<Text style={styles.gameName}>{t("instructions.gameName")}</Text>
 			<Text style={styles.gameSubtitle}>{t("instructions.gameSubtitle")}</Text>

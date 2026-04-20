@@ -1,12 +1,21 @@
 import MagicShield from "@/assets/icons/shield.png";
+import { getHpColor } from "@/utils/hpColor";
 import { useAudio } from "@/contexts/AudioContext";
 import { getCardImage, getHandCardImage } from "@/data/images";
 import { Card, Enemy } from "@/data/types";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
-import { NumberSprite } from "../NumberSprite";
-import { ProgressRing } from "../ProgressRing";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withSequence,
+	withSpring,
+	withTiming,
+} from "react-native-reanimated";
+import { NumberSprite } from "@/components/NumberSprite";
+import { ProgressRing } from "@/components/ProgressRing";
 import { JesterStack } from "./components/JesterStack";
 import { styles } from "./EnemyCard.styles";
 
@@ -51,139 +60,88 @@ export const EnemyCard = ({
 
 	const hpPercent = Math.max(0, displayHP / enemy.health);
 	const attackPercent = Math.min(1, displayAttack / enemy.attack);
-	const hpColor =
-		hpPercent > 0.5 ? "#22C55E" : hpPercent > 0.25 ? "#FBBF24" : "#EF4444";
+	const hpColor = getHpColor(hpPercent);
 	const shielded = effectiveAttack < enemy.attack;
 
-	// ─── Entry animation ──────────────────────────────────────────────────────
-	const entryOpacity = useRef(new Animated.Value(0)).current;
-	const entryScale = useRef(new Animated.Value(0.88)).current;
-	const entryY = useRef(new Animated.Value(20)).current;
-
-	// ─── Damage animation ─────────────────────────────────────────────────────
-	const shakeX = useRef(new Animated.Value(0)).current;
-	const flashOpacity = useRef(new Animated.Value(0)).current;
-
-	// ─── Shield glow ──────────────────────────────────────────────────────────
-	const shieldGlow = useRef(new Animated.Value(0)).current;
+	// ─── Shared values ────────────────────────────────────────────────────────
+	const entryOpacity = useSharedValue(0);
+	const entryScale = useSharedValue(0.88);
+	const entryY = useSharedValue(20);
+	const shakeX = useSharedValue(0);
+	const flashOpacity = useSharedValue(0);
+	const shieldGlow = useSharedValue(0);
 
 	const prevHP = useRef(currentHP);
 	const prevShield = useRef(spadesShield ?? 0);
 
+	// ─── Entry animation ──────────────────────────────────────────────────────
 	useEffect(() => {
-		entryOpacity.setValue(0);
-		entryScale.setValue(0.88);
-		entryY.setValue(20);
+		entryOpacity.value = 0;
+		entryScale.value = 0.88;
+		entryY.value = 20;
 		prevHP.current = currentHP;
 		prevShield.current = spadesShield ?? 0;
 
-		Animated.parallel([
-			Animated.timing(entryOpacity, {
-				toValue: 1,
-				duration: 450,
-				useNativeDriver: true,
-			}),
-			Animated.spring(entryScale, {
-				toValue: 1,
-				tension: 90,
-				friction: 12,
-				useNativeDriver: true,
-			}),
-			Animated.timing(entryY, {
-				toValue: 0,
-				duration: 400,
-				useNativeDriver: true,
-			}),
-		]).start();
+		entryOpacity.value = withTiming(1, { duration: 450 });
+		entryScale.value = withSpring(1, { stiffness: 90, damping: 12 });
+		entryY.value = withTiming(0, { duration: 400 });
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [enemy.id]);
 
+	// ─── Damage animation ─────────────────────────────────────────────────────
 	useEffect(() => {
 		if (currentHP < prevHP.current) {
-			Animated.sequence([
-				Animated.timing(shakeX, {
-					toValue: -10,
-					duration: 45,
-					useNativeDriver: true,
-				}),
-				Animated.timing(shakeX, {
-					toValue: 10,
-					duration: 45,
-					useNativeDriver: true,
-				}),
-				Animated.timing(shakeX, {
-					toValue: -7,
-					duration: 45,
-					useNativeDriver: true,
-				}),
-				Animated.timing(shakeX, {
-					toValue: 7,
-					duration: 45,
-					useNativeDriver: true,
-				}),
-				Animated.timing(shakeX, {
-					toValue: 0,
-					duration: 45,
-					useNativeDriver: true,
-				}),
-			]).start();
+			shakeX.value = withSequence(
+				withTiming(-10, { duration: 45 }),
+				withTiming(10, { duration: 45 }),
+				withTiming(-7, { duration: 45 }),
+				withTiming(7, { duration: 45 }),
+				withTiming(0, { duration: 45 }),
+			);
 
-			Animated.sequence([
-				Animated.timing(flashOpacity, {
-					toValue: 0.45,
-					duration: 60,
-					useNativeDriver: true,
-				}),
-				Animated.timing(flashOpacity, {
-					toValue: 0,
-					duration: 380,
-					useNativeDriver: true,
-				}),
-			]).start();
+			flashOpacity.value = withSequence(
+				withTiming(0.45, { duration: 60 }),
+				withTiming(0, { duration: 380 }),
+			);
 		}
 		prevHP.current = currentHP;
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentHP]);
 
+	// ─── Shield glow ──────────────────────────────────────────────────────────
 	useEffect(() => {
 		const shield = spadesShield ?? 0;
 		if (shield > prevShield.current) {
-			Animated.sequence([
-				Animated.timing(shieldGlow, {
-					toValue: 1,
-					duration: 180,
-					useNativeDriver: true,
-				}),
-				Animated.timing(shieldGlow, {
-					toValue: 0.3,
-					duration: 280,
-					useNativeDriver: true,
-				}),
-				Animated.timing(shieldGlow, {
-					toValue: 1,
-					duration: 280,
-					useNativeDriver: true,
-				}),
-				Animated.timing(shieldGlow, {
-					toValue: 0.3,
-					duration: 280,
-					useNativeDriver: true,
-				}),
-				Animated.timing(shieldGlow, {
-					toValue: 1,
-					duration: 280,
-					useNativeDriver: true,
-				}),
-				Animated.timing(shieldGlow, {
-					toValue: 0,
-					duration: 400,
-					useNativeDriver: true,
-				}),
-			]).start();
+			shieldGlow.value = withSequence(
+				withTiming(1, { duration: 180 }),
+				withTiming(0.3, { duration: 280 }),
+				withTiming(1, { duration: 280 }),
+				withTiming(0.3, { duration: 280 }),
+				withTiming(1, { duration: 280 }),
+				withTiming(0, { duration: 400 }),
+			);
 		}
 		prevShield.current = shield;
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [spadesShield]);
+
+	// ─── Animated styles ──────────────────────────────────────────────────────
+	const cardAnimStyle = useAnimatedStyle(() => ({
+		opacity: defeated ? 0.4 : entryOpacity.value,
+		transform: [
+			{ scale: entryScale.value },
+			{ translateY: entryY.value },
+			{ translateX: shakeX.value },
+		],
+	}));
+
+	const flashStyle = useAnimatedStyle(() => ({
+		opacity: flashOpacity.value,
+	}));
+
+	const glowStyle = useAnimatedStyle(() => ({
+		opacity: shieldGlow.value,
+	}));
 
 	return (
 		<TouchableOpacity
@@ -198,24 +156,12 @@ export const EnemyCard = ({
 			activeOpacity={onPress ? 0.85 : 1}
 			disabled={!onPress}
 		>
-			<Animated.View
-				style={[
-					styles.card,
-					{
-						opacity: defeated ? 0.4 : entryOpacity,
-						transform: [
-							{ scale: entryScale },
-							{ translateY: entryY },
-							{ translateX: shakeX },
-						],
-					},
-				]}
-			>
+			<Animated.View style={[styles.card, cardAnimStyle]}>
 				<View style={styles.imageWrapper}>
 					<Image
 						source={getCardImage(enemy.rank, enemy.suit)}
 						style={styles.image}
-						resizeMode="contain"
+						contentFit="contain"
 					/>
 
 					{/* Jesters — topo esquerdo */}
@@ -237,13 +183,13 @@ export const EnemyCard = ({
 
 					{/* Red damage flash */}
 					<Animated.View
-						style={[styles.damageFlash, { opacity: flashOpacity }]}
+						style={[styles.damageFlash, flashStyle]}
 						pointerEvents="none"
 					/>
 
 					{/* Spades shield glow */}
 					<Animated.View
-						style={[styles.shieldGlowOverlay, { opacity: shieldGlow }]}
+						style={[styles.shieldGlowOverlay, glowStyle]}
 						pointerEvents="none"
 					/>
 
@@ -267,7 +213,7 @@ export const EnemyCard = ({
 								<Image
 									source={MagicShield}
 									style={styles.shieldIconBg}
-									resizeMode="contain"
+									contentFit="contain"
 								/>
 								<NumberSprite
 									value={enemy.attack - effectiveAttack}
@@ -307,7 +253,7 @@ export const EnemyCard = ({
 														<Image
 															source={img}
 															style={styles.shieldPileImg}
-															resizeMode="cover"
+															contentFit="cover"
 														/>
 													) : (
 														<Text style={styles.shieldPileFallback}>

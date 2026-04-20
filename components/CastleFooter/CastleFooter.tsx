@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { Image } from "expo-image";
 import { getCardImage } from "@/data/images";
 import { Enemy, EnemyRank } from "@/data/types";
 import LetterX from "@/assets/icons/letter-x.png";
@@ -58,14 +59,14 @@ export const CastleFooter = ({
 							<Image
 								source={getCardImage(enemy.rank, enemy.suit)}
 								style={[styles.miniCard, defeated && styles.miniCardDefeated]}
-								resizeMode="contain"
+								contentFit="contain"
 							/>
 							{defeated && (
 								<View style={styles.crossOverlay}>
 									<Image
 										source={LetterX}
 										style={styles.crossIcon}
-										resizeMode="contain"
+										contentFit="contain"
 									/>
 								</View>
 							)}

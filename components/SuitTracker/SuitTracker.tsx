@@ -4,14 +4,16 @@ import HeartsIcon from "@/assets/classes/hearts.png";
 import SpadesIcon from "@/assets/classes/spades.png";
 import { Enemy, Suit } from "@/data/types";
 import React from "react";
-import { Image, ImageSourcePropType, StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { Image } from "expo-image";
+import { styles } from "./SuitTracker.styles";
 
 const SUIT_ROWS: Suit[][] = [
 	["hearts", "diamonds"],
 	["clubs", "spades"],
 ];
 
-const SUIT_ICON: Record<Suit, ImageSourcePropType | null> = {
+const SUIT_ICON: Record<Suit, number | null> = {
 	hearts: HeartsIcon,
 	diamonds: DiamondsIcon,
 	clubs: ClubsIcon,
@@ -25,7 +27,7 @@ interface SuitTrackerProps {
 	defeatedIds: string[];
 }
 
-export const SuitTracker = ({ enemies, defeatedIds }: SuitTrackerProps) => {
+export const SuitTracker = React.memo(({ enemies, defeatedIds }: SuitTrackerProps) => {
 	const isDefeated = (suit: Suit): boolean => {
 		const enemy = enemies.find((e) => e.suit === suit);
 		return !!enemy && defeatedIds.includes(enemy.id);
@@ -41,7 +43,7 @@ export const SuitTracker = ({ enemies, defeatedIds }: SuitTrackerProps) => {
 						if (!icon) return null;
 						return (
 							<View key={suit} style={styles.cell}>
-								<Image source={icon} style={styles.icon} resizeMode="contain" />
+								<Image source={icon} style={styles.icon} contentFit="contain" />
 								{defeated && (
 									<View style={styles.overlay}>
 										<Text style={styles.x}>✕</Text>
@@ -54,39 +56,4 @@ export const SuitTracker = ({ enemies, defeatedIds }: SuitTrackerProps) => {
 			))}
 		</View>
 	);
-};
-
-const styles = StyleSheet.create({
-	container: {
-		position: "absolute",
-		top: 56,
-		left: 8,
-		gap: 4,
-		zIndex: 10,
-	},
-	row: {
-		flexDirection: "row",
-		gap: 4,
-	},
-	cell: {
-		width: 32,
-		height: 32,
-	},
-	icon: {
-		width: 32,
-		height: 32,
-	},
-	overlay: {
-		...StyleSheet.absoluteFillObject,
-		justifyContent: "center",
-		alignItems: "center",
-		backgroundColor: "rgba(0,0,0,0.55)",
-		borderRadius: 4,
-	},
-	x: {
-		color: "#EF4444",
-		fontSize: 16,
-		fontWeight: "800",
-		lineHeight: 18,
-	},
 });

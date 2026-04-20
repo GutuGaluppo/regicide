@@ -3,7 +3,8 @@ import { useAudio } from "@/contexts/AudioContext";
 import { CardRank, Enemy, Suit } from "@/data/types";
 import { cardValue } from "@/utils/gameLogic";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import {
 	CardSelectionInfo,
 	getCardsForSuit,
@@ -150,7 +151,7 @@ export const AttackInput = ({
 								<Image
 									style={styles.suitIcon}
 									source={isImmune && immuneIcon ? immuneIcon : icon}
-									resizeMode="contain"
+									contentFit="contain"
 								/>
 							</TouchableOpacity>
 						</View>
@@ -182,7 +183,7 @@ export const AttackInput = ({
 							<Image
 								source={image}
 								style={styles.cardThumb}
-								resizeMode="cover"
+								contentFit="cover"
 							/>
 						</TouchableOpacity>
 					))}
@@ -211,7 +212,7 @@ export const AttackInput = ({
 							<Image
 								source={image}
 								style={styles.cardThumb}
-								resizeMode="cover"
+								contentFit="cover"
 							/>
 						</TouchableOpacity>
 					))}

@@ -1,5 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import { Animated, Image } from "react-native";
+import { useEffect, useState } from "react";
+import { Image } from "expo-image";
+import Animated, {
+	runOnJS,
+	useAnimatedStyle,
+	useSharedValue,
+	withSequence,
+	withTiming,
+} from "react-native-reanimated";
 import { styles } from "./JesterStack.styles";
 
 const JESTER_IMGS = [
@@ -24,39 +31,37 @@ export const JesterCard = ({
 	zIndex: number;
 }) => {
 	const [isBack, setIsBack] = useState(startUsed);
-	const scaleX = useRef(new Animated.Value(1)).current;
+	const scaleX = useSharedValue(1);
 
 	useEffect(() => {
 		if (flip) {
-			Animated.sequence([
-				Animated.timing(scaleX, {
-					toValue: 0,
-					duration: 160,
-					useNativeDriver: true,
+			scaleX.value = withSequence(
+				withTiming(0, { duration: 160 }, (finished) => {
+					if (finished) {
+						runOnJS(setIsBack)(true);
+					}
 				}),
-				Animated.timing(scaleX, {
-					toValue: 1,
-					duration: 160,
-					useNativeDriver: true,
-				}),
-			]).start();
-			const t = setTimeout(() => setIsBack(true), 160);
-			return () => clearTimeout(t);
+				withTiming(1, { duration: 160 }),
+			);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [flip]);
+	}, [flip, scaleX]);
+
+	const animStyle = useAnimatedStyle(() => ({
+		transform: [{ scaleX: scaleX.value }],
+	}));
 
 	return (
 		<Animated.View
 			style={[
 				styles.card,
-				{ left: offsetX, top: offsetY, zIndex, transform: [{ scaleX }] },
+				{ left: offsetX, top: offsetY, zIndex },
+				animStyle,
 			]}
 		>
 			<Image
 				source={isBack ? CARD_BACK : JESTER_IMGS[index]}
 				style={styles.img}
-				resizeMode="cover"
+				contentFit="cover"
 			/>
 		</Animated.View>
 	);

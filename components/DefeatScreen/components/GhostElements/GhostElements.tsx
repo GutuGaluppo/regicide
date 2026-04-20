@@ -1,5 +1,6 @@
 import CARD_BACK from "@/assets/images/cards_back.png";
-import { Image, View } from "react-native";
+import { View } from "react-native";
+import { Image } from "expo-image";
 import { styles } from "./GhostElements.styles";
 export const GhostStatusBar = () => (
 	<View style={styles.statusRow}>
@@ -8,7 +9,7 @@ export const GhostStatusBar = () => (
 				key={i}
 				source={CARD_BACK}
 				style={styles.statusCard}
-				resizeMode="contain"
+				contentFit="contain"
 			/>
 		))}
 	</View>
@@ -21,7 +22,7 @@ export const GhostHand = () => (
 				key={i}
 				source={CARD_BACK}
 				style={styles.handCard}
-				resizeMode="contain"
+				contentFit="contain"
 			/>
 		))}
 	</View>
@@ -41,7 +42,7 @@ export const GhostFooter = () => (
 				key={i}
 				source={CARD_BACK}
 				style={styles.footerCard}
-				resizeMode="contain"
+				contentFit="contain"
 			/>
 		))}
 	</View>

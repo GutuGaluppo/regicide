@@ -2,11 +2,9 @@ import crownIcon from "@/assets/icons/crown_white.png";
 import { getHeroName } from "@/data/heroes";
 import { getHandCardImage } from "@/data/images";
 import { Card, Suit } from "@/data/types";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-	Animated,
-	Image,
 	Modal,
 	Pressable,
 	ScrollView,
@@ -15,6 +13,14 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { Image } from "expo-image";
+import Animated, {
+	runOnJS,
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+	withTiming,
+} from "react-native-reanimated";
 import { SUIT_COLOR, SUIT_SYMBOL } from "./CardDetailModal.constants";
 import { styles } from "./CardDetailModal.styles";
 
@@ -32,43 +38,32 @@ export const CardDetailModal = ({
 	const { t } = useTranslation();
 
 	const [mounted, setMounted] = useState(false);
-	const slideY = useRef(new Animated.Value(500)).current;
-	const backdropOpacity = useRef(new Animated.Value(0)).current;
+	const slideY = useSharedValue(500);
+	const backdrop = useSharedValue(0);
 
 	useEffect(() => {
 		if (visible) {
 			setMounted(true);
-			slideY.setValue(500);
-			backdropOpacity.setValue(0);
-			Animated.parallel([
-				Animated.timing(backdropOpacity, {
-					toValue: 1,
-					duration: 200,
-					useNativeDriver: true,
-				}),
-				Animated.spring(slideY, {
-					toValue: 0,
-					tension: 80,
-					friction: 14,
-					useNativeDriver: true,
-				}),
-			]).start();
+			slideY.value = 500;
+			backdrop.value = 0;
+			backdrop.value = withTiming(1, { duration: 200 });
+			slideY.value = withSpring(0, { stiffness: 80, damping: 14 });
 		} else if (mounted) {
-			Animated.parallel([
-				Animated.timing(backdropOpacity, {
-					toValue: 0,
-					duration: 180,
-					useNativeDriver: true,
-				}),
-				Animated.timing(slideY, {
-					toValue: 500,
-					duration: 220,
-					useNativeDriver: true,
-				}),
-			]).start(() => setMounted(false));
+			backdrop.value = withTiming(0, { duration: 180 });
+			slideY.value = withTiming(500, { duration: 220 }, () => {
+				runOnJS(setMounted)(false);
+			});
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [visible]);
+
+	const backdropStyle = useAnimatedStyle(() => ({
+		opacity: backdrop.value,
+	}));
+
+	const panelStyle = useAnimatedStyle(() => ({
+		transform: [{ translateY: slideY.value }],
+	}));
 
 	if (!mounted || !card) return null;
 
@@ -92,13 +87,13 @@ export const CardDetailModal = ({
 			animationType="none"
 		>
 			{/* Backdrop */}
-			<Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
+			<Animated.View style={[styles.backdrop, backdropStyle]}>
 				<Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 			</Animated.View>
 
 			{/* Panel */}
 			<Animated.View
-				style={[styles.panel, { transform: [{ translateY: slideY }] }]}
+				style={[styles.panel, panelStyle]}
 				pointerEvents="box-none"
 			>
 				{/* Drag handle */}
@@ -113,7 +108,7 @@ export const CardDetailModal = ({
 					<Image
 						source={crownIcon}
 						style={styles.closeIcon}
-						resizeMode="contain"
+						contentFit="contain"
 					/>
 				</TouchableOpacity>
 
@@ -129,7 +124,7 @@ export const CardDetailModal = ({
 								<Image
 									source={cardImage}
 									style={styles.cardImage}
-									resizeMode="cover"
+									contentFit="cover"
 								/>
 							) : (
 								<View

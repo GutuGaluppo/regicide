@@ -1,25 +1,7 @@
 // /data/images.ts
-export const ENEMY_NAMES: Record<string, string> = {
-	"J-hearts": "Letholdus",
-	"J-diamonds": "Kalannar",
-	"J-clubs": "Tezfur",
-	"J-spades": "Nobutada",
-	"Q-hearts": "Catherine",
-	"Q-diamonds": "Malice",
-	"Q-clubs": "Hostla",
-	"Q-spades": "Lilith",
-	"K-hearts": "Edward",
-	"K-diamonds": "Tathzaer",
-	"K-clubs": "Fyrnod",
-	"K-spades": "Vexx",
-};
-
-export const getEnemyName = (rank: string, suit: string): string =>
-	ENEMY_NAMES[`${rank}-${suit}`] ?? `${rank} ${suit}`;
-import { ImageSourcePropType } from "react-native";
 import { CardRank, EnemyRank, Suit } from "./types";
 
-const HAND_CARD_IMAGES: Record<string, ImageSourcePropType> = {
+const HAND_CARD_IMAGES: Record<string, number> = {
 	"2-hearts": require("../assets/game/cards/hearts/2_hearts.png"),
 	"2-diamonds": require("../assets/game/cards/diamonds/2_diamonds.png"),
 	"2-clubs": require("../assets/game/cards/clubs/2_clubs.png"),
@@ -81,7 +63,7 @@ export const getHandCardImage = (
 	rank: CardRank,
 	suit: Suit | null,
 	cardId?: string,
-): ImageSourcePropType | null => {
+): number | null => {
 	if (rank === "Jester") {
 		// Use id suffix to alternate between the two jester images
 		const n = cardId?.endsWith("2") ? "2" : "1";
@@ -91,7 +73,7 @@ export const getHandCardImage = (
 	return HAND_CARD_IMAGES[`${rank}-${suit}`] ?? null;
 };
 
-const CARD_IMAGES: Record<string, ImageSourcePropType> = {
+const CARD_IMAGES: Record<string, number> = {
 	"J-hearts": require("../assets/cards/outlined/Letholdus_Outlined.png"),
 	"J-diamonds": require("../assets/cards/outlined/Kalannar_Outlined.png"),
 	"J-clubs": require("../assets/cards/outlined/Tezfur_Outlined.png"),
@@ -106,7 +88,7 @@ const CARD_IMAGES: Record<string, ImageSourcePropType> = {
 	"K-spades": require("../assets/cards/outlined/Vexx_Outlined.png"),
 };
 
-const FOOTER_CARD_IMAGES: Record<string, ImageSourcePropType> = {
+const FOOTER_CARD_IMAGES: Record<string, number> = {
 	"J-hearts": require("../assets/cards/Letholdus_01.png"),
 	"J-diamonds": require("../assets/cards/Kalannar_01.png"),
 	"J-clubs": require("../assets/cards/Tezfur_01.png"),
@@ -124,13 +106,13 @@ const FOOTER_CARD_IMAGES: Record<string, ImageSourcePropType> = {
 export const getCardImage = (
 	rank: EnemyRank,
 	suit: Suit,
-): ImageSourcePropType => {
+): number => {
 	return CARD_IMAGES[`${rank}-${suit}`];
 };
 
 export const getFooterCardImage = (
 	rank: EnemyRank,
 	suit: Suit,
-): ImageSourcePropType => {
+): number => {
 	return FOOTER_CARD_IMAGES[`${rank}-${suit}`];
 };

@@ -1,6 +1,16 @@
-import React, { useEffect, useRef } from "react";
-import { Animated, Dimensions, Easing } from "react-native";
+import React, { useEffect } from "react";
+import { Dimensions } from "react-native";
+import { Image as ExpoImage } from "expo-image";
+import Animated, {
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withRepeat,
+	withSequence,
+	withTiming,
+} from "react-native-reanimated";
 
+const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 const { height: SCREEN_H } = Dimensions.get("window");
 
 export const ParallaxLayer = ({
@@ -14,41 +24,42 @@ export const ParallaxLayer = ({
 	duration: number;
 	layerWidth: number;
 }) => {
-	const shift = useRef(new Animated.Value(-amplitude)).current;
+	const shift = useSharedValue(-amplitude);
 
 	useEffect(() => {
-		const loop = Animated.loop(
-			Animated.sequence([
-				Animated.timing(shift, {
-					toValue: amplitude,
+		shift.value = withRepeat(
+			withSequence(
+				withTiming(amplitude, {
 					duration,
 					easing: Easing.inOut(Easing.sin),
-					useNativeDriver: true,
 				}),
-				Animated.timing(shift, {
-					toValue: -amplitude,
+				withTiming(-amplitude, {
 					duration,
 					easing: Easing.inOut(Easing.sin),
-					useNativeDriver: true,
 				}),
-			]),
+			),
+			-1,
 		);
-		loop.start();
-		return () => loop.stop();
 	}, [shift, amplitude, duration]);
 
+	const animStyle = useAnimatedStyle(() => ({
+		transform: [{ translateX: shift.value }],
+	}));
+
 	return (
-		<Animated.Image
+		<AnimatedImage
 			source={source}
-			style={{
-				position: "absolute",
-				top: 0,
-				width: layerWidth,
-				height: SCREEN_H,
-				left: -amplitude,
-				transform: [{ translateX: shift }],
-			}}
-			resizeMode="cover"
+			style={[
+				{
+					position: "absolute",
+					top: 0,
+					width: layerWidth,
+					height: SCREEN_H,
+					left: -amplitude,
+				},
+				animStyle,
+			]}
+			contentFit="cover"
 		/>
 	);
 };

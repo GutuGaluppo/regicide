@@ -1,4 +1,4 @@
-import { getEnemyName } from "@/data/images";
+import { getEnemyName } from "@/data/enemyNames";
 import { Card, Enemy, GameStats } from "@/data/types";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";

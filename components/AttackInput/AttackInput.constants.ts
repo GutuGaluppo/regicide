@@ -9,12 +9,10 @@ import SpadesIconShadow from "@/assets/classes/spades_shadow.png";
 import JesterIcon from "@/assets/icons/jasper_circle.png";
 import { CardRank, Suit } from "@/data/types";
 import { cardValue } from "@/utils/gameLogic";
-import { ImageSourcePropType } from "react-native";
-
 export const SUITS: {
 	suit: Suit;
-	icon: ImageSourcePropType;
-	immuneIcon?: ImageSourcePropType;
+	icon: number;
+	immuneIcon?: number;
 }[] = [
 	{ suit: "hearts", icon: HeartsIcon, immuneIcon: HeartsIconShadow },
 	{ suit: "diamonds", icon: DiamondsIcon, immuneIcon: DiamondsIconShadow },
@@ -45,7 +43,7 @@ export type RegularSuit = Exclude<Suit, "jester">;
 
 export const CHOSEN_CARDS: Record<
 	RegularSuit,
-	Record<SuitRank, ImageSourcePropType>
+	Record<SuitRank, number>
 > = {
 	clubs: {
 		A: require("@/assets/game/cards/clubs/A_clubs.png"),
@@ -109,14 +107,14 @@ export const CHOSEN_CARDS: Record<
 	},
 };
 
-export const JESTER_CARDS: { image: ImageSourcePropType }[] = [
+export const JESTER_CARDS: { image: number }[] = [
 	{ image: require("@/assets/game/cards/jester_1.png") },
 	{ image: require("@/assets/game/cards/jester_2.png") },
 ];
 
 export function getCardsForSuit(
 	suit: RegularSuit,
-): { rank: SuitRank; image: ImageSourcePropType }[] {
+): { rank: SuitRank; image: number }[] {
 	return RANKS.map((rank) => ({ rank, image: CHOSEN_CARDS[suit][rank] }));
 }
 
@@ -136,7 +134,7 @@ export const REGULAR_SUITS: RegularSuit[] = ["hearts", "diamonds", "clubs", "spa
 export type ComboOption = {
 	suit: RegularSuit;
 	rank: SuitRank;
-	image: ImageSourcePropType;
+	image: number;
 };
 
 /**

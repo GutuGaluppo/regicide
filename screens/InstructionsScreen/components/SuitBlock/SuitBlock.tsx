@@ -2,7 +2,8 @@ import ClubsClass from "@/assets/classes/clubs.png";
 import DiamondsClass from "@/assets/classes/diamonds.png";
 import HeartsClass from "@/assets/classes/hearts.png";
 import SpadesClass from "@/assets/classes/spades.png";
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { Image } from "expo-image";
 import { styles } from "./SuitBlock.styles";
 
 const SUIT_META: Record<string, { color: string; image: number }> = {
@@ -27,8 +28,9 @@ export default function SuitBlock({
 			<View style={styles.suitBlockHeader}>
 				<Image
 					source={image}
-					style={[styles.suitClassIcon, { tintColor: color }]}
-					resizeMode="contain"
+					style={styles.suitClassIcon}
+					tintColor={color}
+					contentFit="contain"
 				/>
 				<Text style={[styles.suitBlockName, { color }]}>{name}</Text>
 			</View>

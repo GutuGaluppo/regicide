@@ -14,7 +14,8 @@ import { useAudio } from "@/contexts/AudioContext";
 import { CardRank, Enemy, Suit } from "@/data/types";
 import { cardValue } from "@/utils/gameLogic";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import { styles } from "./AttackFooter.styles";
 
 interface AttackFooterProps {
@@ -196,7 +197,7 @@ export const AttackFooter = ({
 								<Image
 									style={styles.suitIcon}
 									source={isImmune && immuneIcon ? immuneIcon : icon}
-									resizeMode="contain"
+									contentFit="contain"
 								/>
 							</TouchableOpacity>
 						</View>
@@ -221,7 +222,7 @@ export const AttackFooter = ({
 							onPress={() => handleJesterCardPress(i)}
 							activeOpacity={0.7}
 						>
-							<Image source={image} style={styles.cardThumb} resizeMode="cover" />
+							<Image source={image} style={styles.cardThumb} contentFit="cover" />
 						</TouchableOpacity>
 					))}
 				</View>
@@ -249,7 +250,7 @@ export const AttackFooter = ({
 							disabled={noSuit}
 							activeOpacity={0.7}
 						>
-							<Image source={image} style={styles.cardThumb} resizeMode="cover" />
+							<Image source={image} style={styles.cardThumb} contentFit="cover" />
 						</TouchableOpacity>
 					))}
 				</ScrollView>

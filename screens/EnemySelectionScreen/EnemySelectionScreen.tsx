@@ -5,14 +5,20 @@ import { Enemy } from "@/data/types";
 import { useGame } from "@/hooks/useGame";
 import { useTracker } from "@/hooks/useTracker";
 import React, { useState } from "react";
-import { Animated, Image, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
+import { Image as ExpoImage } from "expo-image";
+import Animated, {
+	SharedValue,
+	useAnimatedStyle,
+} from "react-native-reanimated";
 import { styles } from "./EnemySelectionScreen.styles";
 
+const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 const BG = require("@/assets/backgrounds/bg_cave.webp");
 
 interface EnemySelectionScreenProps {
 	enemies: Enemy[];
-	bgShift: Animated.Value;
+	bgShift: SharedValue<number>;
 	onSelectEnemy: (id: string) => void;
 	onSettingsPress: () => void;
 }
@@ -27,12 +33,16 @@ export const EnemySelectionScreen = ({
 
 	const [settingsVisible, setSettingsVisible] = useState(false);
 
+	const bgAnimStyle = useAnimatedStyle(() => ({
+		transform: [{ translateX: bgShift.value }],
+	}));
+
 	return (
 		<View style={styles.root}>
-			<Animated.Image
+			<AnimatedImage
 				source={BG}
-				style={[styles.bg, { transform: [{ translateX: bgShift }] }]}
-				resizeMode="cover"
+				style={[styles.bg, bgAnimStyle]}
+				contentFit="cover"
 			/>
 			<View style={styles.overlay}>
 				{/* ── Top (fixed) ── */}
@@ -49,10 +59,10 @@ export const EnemySelectionScreen = ({
 								disabled={defeated}
 								activeOpacity={0.75}
 							>
-								<Image
+								<ExpoImage
 									source={getCardImage(enemy.rank, enemy.suit)}
 									style={[styles.card, defeated && styles.cardDefeated]}
-									resizeMode="contain"
+									contentFit="contain"
 								/>
 								{defeated && <View style={styles.defeatedOverlay} />}
 							</TouchableOpacity>

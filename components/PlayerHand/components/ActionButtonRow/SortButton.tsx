@@ -1,11 +1,12 @@
-import { Image, ImageSourcePropType, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
+import { Image } from "expo-image";
 import { styles } from "./ActionButtonRow.styles";
 
 export const SortButton = ({
 	icon,
 	handleSort,
 }: {
-	icon: ImageSourcePropType;
+	icon: number;
 	handleSort: () => void;
 }) => {
 	return (
@@ -20,7 +21,7 @@ export const SortButton = ({
 					width: 25,
 					height: 35,
 				}}
-				resizeMode="contain"
+				contentFit="contain"
 			/>
 		</TouchableOpacity>
 	);

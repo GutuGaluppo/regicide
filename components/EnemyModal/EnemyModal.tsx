@@ -1,9 +1,7 @@
 import { useAudio } from "@/contexts/AudioContext";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-	Animated,
-	Image,
 	Modal,
 	Pressable,
 	ScrollView,
@@ -12,8 +10,16 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { NumberSprite } from "../NumberSprite";
-import { ProgressRing } from "../ProgressRing";
+import { Image } from "expo-image";
+import Animated, {
+	runOnJS,
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+	withTiming,
+} from "react-native-reanimated";
+import { NumberSprite } from "@/components/NumberSprite";
+import { ProgressRing } from "@/components/ProgressRing";
 import { getCardImage } from "@/data/images";
 import { Enemy, Suit } from "@/data/types";
 import { styles } from "./EnemyModal.styles";
@@ -27,6 +33,7 @@ const SUIT_COLOR: Record<Suit, string> = {
 	diamonds: "#F87171",
 	clubs: "#94A3B8",
 	spades: "#94A3B8",
+	jester: "#9F7AEA",
 };
 
 export const EnemyModal = ({
@@ -51,43 +58,32 @@ export const EnemyModal = ({
 
 	const [mounted, setMounted] = useState(false);
 
-	const slideY = useRef(new Animated.Value(500)).current;
-	const backdropOpacity = useRef(new Animated.Value(0)).current;
+	const slideY = useSharedValue(500);
+	const backdrop = useSharedValue(0);
 
 	useEffect(() => {
 		if (visible) {
 			setMounted(true);
-			slideY.setValue(500);
-			backdropOpacity.setValue(0);
-			Animated.parallel([
-				Animated.timing(backdropOpacity, {
-					toValue: 1,
-					duration: 220,
-					useNativeDriver: true,
-				}),
-				Animated.spring(slideY, {
-					toValue: 0,
-					tension: 80,
-					friction: 14,
-					useNativeDriver: true,
-				}),
-			]).start();
+			slideY.value = 500;
+			backdrop.value = 0;
+			backdrop.value = withTiming(1, { duration: 220 });
+			slideY.value = withSpring(0, { stiffness: 80, damping: 14 });
 		} else if (mounted) {
-			Animated.parallel([
-				Animated.timing(backdropOpacity, {
-					toValue: 0,
-					duration: 200,
-					useNativeDriver: true,
-				}),
-				Animated.timing(slideY, {
-					toValue: 500,
-					duration: 240,
-					useNativeDriver: true,
-				}),
-			]).start(() => setMounted(false));
+			backdrop.value = withTiming(0, { duration: 200 });
+			slideY.value = withTiming(500, { duration: 240 }, () => {
+				runOnJS(setMounted)(false);
+			});
 		}
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [visible]);
+
+	const backdropStyle = useAnimatedStyle(() => ({
+		opacity: backdrop.value,
+	}));
+
+	const panelStyle = useAnimatedStyle(() => ({
+		transform: [{ translateY: slideY.value }],
+	}));
 
 	if (!mounted) return null;
 
@@ -100,13 +96,13 @@ export const EnemyModal = ({
 			animationType="none"
 		>
 			{/* Backdrop */}
-			<Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
+			<Animated.View style={[styles.backdrop, backdropStyle]}>
 				<Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 			</Animated.View>
 
 			{/* Panel */}
 			<Animated.View
-				style={[styles.panel, { transform: [{ translateY: slideY }] }]}
+				style={[styles.panel, panelStyle]}
 				pointerEvents="box-none"
 			>
 				{/* Drag handle */}
@@ -114,7 +110,7 @@ export const EnemyModal = ({
 
 				{/* Close button */}
 				<TouchableOpacity style={styles.closeBtn} onPress={() => { playTap(); onClose(); }} activeOpacity={0.7}>
-					<Image source={CROWN_ICON} style={styles.closeIcon} resizeMode="contain" />
+					<Image source={CROWN_ICON} style={styles.closeIcon} contentFit="contain" />
 				</TouchableOpacity>
 
 				<ScrollView
@@ -126,7 +122,7 @@ export const EnemyModal = ({
 						<Image
 							source={getCardImage(enemy.rank, enemy.suit)}
 							style={styles.enemyImage}
-							resizeMode="contain"
+							contentFit="contain"
 						/>
 						<View style={styles.statsCol}>
 							<Text style={styles.enemyName}>
