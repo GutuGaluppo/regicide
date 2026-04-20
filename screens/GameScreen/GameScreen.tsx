@@ -35,14 +35,20 @@ type ActiveDeal = {
 
 type ActiveDiscard = {
 	id: number;
-	dest: ScreenRect;
-	orderById: Map<string, number>;
+	flightById: Map<
+		string,
+		{
+			order: number;
+			dest: ScreenRect;
+		}
+	>;
 };
 
 type PendingAction = {
 	id: number;
 	kind: "play" | "discard";
 	awaitShieldExit: boolean;
+	incomingShieldCards: Card[];
 };
 
 type ActiveShieldExit = {
@@ -53,6 +59,22 @@ type ActiveShieldExit = {
 const SHIELD_PILE_CARD_SIZE = {
 	w: 50,
 	h: 66,
+};
+
+const getShieldPileSlotRect = (
+	anchor: ScreenRect,
+	stackIndex: number,
+	totalCards: number,
+): ScreenRect => {
+	const visibleStart = Math.max(0, totalCards - 3);
+	const visibleIndex = Math.min(2, Math.max(0, stackIndex - visibleStart));
+
+	return {
+		x: anchor.x + visibleIndex * 6,
+		y: anchor.y + visibleIndex * 6,
+		w: SHIELD_PILE_CARD_SIZE.w,
+		h: SHIELD_PILE_CARD_SIZE.h,
+	};
 };
 
 const StatusCard = ({ count, label }: { count: number; label: string }) => (
@@ -106,6 +128,10 @@ export const GameScreen = () => {
 		playShuffleCards();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [cardsDrawnSignal]);
+
+	useEffect(() => {
+		shieldPileRectRef.current = null;
+	}, [currentEnemy?.id]);
 
 	const {
 		phase,
@@ -205,9 +231,10 @@ export const GameScreen = () => {
 		confirmDiscard();
 	};
 
-	const startShieldExitAnimation = () => {
+	const startShieldExitAnimation = (incomingShieldCards: Card[] = []) => {
 		const shieldPileRect = shieldPileRectRef.current;
-		if (!shieldPileRect || shieldCards.length === 0) {
+		const allShieldCards = [...shieldCards, ...incomingShieldCards];
+		if (!shieldPileRect || allShieldCards.length === 0) {
 			commitPendingAction("play");
 			return;
 		}
@@ -217,19 +244,16 @@ export const GameScreen = () => {
 			(dest) => {
 				const animationId = actionSequenceRef.current + 1;
 				actionSequenceRef.current = animationId;
-				const visibleStart = Math.max(0, shieldCards.length - 3);
-				const flights = shieldCards.map((card, index) => {
-					const visibleIndex = Math.min(2, Math.max(0, index - visibleStart));
+				const flights = allShieldCards.map((card, index) => {
 					return {
 						animationId,
-						order: shieldCards.length - 1 - index,
+						order: allShieldCards.length - 1 - index,
 						card,
-						source: {
-							x: shieldPileRect.x + visibleIndex * 6,
-							y: shieldPileRect.y + visibleIndex * 6,
-							w: SHIELD_PILE_CARD_SIZE.w,
-							h: SHIELD_PILE_CARD_SIZE.h,
-						},
+						source: getShieldPileSlotRect(
+							shieldPileRect,
+							index,
+							allShieldCards.length,
+						),
 						dest,
 					};
 				});
@@ -244,29 +268,60 @@ export const GameScreen = () => {
 		);
 	};
 
-	const startHandDiscardAnimation = (cards: Card[], kind: PendingAction["kind"]) => {
+	const startHandDiscardAnimation = (
+		cards: Card[],
+		kind: PendingAction["kind"],
+		incomingShieldCards: Card[] = [],
+	) => {
 		if (cards.length === 0) return;
 
 		measureRect(
 			discardRef,
-			(dest) => {
+			(discardDest) => {
 				const actionId = actionSequenceRef.current + 1;
 				actionSequenceRef.current = actionId;
+				const shieldDest = shieldPileRectRef.current;
+				const totalShieldCards = shieldCards.length + incomingShieldCards.length;
+				const incomingShieldIds = new Set(
+					incomingShieldCards.map((card) => card.id),
+				);
+				const incomingShieldOrder = new Map<string, number>();
+				incomingShieldCards.forEach((card, index) =>
+					incomingShieldOrder.set(card.id, index),
+				);
+				const flightById = new Map<
+					string,
+					{ order: number; dest: ScreenRect }
+				>();
 
-				const orderById = new Map<string, number>();
-				cards.forEach((card, index) => orderById.set(card.id, index));
+				cards.forEach((card, index) => {
+					const shieldOrder = incomingShieldOrder.get(card.id);
+					const dest =
+						incomingShieldIds.has(card.id) &&
+						shieldDest &&
+						shieldOrder !== undefined
+							? getShieldPileSlotRect(
+									shieldDest,
+									shieldCards.length + shieldOrder,
+									totalShieldCards,
+								)
+							: discardDest;
+					flightById.set(card.id, { order: index, dest });
+				});
 
 				pendingActionRef.current = {
 					id: actionId,
 					kind,
 					awaitShieldExit:
-						kind === "play" && previewDamage >= currentHP && shieldCards.length > 0,
+						kind === "play" &&
+						previewDamage >= currentHP &&
+						(shieldCards.length > 0 || incomingShieldCards.length > 0),
+					incomingShieldCards,
 				};
 				syncDiscardingIds(new Set(cards.map((card) => card.id)));
 				setActiveDiscard({
 					id: actionId,
-					dest,
-					orderById,
+					flightById,
 				});
 			},
 			() => {
@@ -362,7 +417,7 @@ export const GameScreen = () => {
 		}
 
 		if (pending.awaitShieldExit) {
-			startShieldExitAnimation();
+			startShieldExitAnimation(pending.incomingShieldCards);
 			return;
 		}
 
@@ -392,7 +447,11 @@ export const GameScreen = () => {
 			return;
 		}
 
-		startHandDiscardAnimation(selectedCards, "play");
+		const incomingShieldCards =
+			previewShieldGain > 0
+				? selectedCards.filter((card) => card.suit === "spades")
+				: [];
+		startHandDiscardAnimation(selectedCards, "play", incomingShieldCards);
 	};
 
 	const handleConfirmDiscard = () => {

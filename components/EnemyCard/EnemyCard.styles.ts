@@ -78,6 +78,12 @@ export const styles = StyleSheet.create({
 	shieldPile: {
 		position: "relative",
 	},
+	shieldPileAnchor: {
+		position: "relative",
+		width: 50,
+		height: 66,
+		overflow: "visible",
+	},
 	shieldPileCard: {
 		position: "absolute",
 		width: 50,
@@ -99,5 +105,16 @@ export const styles = StyleSheet.create({
 		textAlign: "center",
 		textAlignVertical: "center",
 		backgroundColor: "#F8FAFC",
+	},
+	shieldPilePlaceholder: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		width: 50,
+		height: 66,
+		borderRadius: 5,
+		borderWidth: 1,
+		borderColor: "rgba(147,197,253,0.35)",
+		backgroundColor: "rgba(15,23,42,0.18)",
 	},
 });

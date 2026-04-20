@@ -1,12 +1,14 @@
 import MagicShield from "@/assets/icons/shield.png";
-import { getHpColor } from "@/utils/hpColor";
+import { NumberSprite } from "@/components/NumberSprite";
+import { ProgressRing } from "@/components/ProgressRing";
 import { useAudio } from "@/contexts/AudioContext";
 import { getCardImage, getHandCardImage } from "@/data/images";
 import { Card, Enemy } from "@/data/types";
+import { getHpColor } from "@/utils/hpColor";
+import { Image } from "expo-image";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
-import { Image } from "expo-image";
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
@@ -14,8 +16,6 @@ import Animated, {
 	withSpring,
 	withTiming,
 } from "react-native-reanimated";
-import { NumberSprite } from "@/components/NumberSprite";
-import { ProgressRing } from "@/components/ProgressRing";
 import { JesterStack } from "./components/JesterStack";
 import { styles } from "./EnemyCard.styles";
 
@@ -73,6 +73,11 @@ export const EnemyCard = ({
 	const attackPercent = Math.min(1, displayAttack / enemy.attack);
 	const hpColor = getHpColor(hpPercent);
 	const shielded = effectiveAttack < enemy.attack;
+	const shieldCardsCount = shieldCards?.length ?? 0;
+	const previewShielded = previewShieldGain > 0;
+	const showShieldArea =
+		shieldCardsCount > 0 || (spadesShield ?? 0) > 0 || previewShielded;
+	const shieldValue = Math.max(0, enemy.attack - displayAttack);
 
 	// ─── Shared values ────────────────────────────────────────────────────────
 	const entryOpacity = useSharedValue(0);
@@ -138,7 +143,7 @@ export const EnemyCard = ({
 	}, [spadesShield]);
 
 	useEffect(() => {
-		if (!shieldCards || shieldCards.length === 0 || hideShieldPile) return;
+		if (!showShieldArea || hideShieldPile) return;
 
 		requestAnimationFrame(() => {
 			shieldPileRef.current?.measureInWindow((x, y, w, h) => {
@@ -146,7 +151,14 @@ export const EnemyCard = ({
 				onShieldPileMeasure?.({ x, y, w, h });
 			});
 		});
-	}, [hideShieldPile, onShieldPileMeasure, shieldCards]);
+	}, [
+		hideShieldPile,
+		onShieldPileMeasure,
+		showShieldArea,
+		shieldCardsCount,
+		previewShieldGain,
+		spadesShield,
+	]);
 
 	// ─── Animated styles ──────────────────────────────────────────────────────
 	const cardAnimStyle = useAnimatedStyle(() => ({
@@ -232,7 +244,7 @@ export const EnemyCard = ({
 								height={32}
 							/>
 						</ProgressRing>
-						{shielded && (
+						{(shielded || previewShielded) && (
 							<View style={styles.shieldedWrapper}>
 								<Image
 									source={MagicShield}
@@ -240,59 +252,84 @@ export const EnemyCard = ({
 									contentFit="contain"
 								/>
 								<NumberSprite
-									value={enemy.attack - effectiveAttack}
+									value={shieldValue}
 									type="attack"
 									height={20}
 									color="#FFFFFF"
 								/>
 							</View>
 						)}
-						{!hideShieldPile &&
-							shieldCards &&
-							shieldCards.length > 0 &&
-							(() => {
-								const visible = shieldCards.slice(-3);
-								const n = visible.length;
-								return (
-									<View
-										ref={shieldPileRef}
-										collapsable={false}
-										style={[
-											styles.shieldPile,
-											{ width: 40 + (n - 1) * 6, height: 56 + (n - 1) * 6 },
-										]}
-									>
-										{visible.map((card, i) => {
-											const img = getHandCardImage(
-												card.rank,
-												card.suit,
-												card.id,
-											);
-											return (
-												<View
-													key={card.id}
-													style={[
-														styles.shieldPileCard,
-														{ left: i * 6, top: i * 6, zIndex: i },
-													]}
-												>
-													{img ? (
-														<Image
-															source={img}
-															style={styles.shieldPileImg}
-															contentFit="cover"
-														/>
-													) : (
-														<Text style={styles.shieldPileFallback}>
-															{card.rank}♠
-														</Text>
-													)}
-												</View>
-											);
-										})}
-									</View>
-								);
-							})()}
+						{showShieldArea && (
+							<View
+								ref={shieldPileRef}
+								collapsable={false}
+								style={styles.shieldPileAnchor}
+							>
+								{!hideShieldPile &&
+									shieldCards &&
+									shieldCards.length > 0 &&
+									(() => {
+										const visible = shieldCards.slice(-3);
+										const n = visible.length;
+										return (
+											<View
+												style={[
+													styles.shieldPile,
+													{
+														width: 40 + (n - 1) * 6,
+														height: 56 + (n - 1) * 6,
+													},
+												]}
+											>
+												{visible.map((card, i) => {
+													const img = getHandCardImage(
+														card.rank,
+														card.suit,
+														card.id,
+													);
+													return (
+														<View
+															key={card.id}
+															style={[
+																styles.shieldPileCard,
+																{ left: i * 6, top: i * 6, zIndex: i },
+															]}
+														>
+															{img ? (
+																<Image
+																	source={img}
+																	style={styles.shieldPileImg}
+																	contentFit="cover"
+																/>
+															) : (
+																<Text style={styles.shieldPileFallback}>
+																	{card.rank}♠
+																</Text>
+															)}
+														</View>
+													);
+												})}
+											</View>
+										);
+									})()}
+								{!hideShieldPile &&
+									shieldCardsCount === 0 &&
+									previewShielded && (
+										<View style={styles.shieldPilePlaceholder}>
+											<Image
+												source={require("@/assets/classes/Spades.avif")}
+												style={{
+													width: 35,
+													height: 35,
+													margin: "auto",
+													opacity: 0.4,
+												}}
+												contentFit="cover"
+											/>
+										</View>
+									)}
+							</View>
+						)}
 					</View>
 
 					{/* HP — base esquerda */}
