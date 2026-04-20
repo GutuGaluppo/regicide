@@ -6,14 +6,13 @@ import { getCardImage } from "@/data/images";
 import { Enemy } from "@/data/types";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {
-	Animated,
-	Image,
-	TouchableOpacity,
-	useWindowDimensions,
-	View,
-} from "react-native";
+import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { Text } from "react-native";
+import { Image } from "expo-image";
+import Animated, {
+	SharedValue,
+	useAnimatedStyle,
+} from "react-native-reanimated";
 import { styles } from "./EnemyStatsCard.styles";
 
 // ── Baseline dimensions (mobile reference) ───────────────────────────────────
@@ -51,7 +50,7 @@ function computeScale(screenW: number, screenH: number): number {
 interface EnemyStatsCardProps {
 	enemy: Enemy;
 	isDead: boolean;
-	defeatFade: Animated.Value;
+	defeatFade: SharedValue<number>;
 	isDefeatingTransition: boolean;
 	previewHP: number;
 	hpPercent: number;
@@ -98,19 +97,23 @@ export const EnemyStatsCard = ({
 		badgeFont: Math.round(BASE.badgeFont * sc),
 	};
 
+	const fadeStyle = useAnimatedStyle(() => ({
+		opacity: isDefeatingTransition ? defeatFade.value : 1,
+	}));
+
 	return (
 		<Animated.View
 			style={[
 				styles.section,
 				isDead && styles.sectionDead,
-				isDefeatingTransition && { opacity: defeatFade },
+				fadeStyle,
 			]}
 		>
 			<View style={[styles.imageWrapper, { width: r.wrapperW, height: r.wrapperH }]}>
 				<Image
 					source={getCardImage(enemy.rank, enemy.suit)}
 					style={[styles.image, { width: r.cardW, height: r.cardH }]}
-					resizeMode="contain"
+					contentFit="contain"
 				/>
 
 				<TouchableOpacity
@@ -121,7 +124,7 @@ export const EnemyStatsCard = ({
 					<Image
 						source={SkullIcon}
 						style={{ width: r.skullSize, height: r.skullSize }}
-						resizeMode="contain"
+						contentFit="contain"
 					/>
 				</TouchableOpacity>
 
@@ -143,7 +146,7 @@ export const EnemyStatsCard = ({
 							<Image
 								source={MagicShield}
 								style={{ position: "absolute", top: 0, left: 0, width: r.shield, height: r.shield }}
-								resizeMode="contain"
+								contentFit="contain"
 							/>
 							<NumberSprite value={currentShield} type="attack" height={r.numShieldH} color="#FFFFFF" />
 						</View>
