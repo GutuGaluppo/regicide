@@ -172,18 +172,24 @@ const en: Translations = {
 			setup: {
 				title: "Setup",
 				body: "Shuffle the 4 Kings (K) and place them face-down on the table. Shuffle the 4 Queens (Q) and place them on top. Shuffle the 4 Jacks (J) and place them on top. This is the Castle Deck. Place it in the center of the table and reveal the top Jack — this is the current enemy.\n\nShuffle together all number cards (2–10), the 4 Animal Companions (A) and a number of Jesters according to the table below to form the Tavern Deck.",
-				tableHeader: { players: "Players", jesters: "Jesters", hand: "Max Hand" },
+				tableHeader: {
+					players: "Players",
+					jesters: "Jesters",
+					hand: "Max Hand",
+				},
 				tableRows: [
 					{ players: "1", jesters: "0", hand: "8" },
 					{ players: "2", jesters: "0", hand: "7" },
 					{ players: "3", jesters: "1", hand: "6" },
 					{ players: "4", jesters: "2", hand: "5" },
 				],
-				startNote: "The player who most recently committed regicide goes first.",
+				startNote:
+					"The player who most recently committed regicide goes first.",
 			},
 			howToPlay: {
 				title: "How to Play",
-				intro: "On your turn, use cards from your hand to deal damage to the current enemy, trying to defeat it. Card values determine damage, while the suit grants a special power.",
+				intro:
+					"On your turn, use cards from your hand to deal damage to the current enemy, trying to defeat it. Card values determine damage, while the suit grants a special power.",
 				stepsLabel: "Each turn has four steps:",
 				steps: [
 					"Step 1 — Play a card or pass",
@@ -200,7 +206,8 @@ const en: Translations = {
 			step2: {
 				title: "Step 2 — Suit Powers",
 				subtitle: "Activate the power of the played card's suit",
-				intro: "Using a card to deal damage also grants a power based on its suit. Red suit powers (♥ ♦) resolve immediately; black suit powers (♣ ♠) take effect in later steps.",
+				intro:
+					"Using a card to deal damage also grants a power based on its suit. Red suit powers (♥ ♦) resolve immediately; black suit powers (♣ ♠) take effect in later steps.",
 				suits: {
 					hearts: {
 						name: "HEARTS",
@@ -277,16 +284,19 @@ const en: Translations = {
 			communication: {
 				title: "Communication",
 				body: "Players may not communicate any information that could reveal or suggest the contents of their hands. They may, however, remind other players of any public information.",
-				allowed: 'Allowed: "I have two cards in hand" · "3 cards left in the Tavern!"',
-				forbidden: 'Forbidden: "I have the 10 of Clubs" · "I hope someone plays Diamonds soon!"',
+				allowed:
+					'Allowed: "I have two cards in hand" · "3 cards left in the Tavern!"',
+				forbidden:
+					'Forbidden: "I have the 10 of Clubs" · "I hope someone plays Diamonds soon!"',
 			},
 			endConditions: {
 				title: "End of Game",
 				body: "The game ends in victory when all Kings are defeated, or in defeat when a player cannot resolve the damage dealt by an enemy. Players also lose when a player cannot play a card or pass on their turn.",
-				victoryTitle: "Victory 👑",
+				victoryTitle: "Victory",
 				victoryText: "Defeat all 12 Castle nobles.",
-				defeatTitle: "Defeat 💀",
-				defeatText: "A player cannot discard enough cards to cover the damage suffered, or needs to play a card and has none in hand.",
+				defeatTitle: "Defeat",
+				defeatText:
+					"A player cannot discard enough cards to cover the damage suffered, or needs to play a card and has none in hand.",
 			},
 			solo: {
 				title: "Solo Game",

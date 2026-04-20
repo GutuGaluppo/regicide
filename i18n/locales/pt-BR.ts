@@ -289,9 +289,9 @@ const ptBR = {
 			endConditions: {
 				title: "Final do Jogo",
 				body: "A partida termina com a vitória dos jogadores quando derrotam o último Rei, ou com a derrota dos jogadores quando um jogador não consegue resolver o dano causado por um inimigo. Os jogadores perdem também quando um jogador não pode jogar uma carta ou passar no seu turno.",
-				victoryTitle: "Vitória 👑",
+				victoryTitle: "Vitória",
 				victoryText: "Derrote todos os 12 nobres do Castelo.",
-				defeatTitle: "Derrota 💀",
+				defeatTitle: "Derrota",
 				defeatText:
 					"Um jogador não consegue descartar cartas suficientes para cobrir o dano sofrido, ou precisa jogar uma carta e não tem nenhuma na mão.",
 			},

@@ -1,22 +1,13 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createTavernDeck, HAND_SIZE } from "../data/deck";
-import { createCastleDeck } from "../data/enemies";
-import { Card, Enemy, GamePhase, GameState, GameStats, Suit } from "../data/types";
-import { loadGame, saveGame } from "../services/storage";
-import { enemyToCard, resolvePlay, validatePlay } from "../utils/gameLogic";
-import { shuffle } from "../utils/shuffle";
+import { buildCastle } from "@/data/buildCastle";
+import { createTavernDeck, HAND_SIZE } from "@/data/deck";
+import { Card, GamePhase, GameState, GameStats, Suit } from "@/data/types";
+import { loadGame, saveGame } from "@/services/storage";
+import { enemyToCard, resolvePlay, validatePlay } from "@/utils/gameLogic";
 
 const PLAYER_COUNT = 1 as const;
 const MAX_HAND = HAND_SIZE[PLAYER_COUNT];
-
-const buildCastle = (): Enemy[] => {
-	const all = createCastleDeck();
-	const jacks = shuffle(all.filter((e) => e.rank === "J"));
-	const queens = shuffle(all.filter((e) => e.rank === "Q"));
-	const kings = shuffle(all.filter((e) => e.rank === "K"));
-	return [...jacks, ...queens, ...kings];
-};
 
 const emptyStats = (): GameStats => ({
 	startTime: Date.now(),
