@@ -31,8 +31,13 @@ type PropsType = {
 	} | null;
 	activeDiscard?: {
 		id: number;
-		dest: ScreenRect;
-		orderById: Map<string, number>;
+		flightById: Map<
+			string,
+			{
+				order: number;
+				dest: ScreenRect;
+			}
+		>;
 	} | null;
 	locked?: boolean;
 	pendingDamage?: number;
@@ -119,7 +124,7 @@ export const PlayerHand = ({
 						!selectedIds.has(card.id) &&
 						!(compatibleIds?.has(card.id) ?? true);
 					const dealOrder = activeDeal?.orderById.get(card.id);
-					const discardOrder = activeDiscard?.orderById.get(card.id);
+					const discardFlight = activeDiscard?.flightById.get(card.id);
 					return (
 						<CardView
 							key={card.id}
@@ -139,11 +144,11 @@ export const PlayerHand = ({
 									: undefined
 							}
 							discardAnimation={
-								activeDiscard && discardOrder !== undefined
+								activeDiscard && discardFlight
 									? {
 											id: activeDiscard.id,
-											order: discardOrder,
-											dest: activeDiscard.dest,
+											order: discardFlight.order,
+											dest: discardFlight.dest,
 										}
 									: undefined
 							}
