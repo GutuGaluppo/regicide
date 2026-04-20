@@ -3,8 +3,8 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
 	stack: {
 		position: "relative",
-		width: 46 + 7,
-		height: 64 + 7,
+		width: 68,
+		height: 88,
 	},
 	stackActive: {
 		// glow handled via activeDot
@@ -17,6 +17,17 @@ export const styles = StyleSheet.create({
 		overflow: "hidden",
 		borderWidth: 1,
 		borderColor: "rgba(167,139,250,0.5)",
+		backgroundColor: "#0F172A",
+	},
+	face: {
+		...StyleSheet.absoluteFillObject,
+		backfaceVisibility: "hidden",
+	},
+	frontFace: {
+		zIndex: 1,
+	},
+	backFace: {
+		transform: [{ rotateY: "180deg" }],
 	},
 	img: { width: "100%", height: "100%" },
 	activeDot: {
