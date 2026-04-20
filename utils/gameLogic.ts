@@ -1,5 +1,5 @@
-import { Card, Enemy, GameState, Suit } from "../data/types";
-import { shuffle } from "./shuffle";
+import { Card, Enemy, GameState, Suit } from "@/data/types";
+import { shuffle } from "@/utils/shuffle";
 
 export const cardValue = (rank: string): number => {
 	if (rank === "A") return 1;

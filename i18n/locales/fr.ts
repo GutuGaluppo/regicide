@@ -173,18 +173,24 @@ const fr: Translations = {
 			setup: {
 				title: "Préparation",
 				body: "Mélangez les 4 Rois (K) et placez-les face cachée sur la table. Mélangez les 4 Dames (Q) et posez-les dessus. Mélangez les 4 Valets (J) et posez-les dessus. C'est le Deck Château. Placez-le au centre de la table et révélez le Valet du dessus — ce sera l'ennemi actuel.\n\nMélangez ensemble toutes les cartes numérotées (2–10), les 4 Animaux Compagnons (A) et un nombre de Jokers selon le tableau ci-dessous pour former le Deck Taverne.",
-				tableHeader: { players: "Joueurs", jesters: "Jokers", hand: "Main max." },
+				tableHeader: {
+					players: "Joueurs",
+					jesters: "Jokers",
+					hand: "Main max.",
+				},
 				tableRows: [
 					{ players: "1", jesters: "0", hand: "8" },
 					{ players: "2", jesters: "0", hand: "7" },
 					{ players: "3", jesters: "1", hand: "6" },
 					{ players: "4", jesters: "2", hand: "5" },
 				],
-				startNote: "Le joueur ayant le plus récemment commis un régicide commence.",
+				startNote:
+					"Le joueur ayant le plus récemment commis un régicide commence.",
 			},
 			howToPlay: {
 				title: "Comment Jouer",
-				intro: "À votre tour, utilisez des cartes de votre main pour infliger des dégâts à l'ennemi actuel et tenter de le vaincre. La valeur des cartes détermine les dégâts, tandis que la couleur octroie un pouvoir spécial.",
+				intro:
+					"À votre tour, utilisez des cartes de votre main pour infliger des dégâts à l'ennemi actuel et tenter de le vaincre. La valeur des cartes détermine les dégâts, tandis que la couleur octroie un pouvoir spécial.",
 				stepsLabel: "Chaque tour comporte quatre étapes :",
 				steps: [
 					"Étape 1 — Jouez une carte ou passez",
@@ -201,7 +207,8 @@ const fr: Translations = {
 			step2: {
 				title: "Étape 2 — Pouvoirs des Couleurs",
 				subtitle: "Activez le pouvoir de la couleur de la carte jouée",
-				intro: "Utiliser une carte pour infliger des dégâts octroie également un pouvoir lié à sa couleur. Les pouvoirs des couleurs rouges (♥ ♦) se résolvent immédiatement ; ceux des couleurs noires (♣ ♠) prennent effet lors des étapes suivantes.",
+				intro:
+					"Utiliser une carte pour infliger des dégâts octroie également un pouvoir lié à sa couleur. Les pouvoirs des couleurs rouges (♥ ♦) se résolvent immédiatement ; ceux des couleurs noires (♣ ♠) prennent effet lors des étapes suivantes.",
 				suits: {
 					hearts: {
 						name: "CŒURS",
@@ -273,21 +280,24 @@ const fr: Translations = {
 			},
 			pass: {
 				title: "Passer",
-				body: 'Durant l\'étape 1, il peut être avantageux de passer plutôt que de jouer une carte. Dites simplement "Passe" et allez directement à l\'étape 4, en sautant les étapes 2 et 3. Un joueur ne peut pas passer si tous les autres joueurs ont passé lors de leur dernier tour.',
+				body: "Durant l'étape 1, il peut être avantageux de passer plutôt que de jouer une carte. Dites simplement \"Passe\" et allez directement à l'étape 4, en sautant les étapes 2 et 3. Un joueur ne peut pas passer si tous les autres joueurs ont passé lors de leur dernier tour.",
 			},
 			communication: {
 				title: "Communication",
 				body: "Les joueurs ne peuvent pas communiquer d'informations pouvant révéler ou suggérer le contenu de leurs mains. Ils peuvent cependant rappeler aux autres joueurs toute information publique.",
-				allowed: 'Autorisé : "J\'ai deux cartes en main" · "Il reste 3 cartes dans la Taverne !"',
-				forbidden: 'Interdit : "J\'ai le 10 de Trèfles" · "J\'espère que quelqu\'un joue des Carreaux bientôt !"',
+				allowed:
+					'Autorisé : "J\'ai deux cartes en main" · "Il reste 3 cartes dans la Taverne !"',
+				forbidden:
+					'Interdit : "J\'ai le 10 de Trèfles" · "J\'espère que quelqu\'un joue des Carreaux bientôt !"',
 			},
 			endConditions: {
 				title: "Fin de Partie",
 				body: "La partie se termine en victoire quand tous les Rois sont vaincus, ou en défaite quand un joueur ne peut pas résoudre les dégâts causés par un ennemi. Les joueurs perdent aussi quand un joueur ne peut ni jouer de carte ni passer lors de son tour.",
-				victoryTitle: "Victoire 👑",
+				victoryTitle: "Victoire",
 				victoryText: "Vainquez les 12 nobles du Château.",
-				defeatTitle: "Défaite 💀",
-				defeatText: "Un joueur ne peut pas défausser suffisamment de cartes pour couvrir les dégâts subis, ou doit jouer une carte et n'en a aucune en main.",
+				defeatTitle: "Défaite",
+				defeatText:
+					"Un joueur ne peut pas défausser suffisamment de cartes pour couvrir les dégâts subis, ou doit jouer une carte et n'en a aucune en main.",
 			},
 			solo: {
 				title: "Jeu en Solo",

@@ -1,6 +1,6 @@
 // /data/deck.ts
 import { Card, Suit } from "./types";
-import { shuffle } from "../utils/shuffle";
+import { shuffle } from "@/utils/shuffle";
 
 const SUITS: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
 

@@ -2,14 +2,16 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
 	header: {
+		position: "absolute",
+		top: 10,
+		left: 0,
 		width: "100%",
-		position: "fixed",
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "space-between",
-		paddingTop: 12,
 		paddingHorizontal: 12,
 		paddingBottom: 4,
+		zIndex: 1000,
 	},
 	btn: {
 		padding: 6,

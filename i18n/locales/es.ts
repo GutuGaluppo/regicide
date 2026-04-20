@@ -172,18 +172,24 @@ const es: Translations = {
 			setup: {
 				title: "Preparación",
 				body: "Baraja los 4 Reyes (K) y colócalos boca abajo sobre la mesa. Baraja las 4 Reinas (Q) y colócalas encima. Baraja las 4 Sotas (J) y colócalas encima. Este es el Mazo Castillo. Ponlo en el centro de la mesa y revela la Sota superior — este será el enemigo actual.\n\nBaraja juntas todas las cartas numéricas (2–10), los 4 Animales Compañeros (A) y un número de Comodines según la tabla para formar el Mazo Taberna.",
-				tableHeader: { players: "Jugadores", jesters: "Comodines", hand: "Máx. mano" },
+				tableHeader: {
+					players: "Jugadores",
+					jesters: "Comodines",
+					hand: "Máx. mano",
+				},
 				tableRows: [
 					{ players: "1", jesters: "0", hand: "8" },
 					{ players: "2", jesters: "0", hand: "7" },
 					{ players: "3", jesters: "1", hand: "6" },
 					{ players: "4", jesters: "2", hand: "5" },
 				],
-				startNote: "Empieza el jugador que más recientemente cometió regicidio.",
+				startNote:
+					"Empieza el jugador que más recientemente cometió regicidio.",
 			},
 			howToPlay: {
 				title: "Cómo Jugar",
-				intro: "En tu turno, usas cartas de tu mano para infligir daño al enemigo actual, intentando derrotarlo. Los valores de las cartas determinan el daño, mientras que el palo otorga un poder especial.",
+				intro:
+					"En tu turno, usas cartas de tu mano para infligir daño al enemigo actual, intentando derrotarlo. Los valores de las cartas determinan el daño, mientras que el palo otorga un poder especial.",
 				stepsLabel: "Cada turno tiene cuatro pasos:",
 				steps: [
 					"Paso 1 — Juega una carta o pasa",
@@ -200,7 +206,8 @@ const es: Translations = {
 			step2: {
 				title: "Paso 2 — Poderes de los Palos",
 				subtitle: "Activa el poder del palo de la carta jugada",
-				intro: "Usar una carta para causar daño también otorga un poder asociado a su palo. Los poderes de palos rojos (♥ ♦) se resuelven inmediatamente; los de palos negros (♣ ♠) surten efecto en pasos posteriores.",
+				intro:
+					"Usar una carta para causar daño también otorga un poder asociado a su palo. Los poderes de palos rojos (♥ ♦) se resuelven inmediatamente; los de palos negros (♣ ♠) surten efecto en pasos posteriores.",
 				suits: {
 					hearts: {
 						name: "CORAZONES",
@@ -277,16 +284,19 @@ const es: Translations = {
 			communication: {
 				title: "Comunicación",
 				body: "Los jugadores no pueden comunicar ninguna información que pueda revelar o sugerir el contenido de sus manos. Sin embargo, pueden recordar a otros jugadores cualquier información pública.",
-				allowed: 'Permitido: "Tengo dos cartas en mano" · "¡Quedan 3 cartas en la Taberna!"',
-				forbidden: 'Prohibido: "Tengo el 10 de Tréboles" · "¡Espero que alguien juegue Diamantes pronto!"',
+				allowed:
+					'Permitido: "Tengo dos cartas en mano" · "¡Quedan 3 cartas en la Taberna!"',
+				forbidden:
+					'Prohibido: "Tengo el 10 de Tréboles" · "¡Espero que alguien juegue Diamantes pronto!"',
 			},
 			endConditions: {
 				title: "Final del Juego",
 				body: "La partida termina en victoria cuando todos los Reyes son derrotados, o en derrota cuando un jugador no puede resolver el daño causado por un enemigo. Los jugadores también pierden cuando un jugador no puede jugar una carta ni pasar en su turno.",
-				victoryTitle: "Victoria 👑",
+				victoryTitle: "Victoria",
 				victoryText: "Derrota a los 12 nobles del Castillo.",
-				defeatTitle: "Derrota 💀",
-				defeatText: "Un jugador no puede descartar cartas suficientes para cubrir el daño sufrido, o necesita jugar una carta y no tiene ninguna en la mano.",
+				defeatTitle: "Derrota",
+				defeatText:
+					"Un jugador no puede descartar cartas suficientes para cubrir el daño sufrido, o necesita jugar una carta y no tiene ninguna en la mano.",
 			},
 			solo: {
 				title: "Juego en Solitario",

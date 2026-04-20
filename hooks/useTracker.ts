@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { createCastleDeck } from "../data/enemies";
-import { CardRank, Enemy, EnemyRank, Suit } from "../data/types";
-import { shuffle } from "../utils/shuffle";
-import { cardValue } from "../utils/gameLogic";
+import { buildCastle } from "@/data/buildCastle";
+import { CardRank, Enemy, EnemyRank, Suit } from "@/data/types";
+import { cardValue } from "@/utils/gameLogic";
 
 export interface AttackResult {
 	damage: number;
@@ -35,17 +34,8 @@ interface HistoryEntry {
 
 const MAX_HISTORY = 20;
 
-const buildEnemies = (): Enemy[] => {
-	const all = createCastleDeck();
-	return [
-		...shuffle(all.filter((e) => e.rank === "J")),
-		...shuffle(all.filter((e) => e.rank === "Q")),
-		...shuffle(all.filter((e) => e.rank === "K")),
-	];
-};
-
 const createInitial = (): TrackerState => {
-	const allEnemies = buildEnemies();
+	const allEnemies = buildCastle();
 	return {
 		allEnemies,
 		currentEnemyId: null, // start in ENEMY_SELECTION so player chooses first enemy

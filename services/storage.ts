@@ -1,6 +1,6 @@
 // /services/storage.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GameState } from "../data/types";
+import { GameState } from "@/data/types";
 
 const KEY = "regicide_save";
 
