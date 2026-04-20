@@ -18,7 +18,7 @@ interface NumberSpriteProps {
 	color?: string;
 }
 
-export const NumberSprite = ({
+export const NumberSprite = React.memo(({
 	value,
 	type,
 	height = 32,
@@ -31,4 +31,4 @@ export const NumberSprite = ({
 			color={color ?? TYPE_COLOR[type]}
 		/>
 	);
-};
+});

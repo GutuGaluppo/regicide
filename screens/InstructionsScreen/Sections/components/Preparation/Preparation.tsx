@@ -1,5 +1,6 @@
 import { t } from "i18next";
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { Image } from "expo-image";
 import SetupTable from "@/screens/InstructionsScreen/components/SetupTable";
 import Section from "@/screens/InstructionsScreen/Sections/Section";
 import { styles } from "./Preparation.styles";
@@ -26,7 +27,7 @@ export default function Preparation() {
 				<Image
 					source={require("@/assets/icons/tavern.png")}
 					style={styles.sectionIconMd}
-					resizeMode="contain"
+					contentFit="contain"
 				/>
 			</View>
 			<Text style={styles.bodyText}>{t(`${s("setup")}.body`)}</Text>

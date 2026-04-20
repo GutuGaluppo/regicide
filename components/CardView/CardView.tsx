@@ -1,10 +1,16 @@
 import { useAudio } from "@/contexts/AudioContext";
-import React, { useEffect, useRef } from "react";
-import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming,
+} from "react-native-reanimated";
 import SpellIcon from "@/assets/icons/spellImmune_shadow.png";
 import { getHandCardImage } from "@/data/images";
 import { Card, Suit } from "@/data/types";
-import { useCardSize } from "@/utils/responsive";
+import { useCardSize } from "@/hooks/useCardSize";
 import { SUIT_COLOR, SUIT_SYMBOL } from "./CardView.constants";
 import { styles } from "./CardView.styles";
 
@@ -36,49 +42,35 @@ export const CardView = ({
 	const cardImage = getHandCardImage(card.rank, card.suit, card.id);
 	const { w, h, mx, liftY, icon } = useCardSize();
 
-	const discardOpacity = useRef(new Animated.Value(1)).current;
-	const discardScale = useRef(new Animated.Value(1)).current;
-	const dimOpacity = useRef(new Animated.Value(1)).current;
+	const discardOpacity = useSharedValue(1);
+	const discardScale = useSharedValue(1);
+	const dimOpacity = useSharedValue(1);
 
 	useEffect(() => {
 		if (discarding) {
-			Animated.parallel([
-				Animated.timing(discardOpacity, {
-					toValue: 0,
-					duration: 320,
-					useNativeDriver: true,
-				}),
-				Animated.timing(discardScale, {
-					toValue: 0.55,
-					duration: 320,
-					useNativeDriver: true,
-				}),
-			]).start();
+			discardOpacity.value = withTiming(0, { duration: 320 });
+			discardScale.value = withTiming(0.55, { duration: 320 });
 		} else {
-			discardOpacity.setValue(1);
-			discardScale.setValue(1);
+			discardOpacity.value = 1;
+			discardScale.value = 1;
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [discarding]);
+	}, [discarding, discardOpacity, discardScale]);
 
 	useEffect(() => {
-		Animated.timing(dimOpacity, {
-			toValue: dimmed ? 0.3 : 1,
-			duration: 150,
-			useNativeDriver: true,
-		}).start();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [dimmed]);
+		dimOpacity.value = withTiming(dimmed ? 0.3 : 1, { duration: 150 });
+	}, [dimmed, dimOpacity]);
+
+	const animStyle = useAnimatedStyle(() => ({
+		opacity: discardOpacity.value * dimOpacity.value,
+		transform: [{ scale: discardScale.value }],
+	}));
 
 	return (
 		<Animated.View
 			style={[
 				styles.wrapper,
 				{ marginHorizontal: mx },
-				{
-					opacity: Animated.multiply(discardOpacity, dimOpacity),
-					transform: [{ scale: discardScale }],
-				},
+				animStyle,
 			]}
 		>
 			<TouchableOpacity
@@ -101,7 +93,7 @@ export const CardView = ({
 					<Image
 						source={cardImage}
 						style={styles.cardImage}
-						resizeMode="cover"
+						contentFit="cover"
 					/>
 				) : (
 					<>

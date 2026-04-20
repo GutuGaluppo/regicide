@@ -32,7 +32,7 @@ interface SvgNumberSpriteProps {
 	gap?: number;
 }
 
-export const SvgNumberSprite = ({
+export const SvgNumberSprite = React.memo(({
 	value,
 	height = 32,
 	color,
@@ -49,4 +49,4 @@ export const SvgNumberSprite = ({
 			})}
 		</View>
 	);
-};
+});

@@ -1,6 +1,7 @@
 import { useAudio } from "@/contexts/AudioContext";
 import { GamePhase } from "@/data/types";
-import { Image, LayoutAnimation, TouchableOpacity, View } from "react-native";
+import { LayoutAnimation, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import { styles } from "./ActionButtonRow.styles";
 import { SortButton } from "./SortButton";
 
@@ -51,7 +52,7 @@ export const ActionButtonRow = ({
 								height: 35,
 								transform: [{ rotate: "45deg" }],
 							}}
-							resizeMode="contain"
+							contentFit="contain"
 						/>
 					</View>
 				</TouchableOpacity>

@@ -13,12 +13,8 @@ import { useGame } from "@/hooks/useGame";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	Image,
-	ImageBackground,
-	Text,
-	View,
-} from "react-native";
+import { ImageBackground, Text, View } from "react-native";
+import { Image } from "expo-image";
 import { styles } from "./GameScreen.styles";
 
 const StatusCard = ({ count, label }: { count: number; label: string }) => (
@@ -27,7 +23,7 @@ const StatusCard = ({ count, label }: { count: number; label: string }) => (
 			<Image
 				source={cardBack}
 				style={styles.statusCardImg}
-				resizeMode="contain"
+				contentFit="contain"
 			/>
 			<View style={styles.statusCardOverlay}>
 				<NumberSprite value={count} type="deckstatus" height={25} />
@@ -40,7 +36,9 @@ const StatusCard = ({ count, label }: { count: number; label: string }) => (
 export const GameScreen = () => {
 	const { t } = useTranslation();
 	const { playShuffleCards } = useAudio();
-	useSoundtrack(require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource);
+	useSoundtrack(
+		require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource,
+	);
 	const {
 		gameState,
 		selectedIds,
@@ -65,7 +63,7 @@ export const GameScreen = () => {
 	useEffect(() => {
 		if (cardsDrawnSignal === 0) return;
 		playShuffleCards();
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [cardsDrawnSignal]);
 
 	const {
@@ -112,9 +110,6 @@ export const GameScreen = () => {
 			imageStyle={{ width: "100%", height: "100%" }}
 		>
 			<View style={styles.overlay}>
-				{/* Header */}
-				<ScreenHeader onSettingsPress={() => setSettingsVisible(true)} />
-
 				{/* Status bar */}
 				<View style={styles.statusBar}>
 					<StatusCard
@@ -149,7 +144,9 @@ export const GameScreen = () => {
 								onUseJester={phase === "player_turn" ? useJester : undefined}
 								onPress={() => setModalVisible(true)}
 								previewDamage={phase === "player_turn" ? previewDamage : 0}
-								previewShieldGain={phase === "player_turn" ? previewShieldGain : 0}
+								previewShieldGain={
+									phase === "player_turn" ? previewShieldGain : 0
+								}
 							/>
 						)}
 				</View>
@@ -181,6 +178,9 @@ export const GameScreen = () => {
 					defeatedEnemies={defeatedEnemies}
 					currentEnemyId={currentEnemy?.id}
 				/>
+
+				{/* Header */}
+				<ScreenHeader onSettingsPress={() => setSettingsVisible(true)} />
 			</View>
 
 			{/* Enemy modal */}

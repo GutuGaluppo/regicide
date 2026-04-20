@@ -1,12 +1,12 @@
 import { Card, GamePhase, Suit } from "@/data/types";
 import { getCompatibleCardIds } from "@/utils/gameLogic";
-import { useCardSize } from "@/utils/responsive";
+import { useCardSize } from "@/hooks/useCardSize";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
-import { CardDetailModal } from "../CardDetailModal";
-import { CardView } from "../CardView";
+import { CardDetailModal } from "@/components/CardDetailModal";
+import { CardView } from "@/components/CardView";
 import { styles } from "./PlayerHand.styles";
 import { ActionButtonRow } from "./components/ActionButtonRow";
 import { DiscardButton } from "./components/DiscardButton/DiscardButton";

@@ -1,6 +1,7 @@
 import { useAudio } from "@/contexts/AudioContext";
 import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import LetterX from "@/assets/icons/letter-x.png";
 import { getFooterCardImage } from "@/data/images";
 import { Enemy, EnemyRank } from "@/data/types";
@@ -52,14 +53,14 @@ export const DefeatFooter = ({
 							<Image
 								source={getFooterCardImage(enemy.rank, enemy.suit)}
 								style={[styles.miniCard, defeated && styles.miniCardDefeated]}
-								resizeMode="contain"
+								contentFit="contain"
 							/>
 							{defeated && (
 								<View style={styles.crossOverlay}>
 									<Image
 										source={LetterX}
 										style={styles.crossIcon}
-										resizeMode="contain"
+										contentFit="contain"
 									/>
 								</View>
 							)}

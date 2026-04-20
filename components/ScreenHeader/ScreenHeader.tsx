@@ -3,7 +3,8 @@ import TavernSilver from "@/assets/icons/tavern_silver.png";
 import { useAudio } from "@/contexts/AudioContext";
 import { router } from "expo-router";
 import React from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import { styles } from "./ScreenHeader.styles";
 
 interface ScreenHeaderProps {
@@ -32,7 +33,7 @@ export const ScreenHeader = ({
 				style={styles.btn}
 				activeOpacity={0.7}
 			>
-				<Image source={TavernSilver} style={styles.icon} resizeMode="contain" />
+				<Image source={TavernSilver} style={styles.icon} contentFit="contain" />
 			</TouchableOpacity>
 
 			<View style={styles.rightGroup}>
@@ -46,7 +47,7 @@ export const ScreenHeader = ({
 						style={styles.btn}
 						activeOpacity={0.7}
 					>
-						<Image source={GearFlat} style={styles.icon} resizeMode="contain" />
+						<Image source={GearFlat} style={styles.icon} contentFit="contain" />
 					</TouchableOpacity>
 				)}
 			</View>

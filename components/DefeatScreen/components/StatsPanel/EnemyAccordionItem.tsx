@@ -1,16 +1,15 @@
 import { getHandCardImage } from "@/data/images";
 import { Card, Enemy } from "@/data/types";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
-import {
-	Animated,
-	Image,
-	ImageSourcePropType,
-	ScrollView,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import React, { useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+import Animated, {
+	interpolate,
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+} from "react-native-reanimated";
 import { styles } from "./StatsPanel.styles";
 
 const SWORD = require("@/assets/icons/sword.png");
@@ -19,7 +18,7 @@ const SHIELD = require("@/assets/icons/shield.png");
 const MiniCard = ({ card }: { card: Card }) => {
 	const src = getHandCardImage(card.rank, card.suit, card.id);
 	if (!src) return null;
-	return <Image source={src} style={styles.cardImage} resizeMode="contain" />;
+	return <Image source={src} style={styles.cardImage} contentFit="contain" />;
 };
 
 const CardSection = ({
@@ -28,7 +27,7 @@ const CardSection = ({
 	cards,
 	emptyLabel,
 }: {
-	icon: ImageSourcePropType;
+	icon: number;
 	title: string;
 	cards: Card[];
 	emptyLabel: string;
@@ -38,7 +37,7 @@ const CardSection = ({
 			<Image
 				source={icon}
 				style={styles.cardSectionIcon}
-				resizeMode="contain"
+				contentFit="contain"
 			/>
 			<Text style={styles.cardSectionTitle}>{title}</Text>
 			<Text style={styles.cardSectionCount}>{cards.length}</Text>
@@ -67,7 +66,7 @@ export const EnemyAccordionItem = ({
 	emptyLabel,
 }: {
 	enemy?: Enemy;
-	sectionIcon?: ImageSourcePropType;
+	sectionIcon?: number;
 	attackCards?: Card[];
 	discardedCards?: Card[];
 	cards?: Card[];
@@ -75,22 +74,21 @@ export const EnemyAccordionItem = ({
 	emptyLabel: string;
 }) => {
 	const [expanded, setExpanded] = useState(false);
-	const rotation = useRef(new Animated.Value(0)).current;
+	const rotation = useSharedValue(0);
 
 	const toggle = () => {
-		Animated.spring(rotation, {
-			toValue: expanded ? 0 : 1,
-			useNativeDriver: true,
-			tension: 80,
-			friction: 14,
-		}).start();
+		rotation.value = withSpring(expanded ? 0 : 1, {
+			stiffness: 80,
+			damping: 14,
+		});
 		setExpanded((v) => !v);
 	};
 
-	const rotate = rotation.interpolate({
-		inputRange: [0, 1],
-		outputRange: ["0deg", "180deg"],
-	});
+	const chevronStyle = useAnimatedStyle(() => ({
+		transform: [
+			{ rotate: `${interpolate(rotation.value, [0, 1], [0, 180])}deg` },
+		],
+	}));
 
 	const thumbSrc = enemy ? getHandCardImage(enemy.rank, enemy.suit) : null;
 
@@ -110,20 +108,20 @@ export const EnemyAccordionItem = ({
 					<Image
 						source={thumbSrc}
 						style={styles.accordionThumb}
-						resizeMode="contain"
+						contentFit="contain"
 					/>
 				) : sectionIcon ? (
 					<Image
 						source={sectionIcon}
 						style={styles.accordionIcon}
-						resizeMode="contain"
+						contentFit="contain"
 					/>
 				) : null}
 				<Text style={styles.accordionLabel} numberOfLines={1}>
 					{label}
 				</Text>
 				<Text style={styles.accordionCount}>{totalCount}</Text>
-				<Animated.View style={{ transform: [{ rotate }] }}>
+				<Animated.View style={chevronStyle}>
 					<Ionicons name="chevron-down" size={18} color="#94A3B8" />
 				</Animated.View>
 			</TouchableOpacity>

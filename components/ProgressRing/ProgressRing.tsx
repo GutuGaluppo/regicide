@@ -11,7 +11,7 @@ interface ProgressRingProps {
 	children?: React.ReactNode;
 }
 
-export const ProgressRing = ({
+export const ProgressRing = React.memo(({
 	percent,
 	size,
 	strokeWidth = 5,
@@ -54,4 +54,4 @@ export const ProgressRing = ({
 			<View style={styles.content}>{children}</View>
 		</View>
 	);
-};
+});

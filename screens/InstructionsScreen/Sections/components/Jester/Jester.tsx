@@ -1,5 +1,6 @@
 import { t } from "i18next";
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { Image } from "expo-image";
 import Section from "@/screens/InstructionsScreen/Sections/Section";
 import { styles } from "./Jester.styles";
 
@@ -12,7 +13,7 @@ export default function Jester() {
 				<Image
 					source={require("@/assets/icons/jester_icon.png")}
 					style={styles.sectionIconMd}
-					resizeMode="contain"
+					contentFit="contain"
 				/>
 			</View>
 			<Text style={styles.bodyText}>{t(`${s("jester")}.body`)}</Text>
