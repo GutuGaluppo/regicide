@@ -5,6 +5,7 @@ export const SUIT_COLOR: Record<Suit, string> = {
 	diamonds: "#F59E0B",
 	clubs: "#4ADE80",
 	spades: "#60A5FA",
+	jester: "#9F7AEA",
 };
 
 export const SUIT_SYMBOL: Record<Suit, string> = {
@@ -12,4 +13,5 @@ export const SUIT_SYMBOL: Record<Suit, string> = {
 	diamonds: "♦",
 	clubs: "♣",
 	spades: "♠",
+	jester: "🃏",
 };
