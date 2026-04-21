@@ -288,20 +288,54 @@ export const useGame = () => {
 			return;
 		}
 
-		const handValue = result.newHand.reduce((sum, c) => sum + c.value, 0);
+		// Mão vazia após jogar: tenta repor via Coringa antes de avaliar dano
+		const emptyResolution = result.newHand.length === 0
+			? resolveEmptyHand(gameState, result.newTavernDeck, result.newDiscardPile)
+			: null;
+
+		if (emptyResolution && emptyResolution.playerHand.length > 0) bumpDraw();
+
+		const activeHand = emptyResolution ? emptyResolution.playerHand : result.newHand;
+		const activeTavern = emptyResolution ? emptyResolution.tavernDeck : result.newTavernDeck;
+		const activeDiscard = emptyResolution ? emptyResolution.discardPile : result.newDiscardPile;
+
+		if (emptyResolution?.phase === "defeat") {
+			// Sem Coringas disponíveis → derrota
+			const next: GameState = {
+				...gameState,
+				playerHand: [],
+				tavernDeck: activeTavern,
+				discardPile: activeDiscard,
+				playedThisFight: allPlayedCards,
+				currentDamage: newCurrentDamage,
+				spadesShield: result.newShield,
+				pendingDamage: effectiveAttack,
+				jestersAvailable: emptyResolution.jestersAvailable,
+				jestersUsed: emptyResolution.jestersUsed,
+				phase: "defeat",
+				stats: newStats,
+			};
+			setGameState(next);
+			persist(next);
+			return;
+		}
+
+		const handValue = activeHand.reduce((sum, c) => sum + c.value, 0);
 		const canSatisfy = handValue >= effectiveAttack;
 		const newPhase: GamePhase = canSatisfy ? "suffer_damage" : "defeat";
 
 		const next: GameState = {
 			...gameState,
-			playerHand: result.newHand,
-			tavernDeck: result.newTavernDeck,
-			discardPile: result.newDiscardPile,
+			playerHand: activeHand,
+			tavernDeck: activeTavern,
+			discardPile: activeDiscard,
 			playedThisFight: allPlayedCards,
 			currentDamage: newCurrentDamage,
 			spadesShield: result.newShield,
 			pendingDamage: effectiveAttack,
 			phase: newPhase,
+			jestersAvailable: emptyResolution ? emptyResolution.jestersAvailable : gameState.jestersAvailable,
+			jestersUsed: emptyResolution ? emptyResolution.jestersUsed : gameState.jestersUsed,
 			stats: newStats,
 		};
 		setGameState(next);
