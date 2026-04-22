@@ -3,15 +3,15 @@ import { Audio, AVPlaybackSource } from "expo-av";
 import { useEffect, useRef } from "react";
 
 export const useSoundtrack = (source: AVPlaybackSource) => {
-	const { musicVolume } = useAudio();
+	const { effectiveMusicVolume } = useAudio();
 	const soundRef = useRef<Audio.Sound | null>(null);
 	// Track the latest desired volume so it can be applied after the sound loads
-	const desiredVolumeRef = useRef(musicVolume);
+	const desiredVolumeRef = useRef(effectiveMusicVolume);
 
 	useEffect(() => {
-		desiredVolumeRef.current = musicVolume;
-		soundRef.current?.setVolumeAsync(musicVolume).catch(() => {});
-	}, [musicVolume]);
+		desiredVolumeRef.current = effectiveMusicVolume;
+		soundRef.current?.setVolumeAsync(effectiveMusicVolume).catch(() => {});
+	}, [effectiveMusicVolume]);
 
 	useEffect(() => {
 		let mounted = true;
