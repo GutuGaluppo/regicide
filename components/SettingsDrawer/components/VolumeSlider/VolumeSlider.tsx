@@ -6,10 +6,12 @@ export default function VolumeSlider({
 	value,
 	onChange,
 	onPreview,
+	disabled,
 }: {
 	value: number;
 	onChange: (v: number) => void;
 	onPreview?: () => void;
+	disabled?: boolean;
 }) {
 	const trackWidthRef = useRef(0);
 	// Absolute pageX of the hit area — avoids locationX being relative to a child view (thumb)
@@ -17,6 +19,8 @@ export default function VolumeSlider({
 	const hitAreaRef = useRef<View>(null);
 	const onPreviewRef = useRef(onPreview);
 	onPreviewRef.current = onPreview;
+	const disabledRef = useRef(disabled);
+	disabledRef.current = disabled;
 	const lastPreviewAt = useRef(0);
 
 	const clamp = (v: number) => Math.max(0, Math.min(1, v));
@@ -28,7 +32,7 @@ export default function VolumeSlider({
 			onMoveShouldSetPanResponder: () => true,
 			onPanResponderTerminationRequest: () => false,
 			onPanResponderGrant: (evt) => {
-				if (trackWidthRef.current === 0) return;
+				if (disabledRef.current || trackWidthRef.current === 0) return;
 				onChange(
 					clamp(
 						(evt.nativeEvent.pageX - trackPageXRef.current) /
@@ -37,7 +41,7 @@ export default function VolumeSlider({
 				);
 			},
 			onPanResponderMove: (evt) => {
-				if (trackWidthRef.current === 0) return;
+				if (disabledRef.current || trackWidthRef.current === 0) return;
 				onChange(
 					clamp(
 						(evt.nativeEvent.pageX - trackPageXRef.current) /
@@ -66,7 +70,7 @@ export default function VolumeSlider({
 					if (pageX !== undefined) trackPageXRef.current = pageX;
 				});
 			}}
-			style={styles.sliderHitArea}
+			style={[styles.sliderHitArea, disabled && { opacity: 0.35 }]}
 		>
 			<View style={styles.sliderTrack} pointerEvents="none">
 				<View style={[styles.sliderFill, { width: fillPct as `${number}%` }]} />

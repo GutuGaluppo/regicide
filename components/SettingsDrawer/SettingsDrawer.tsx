@@ -23,8 +23,17 @@ export const SettingsDrawer = ({
 	onReset: () => void;
 }) => {
 	const { t } = useTranslation();
-	const { playTap, musicVolume, sfxVolume, setMusicVolume, setSfxVolume } =
-		useAudio();
+	const {
+		playTap,
+		musicVolume,
+		sfxVolume,
+		musicMuted,
+		sfxMuted,
+		setMusicVolume,
+		setSfxVolume,
+		toggleMusicMute,
+		toggleSfxMute,
+	} = useAudio();
 	const [mounted, setMounted] = useState(false);
 	const slideY = useRef(new Animated.Value(400)).current;
 	const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -102,6 +111,8 @@ export const SettingsDrawer = ({
 					label={t("settings.music")}
 					value={musicVolume}
 					onChange={setMusicVolume}
+					muted={musicMuted}
+					onToggleMute={toggleMusicMute}
 				/>
 				<VolumeRow
 					icon="volume-medium-outline"
@@ -109,6 +120,8 @@ export const SettingsDrawer = ({
 					value={sfxVolume}
 					onChange={setSfxVolume}
 					onPreview={playTap}
+					muted={sfxMuted}
+					onToggleMute={toggleSfxMute}
 				/>
 
 				<View style={styles.divider} />
