@@ -3,6 +3,7 @@ import { CardFlight, CardFlightOverlay } from "@/components/CardFlightOverlay/Ca
 import { CastleFooter } from "@/components/CastleFooter";
 import { DefeatScreen } from "@/components/DefeatScreen";
 import { EnemyCard } from "@/components/EnemyCard";
+import { EnemyCaptureFlight, EnemyCaptureOverlay } from "@/components/EnemyCaptureOverlay/EnemyCaptureOverlay";
 import { EnemyModal } from "@/components/EnemyModal";
 import { NumberSprite } from "@/components/NumberSprite";
 import { PlayerHand } from "@/components/PlayerHand";
@@ -10,10 +11,10 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
-import { Card } from "@/data/types";
-import { useGame } from "@/hooks/useGame";
+import { Card, Enemy } from "@/data/types";
+import { useGameStore } from "@/store/gameStore";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
-import { validatePlay } from "@/utils/gameLogic";
+import { enemyToCard, validatePlay } from "@/utils/gameLogic";
 import { Image } from "expo-image";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,12 +50,21 @@ type PendingAction = {
 	kind: "play" | "discard";
 	awaitShieldExit: boolean;
 	incomingShieldCards: Card[];
+	enemyCapture: PendingEnemyCapture | null;
 };
 
 type ActiveShieldExit = {
 	id: number;
 	flights: CardFlight[];
 };
+
+type PendingEnemyCapture = {
+	enemy: Enemy;
+	card: Card;
+	destination: "tavern" | "discard";
+};
+
+type ActiveEnemyCapture = EnemyCaptureFlight;
 
 const SHIELD_PILE_CARD_SIZE = {
 	w: 50,
@@ -111,17 +121,25 @@ export const GameScreen = () => {
 		selectedTotal,
 		previewDamage,
 		previewShieldGain,
-		defeatedEnemies,
 		cardsDrawnSignal,
 		dealSignal,
+		autoJesterSignal,
+		autoJesterPending,
+		initialize,
 		toggleCard,
 		playSelected,
 		confirmDiscard,
+		completeAutoJesterAnimation,
 		useJester,
 		sortHand,
 		sortHandByClass,
 		resetGame,
-	} = useGame();
+	} = useGameStore();
+
+	useEffect(() => {
+		initialize();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	useEffect(() => {
 		if (cardsDrawnSignal === 0) return;
@@ -131,6 +149,7 @@ export const GameScreen = () => {
 
 	useEffect(() => {
 		shieldPileRectRef.current = null;
+		enemyCardRectRef.current = null;
 	}, [currentEnemy?.id]);
 
 	const {
@@ -150,9 +169,11 @@ export const GameScreen = () => {
 	const actionSequenceRef = useRef(0);
 	const pendingActionRef = useRef<PendingAction | null>(null);
 	const shieldPileRectRef = useRef<ScreenRect | null>(null);
+	const enemyCardRectRef = useRef<ScreenRect | null>(null);
 	const dealingIdsRef = useRef<Set<string>>(new Set());
 	const discardingIdsRef = useRef<Set<string>>(new Set());
 	const shieldExitIdsRef = useRef<Set<string>>(new Set());
+	const activeEnemyCaptureRef = useRef<ActiveEnemyCapture | null>(null);
 	const isInitialMountRef = useRef(true);
 	const isSaveLoadPossibleRef = useRef(false);
 	const prevHandIdsRef = useRef<Set<string>>(new Set());
@@ -166,13 +187,17 @@ export const GameScreen = () => {
 	const [activeDiscard, setActiveDiscard] = useState<ActiveDiscard | null>(null);
 	const [activeShieldExit, setActiveShieldExit] =
 		useState<ActiveShieldExit | null>(null);
+	const [activeEnemyCapture, setActiveEnemyCapture] =
+		useState<ActiveEnemyCapture | null>(null);
 	const [hideShieldPile, setHideShieldPile] = useState(false);
 	const [jesterAnimating, setJesterAnimating] = useState(false);
 
 	const actionLocked =
+		autoJesterPending ||
 		jesterAnimating ||
 		activeDiscard !== null ||
 		activeShieldExit !== null ||
+		activeEnemyCapture !== null ||
 		discardingIds.size > 0 ||
 		shieldExitIds.size > 0;
 
@@ -215,8 +240,10 @@ export const GameScreen = () => {
 
 	const resetTransientActionState = () => {
 		pendingActionRef.current = null;
+		activeEnemyCaptureRef.current = null;
 		setActiveDiscard(null);
 		setActiveShieldExit(null);
+		setActiveEnemyCapture(null);
 		setHideShieldPile(false);
 		syncDiscardingIds(new Set());
 		syncShieldExitIds(new Set());
@@ -231,11 +258,52 @@ export const GameScreen = () => {
 		confirmDiscard();
 	};
 
+	const continuePendingPlayFlow = () => {
+		const pending = pendingActionRef.current;
+		if (pending?.enemyCapture) {
+			startEnemyCaptureAnimation(pending.enemyCapture);
+			return;
+		}
+		commitPendingAction("play");
+	};
+
+	const startEnemyCaptureAnimation = (enemyCapture: PendingEnemyCapture) => {
+		const source = enemyCardRectRef.current;
+		if (!source) {
+			commitPendingAction("play");
+			return;
+		}
+
+		const destinationRef =
+			enemyCapture.destination === "tavern" ? tavernRef : discardRef;
+
+		measureRect(
+			destinationRef,
+			(dest) => {
+				const animationId = actionSequenceRef.current + 1;
+				actionSequenceRef.current = animationId;
+				const nextCapture: ActiveEnemyCapture = {
+					animationId,
+					enemy: enemyCapture.enemy,
+					card: enemyCapture.card,
+					source,
+					dest,
+				};
+
+				activeEnemyCaptureRef.current = nextCapture;
+				setActiveEnemyCapture(nextCapture);
+			},
+			() => {
+				commitPendingAction("play");
+			},
+		);
+	};
+
 	const startShieldExitAnimation = (incomingShieldCards: Card[] = []) => {
 		const shieldPileRect = shieldPileRectRef.current;
 		const allShieldCards = [...shieldCards, ...incomingShieldCards];
 		if (!shieldPileRect || allShieldCards.length === 0) {
-			commitPendingAction("play");
+			continuePendingPlayFlow();
 			return;
 		}
 
@@ -263,7 +331,7 @@ export const GameScreen = () => {
 				setActiveShieldExit({ id: animationId, flights });
 			},
 			() => {
-				commitPendingAction("play");
+				continuePendingPlayFlow();
 			},
 		);
 	};
@@ -272,6 +340,7 @@ export const GameScreen = () => {
 		cards: Card[],
 		kind: PendingAction["kind"],
 		incomingShieldCards: Card[] = [],
+		enemyCapture: PendingEnemyCapture | null = null,
 	) => {
 		if (cards.length === 0) return;
 
@@ -317,6 +386,7 @@ export const GameScreen = () => {
 						previewDamage >= currentHP &&
 						(shieldCards.length > 0 || incomingShieldCards.length > 0),
 					incomingShieldCards,
+					enemyCapture,
 				};
 				syncDiscardingIds(new Set(cards.map((card) => card.id)));
 				setActiveDiscard({
@@ -421,7 +491,7 @@ export const GameScreen = () => {
 			return;
 		}
 
-		commitPendingAction("play");
+		continuePendingPlayFlow();
 	};
 
 	const handleShieldFlightComplete = (animationId: number, cardId: string) => {
@@ -433,6 +503,12 @@ export const GameScreen = () => {
 
 		if (next.size > 0) return;
 
+		setActiveShieldExit(null);
+		continuePendingPlayFlow();
+	};
+
+	const handleEnemyCaptureComplete = (animationId: number) => {
+		if (activeEnemyCaptureRef.current?.animationId !== animationId) return;
 		commitPendingAction("play");
 	};
 
@@ -451,7 +527,22 @@ export const GameScreen = () => {
 			previewShieldGain > 0
 				? selectedCards.filter((card) => card.suit === "spades")
 				: [];
-		startHandDiscardAnimation(selectedCards, "play", incomingShieldCards);
+		const enemyCapture =
+			currentEnemy && previewDamage >= currentHP
+				? {
+						enemy: currentEnemy,
+						card: enemyToCard(currentEnemy),
+						destination: (
+							previewDamage === currentHP ? "tavern" : "discard"
+						) as "tavern" | "discard",
+					}
+				: null;
+		startHandDiscardAnimation(
+			selectedCards,
+			"play",
+			incomingShieldCards,
+			enemyCapture,
+		);
 	};
 
 	const handleConfirmDiscard = () => {
@@ -475,6 +566,10 @@ export const GameScreen = () => {
 		shieldPileRectRef.current = rect;
 	};
 
+	const handleEnemyCardMeasure = (rect: ScreenRect) => {
+		enemyCardRectRef.current = rect;
+	};
+
 	if (phase === "victory") return <VictoryScreen onReset={resetGame} />;
 
 	if (phase === "defeat" && currentEnemy) {
@@ -482,7 +577,7 @@ export const GameScreen = () => {
 			<DefeatScreen
 				enemy={currentEnemy}
 				stats={gameState.stats}
-				defeatedEnemies={defeatedEnemies}
+				defeatedEnemies={gameState.defeatedEnemies}
 				playerHand={gameState.playerHand}
 				onReset={resetGame}
 			/>
@@ -528,15 +623,13 @@ export const GameScreen = () => {
 								shieldCards={shieldCards}
 								jestersAvailable={gameState.jestersAvailable}
 								jestersUsed={gameState.jestersUsed}
+								autoJesterSignal={autoJesterSignal}
+								hidden={activeEnemyCapture !== null}
 								hideShieldPile={hideShieldPile}
+								onCardMeasure={handleEnemyCardMeasure}
 								onShieldPileMeasure={handleShieldPileMeasure}
-								onUseJester={
-									phase === "player_turn" &&
-									activeDiscard === null &&
-									activeShieldExit === null
-										? useJester
-										: undefined
-								}
+								onUseJester={phase === "player_turn" && !actionLocked ? useJester : undefined}
+								onAutoJesterComplete={completeAutoJesterAnimation}
 								onJesterAnimationStateChange={setJesterAnimating}
 								onPress={!actionLocked ? () => setModalVisible(true) : undefined}
 								previewDamage={phase === "player_turn" ? previewDamage : 0}
@@ -574,8 +667,8 @@ export const GameScreen = () => {
 
 				<CastleFooter
 					castle={gameState.castle}
-					defeatedEnemies={defeatedEnemies}
-					currentEnemyId={currentEnemy?.id}
+					defeatedEnemies={gameState.defeatedEnemies}
+					currentEnemyId={currentEnemy?.id ?? ""}
 				/>
 
 				<ScreenHeader onSettingsPress={() => setSettingsVisible(true)} />
@@ -585,6 +678,13 @@ export const GameScreen = () => {
 				<CardFlightOverlay
 					flights={activeShieldExit.flights}
 					onFlightComplete={handleShieldFlightComplete}
+				/>
+			)}
+
+			{activeEnemyCapture && (
+				<EnemyCaptureOverlay
+					capture={activeEnemyCapture}
+					onCaptureComplete={handleEnemyCaptureComplete}
 				/>
 			)}
 

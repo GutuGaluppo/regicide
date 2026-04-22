@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { buildCastle } from "@/data/buildCastle";
 import { createTavernDeck, HAND_SIZE } from "@/data/deck";
-import { Card, GamePhase, GameState, GameStats, Suit } from "@/data/types";
+import { Card, GameState, GameStats, Suit } from "@/data/types";
 import { loadGame, saveGame } from "@/services/storage";
 import { enemyToCard, resolvePlay, validatePlay } from "@/utils/gameLogic";
 
@@ -39,12 +39,29 @@ const createInitialState = (): GameState => {
 	};
 };
 
-// ─── Empty-hand resolution helper ──────────────────────────────────────────
+// ─── Helpers de resolução de Coringa ─────────────────────────────────────────
+
+type JesterResolution = Pick<
+	GameState,
+	"playerHand" | "tavernDeck" | "discardPile" | "jestersAvailable" | "jestersUsed" | "phase"
+>;
+
+type JesterTransition = {
+	resolution: JesterResolution;
+	usedJester: boolean;
+	preDrawTavernDeck: Card[];
+	preDrawDiscardPile: Card[];
+};
+
+/**
+ * Consome 1 Coringa e reabastece a mão a partir da taverna (até MAX_HAND).
+ * Retorna phase "defeat" se não houver Coringas disponíveis.
+ */
 const resolveEmptyHand = (
 	state: GameState,
 	tavernDeck: Card[],
 	discardPile: Card[],
-): Pick<GameState, "playerHand" | "tavernDeck" | "discardPile" | "jestersAvailable" | "jestersUsed" | "phase"> => {
+): JesterResolution => {
 	if (state.jestersAvailable > 0) {
 		const canDraw = Math.min(MAX_HAND, tavernDeck.length);
 		return {
@@ -66,16 +83,95 @@ const resolveEmptyHand = (
 	};
 };
 
+/**
+ * Usado quando o jogador não consegue pagar o dano recebido.
+ * Se houver Coringas: descarta toda a mão atual, consome 1 Coringa e reabastece.
+ * Se não houver Coringas: retorna phase "defeat" sem alterar a mão.
+ */
+const resolveCannotPay = (
+	hand: Card[],
+	tavernDeck: Card[],
+	discardPile: Card[],
+	jestersAvailable: number,
+	jestersUsed: number,
+): JesterResolution => {
+	if (jestersAvailable > 0) {
+		const newDiscard = [...discardPile, ...hand];
+		const canDraw = Math.min(MAX_HAND, tavernDeck.length);
+		return {
+			playerHand: tavernDeck.slice(0, canDraw),
+			tavernDeck: tavernDeck.slice(canDraw),
+			discardPile: newDiscard,
+			jestersAvailable: jestersAvailable - 1,
+			jestersUsed: jestersUsed + 1,
+			phase: "player_turn",
+		};
+	}
+	return {
+		playerHand: hand,
+		tavernDeck,
+		discardPile,
+		jestersAvailable: 0,
+		jestersUsed,
+		phase: "defeat",
+	};
+};
+
+const resolveEmptyHandTransition = (
+	state: GameState,
+	tavernDeck: Card[],
+	discardPile: Card[],
+): JesterTransition => {
+	const resolution = resolveEmptyHand(state, tavernDeck, discardPile);
+	return {
+		resolution,
+		usedJester: resolution.jestersUsed > state.jestersUsed,
+		preDrawTavernDeck: tavernDeck,
+		preDrawDiscardPile: discardPile,
+	};
+};
+
+const resolveCannotPayTransition = (
+	hand: Card[],
+	tavernDeck: Card[],
+	discardPile: Card[],
+	jestersAvailable: number,
+	jestersUsed: number,
+): JesterTransition => {
+	const resolution = resolveCannotPay(
+		hand,
+		tavernDeck,
+		discardPile,
+		jestersAvailable,
+		jestersUsed,
+	);
+
+	return {
+		resolution,
+		usedJester: resolution.jestersUsed > jestersUsed,
+		preDrawTavernDeck: tavernDeck,
+		preDrawDiscardPile: [...discardPile, ...hand],
+	};
+};
+
 export const useGame = () => {
 	const { t } = useTranslation();
 	const [gameState, setGameState] = useState<GameState>(createInitialState);
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const [playError, setPlayError] = useState<string | null>(null);
 	const [cardsDrawnSignal, setCardsDrawnSignal] = useState(0);
+	const [autoJesterSignal, setAutoJesterSignal] = useState(0);
+	const [autoJesterPending, setAutoJesterPending] = useState(false);
 	const bumpDraw = () => setCardsDrawnSignal((s) => s + 1);
 	// Fires when cards should be dealt with full animation (new game or reset)
 	const [dealSignal, setDealSignal] = useState(0);
 	const bumpDeal = () => setDealSignal((s) => s + 1);
+	const autoJesterSignalRef = useRef(0);
+	const pendingAutoJesterRef = useRef<{
+		usesRemaining: number;
+		finalState: GameState;
+		shouldBumpDraw: boolean;
+	} | null>(null);
 
 	useEffect(() => {
 		let active = true;
@@ -103,7 +199,6 @@ export const useGame = () => {
 		};
 		init();
 		return () => { active = false; };
-	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const persist = async (state: GameState) => {
@@ -114,18 +209,103 @@ export const useGame = () => {
 		}
 	};
 
+	const resetAutoJesterQueue = () => {
+		pendingAutoJesterRef.current = null;
+		autoJesterSignalRef.current = 0;
+		setAutoJesterPending(false);
+		setAutoJesterSignal(0);
+	};
+
+	const emitAutoJesterSignal = () => {
+		setAutoJesterSignal((prev) => {
+			const next = prev + 1;
+			autoJesterSignalRef.current = next;
+			return next;
+		});
+	};
+
+	const commitState = (next: GameState, shouldBumpDraw = false) => {
+		pendingAutoJesterRef.current = null;
+		setAutoJesterPending(false);
+		setGameState(next);
+		if (shouldBumpDraw) {
+			bumpDraw();
+		}
+		persist(next);
+	};
+
+	const queueAutoJesterSequence = (
+		displayState: GameState,
+		finalState: GameState,
+		uses: number,
+	) => {
+		if (uses <= 0) {
+			commitState(finalState);
+			return;
+		}
+
+		pendingAutoJesterRef.current = {
+			usesRemaining: uses,
+			finalState,
+			shouldBumpDraw:
+				finalState.phase !== "defeat" && finalState.playerHand.length > 0,
+		};
+		setGameState(displayState);
+		setAutoJesterPending(true);
+		emitAutoJesterSignal();
+	};
+
+	const completeAutoJesterAnimation = (signal: number) => {
+		if (signal !== autoJesterSignalRef.current) return;
+
+		const pending = pendingAutoJesterRef.current;
+		if (!pending) return;
+
+		if (pending.usesRemaining > 1) {
+			pendingAutoJesterRef.current = {
+				...pending,
+				usesRemaining: pending.usesRemaining - 1,
+			};
+			emitAutoJesterSignal();
+			return;
+		}
+
+		commitState(pending.finalState, pending.shouldBumpDraw);
+	};
+
+	const buildAutoJesterDisplayState = (
+		next: GameState,
+		tavernDeck: Card[],
+		discardPile: Card[],
+	): GameState => ({
+		...next,
+		playerHand: [],
+		tavernDeck,
+		discardPile,
+		phase: "player_turn",
+		pendingDamage: 0,
+		jestersAvailable: gameState.jestersAvailable,
+		jestersUsed: gameState.jestersUsed,
+	});
+
 	const toggleCard = (card: Card) => {
+		if (autoJesterPending) return;
 		if (gameState.phase !== "player_turn" && gameState.phase !== "suffer_damage") return;
 		setPlayError(null);
 		setSelectedIds((prev) => {
 			const next = new Set(prev);
-			next.has(card.id) ? next.delete(card.id) : next.add(card.id);
+			if (next.has(card.id)) {
+				next.delete(card.id);
+			} else {
+				next.add(card.id);
+			}
 			return next;
 		});
 	};
 
 	// ─── Usar Jester (cancela imunidade) ──────────────────────────────────────
 	const useJester = () => {
+		if (autoJesterPending) return;
 		if (gameState.phase !== "player_turn") return;
 		if (gameState.jestersAvailable <= 0) return;
 		const next: GameState = {
@@ -140,6 +320,7 @@ export const useGame = () => {
 
 	// ─── Jogar cartas ─────────────────────────────────────────────────────────
 	const playSelected = () => {
+		if (autoJesterPending) return;
 		if (gameState.phase !== "player_turn") return;
 
 		const selected = gameState.playerHand.filter((c) => selectedIds.has(c.id));
@@ -179,7 +360,7 @@ export const useGame = () => {
 
 		// Detectar compra de cartas via poder de Ouros
 		const handSizeAfterPlay = gameState.playerHand.length - selected.length;
-		if (result.newHand.length > handSizeAfterPlay) bumpDraw();
+		const drewCardsFromPlay = result.newHand.length > handSizeAfterPlay;
 
 		const newCurrentDamage = gameState.currentDamage + result.totalDamage;
 		const allPlayedCards = [...gameState.playedThisFight, ...selected];
@@ -220,42 +401,60 @@ export const useGame = () => {
 					phase: "victory",
 					stats: defeatedStats,
 				};
-				setGameState(next);
-				persist(next);
+				commitState(next);
 				return;
 			}
 
 			// Verifica mão vazia após derrota do inimigo
-			const emptyResolution = result.newHand.length === 0
-				? resolveEmptyHand(
-					{ ...gameState, jestersAvailable: gameState.jestersAvailable, jestersUsed: gameState.jestersUsed },
-					newTavern,
-					newDiscard,
-				)
+			const emptyTransition = result.newHand.length === 0
+				? resolveEmptyHandTransition(gameState, newTavern, newDiscard)
 				: null;
-
-			if (emptyResolution && emptyResolution.playerHand.length > 0) bumpDraw();
 
 			const next: GameState = {
 				...gameState,
 				castle: restCastle,
 				defeatedEnemies: [...gameState.defeatedEnemies, enemy],
-				playerHand: emptyResolution ? emptyResolution.playerHand : result.newHand,
-				tavernDeck: emptyResolution ? emptyResolution.tavernDeck : newTavern,
-				discardPile: emptyResolution ? emptyResolution.discardPile : newDiscard,
+				playerHand: emptyTransition
+					? emptyTransition.resolution.playerHand
+					: result.newHand,
+				tavernDeck: emptyTransition
+					? emptyTransition.resolution.tavernDeck
+					: newTavern,
+				discardPile: emptyTransition
+					? emptyTransition.resolution.discardPile
+					: newDiscard,
 				playedThisFight: [],
 				discardedThisFight: [],
 				currentDamage: 0,
 				spadesShield: 0,
 				jesterActive: false,
 				pendingDamage: 0,
-				phase: emptyResolution ? emptyResolution.phase : "player_turn",
-				jestersAvailable: emptyResolution ? emptyResolution.jestersAvailable : gameState.jestersAvailable,
-				jestersUsed: emptyResolution ? emptyResolution.jestersUsed : gameState.jestersUsed,
+				phase: emptyTransition
+					? emptyTransition.resolution.phase
+					: "player_turn",
+				jestersAvailable: emptyTransition
+					? emptyTransition.resolution.jestersAvailable
+					: gameState.jestersAvailable,
+				jestersUsed: emptyTransition
+					? emptyTransition.resolution.jestersUsed
+					: gameState.jestersUsed,
 				stats: defeatedStats,
 			};
-			setGameState(next);
-			persist(next);
+
+			if (emptyTransition?.usedJester) {
+				queueAutoJesterSequence(
+					buildAutoJesterDisplayState(
+						next,
+						emptyTransition.preDrawTavernDeck,
+						emptyTransition.preDrawDiscardPile,
+					),
+					next,
+					1,
+				);
+				return;
+			}
+
+			commitState(next, drewCardsFromPlay && next.phase !== "defeat");
 			return;
 		}
 
@@ -264,65 +463,141 @@ export const useGame = () => {
 
 		if (effectiveAttack === 0) {
 			// Totalmente bloqueado por espadas
-			const emptyResolution = result.newHand.length === 0
-				? resolveEmptyHand(gameState, result.newTavernDeck, result.newDiscardPile)
+			const emptyTransition = result.newHand.length === 0
+				? resolveEmptyHandTransition(
+					gameState,
+					result.newTavernDeck,
+					result.newDiscardPile,
+				)
 				: null;
-
-			if (emptyResolution && emptyResolution.playerHand.length > 0) bumpDraw();
 
 			const next: GameState = {
 				...gameState,
-				playerHand: emptyResolution ? emptyResolution.playerHand : result.newHand,
-				tavernDeck: emptyResolution ? emptyResolution.tavernDeck : result.newTavernDeck,
-				discardPile: emptyResolution ? emptyResolution.discardPile : result.newDiscardPile,
+				playerHand: emptyTransition
+					? emptyTransition.resolution.playerHand
+					: result.newHand,
+				tavernDeck: emptyTransition
+					? emptyTransition.resolution.tavernDeck
+					: result.newTavernDeck,
+				discardPile: emptyTransition
+					? emptyTransition.resolution.discardPile
+					: result.newDiscardPile,
 				playedThisFight: allPlayedCards,
 				currentDamage: newCurrentDamage,
 				spadesShield: result.newShield,
-				phase: emptyResolution ? emptyResolution.phase : "player_turn",
-				jestersAvailable: emptyResolution ? emptyResolution.jestersAvailable : gameState.jestersAvailable,
-				jestersUsed: emptyResolution ? emptyResolution.jestersUsed : gameState.jestersUsed,
+				phase: emptyTransition
+					? emptyTransition.resolution.phase
+					: "player_turn",
+				jestersAvailable: emptyTransition
+					? emptyTransition.resolution.jestersAvailable
+					: gameState.jestersAvailable,
+				jestersUsed: emptyTransition
+					? emptyTransition.resolution.jestersUsed
+					: gameState.jestersUsed,
 				stats: newStats,
 			};
-			setGameState(next);
-			persist(next);
+
+			if (emptyTransition?.usedJester) {
+				queueAutoJesterSequence(
+					buildAutoJesterDisplayState(
+						next,
+						emptyTransition.preDrawTavernDeck,
+						emptyTransition.preDrawDiscardPile,
+					),
+					next,
+					1,
+				);
+				return;
+			}
+
+			commitState(next, drewCardsFromPlay && next.phase !== "defeat");
 			return;
 		}
 
 		// Mão vazia após jogar: tenta repor via Coringa antes de avaliar dano
-		const emptyResolution = result.newHand.length === 0
-			? resolveEmptyHand(gameState, result.newTavernDeck, result.newDiscardPile)
+		const emptyTransition = result.newHand.length === 0
+			? resolveEmptyHandTransition(
+				gameState,
+				result.newTavernDeck,
+				result.newDiscardPile,
+			)
 			: null;
 
-		if (emptyResolution && emptyResolution.playerHand.length > 0) bumpDraw();
+		const activeHand = emptyTransition
+			? emptyTransition.resolution.playerHand
+			: result.newHand;
+		const activeTavern = emptyTransition
+			? emptyTransition.resolution.tavernDeck
+			: result.newTavernDeck;
+		const activeDiscard = emptyTransition
+			? emptyTransition.resolution.discardPile
+			: result.newDiscardPile;
+		const activeJestersAvailable =
+			emptyTransition?.resolution.jestersAvailable ?? gameState.jestersAvailable;
+		const activeJestersUsed =
+			emptyTransition?.resolution.jestersUsed ?? gameState.jestersUsed;
 
-		const activeHand = emptyResolution ? emptyResolution.playerHand : result.newHand;
-		const activeTavern = emptyResolution ? emptyResolution.tavernDeck : result.newTavernDeck;
-		const activeDiscard = emptyResolution ? emptyResolution.discardPile : result.newDiscardPile;
+		const handValue = activeHand.reduce((sum, c) => sum + c.value, 0);
 
-		if (emptyResolution?.phase === "defeat") {
-			// Sem Coringas disponíveis → derrota
+		if (handValue < effectiveAttack) {
+			// Não consegue pagar o dano: usa Coringa para descartar tudo e reabastecer,
+			// ou vai para derrota se não houver Coringas
+			const cannotPayTransition = resolveCannotPayTransition(
+				activeHand,
+				activeTavern,
+				activeDiscard,
+				activeJestersAvailable,
+				activeJestersUsed,
+			);
 			const next: GameState = {
 				...gameState,
-				playerHand: [],
-				tavernDeck: activeTavern,
-				discardPile: activeDiscard,
+				playerHand: cannotPayTransition.resolution.playerHand,
+				tavernDeck: cannotPayTransition.resolution.tavernDeck,
+				discardPile: cannotPayTransition.resolution.discardPile,
 				playedThisFight: allPlayedCards,
 				currentDamage: newCurrentDamage,
 				spadesShield: result.newShield,
-				pendingDamage: effectiveAttack,
-				jestersAvailable: emptyResolution.jestersAvailable,
-				jestersUsed: emptyResolution.jestersUsed,
-				phase: "defeat",
+				pendingDamage:
+					cannotPayTransition.resolution.phase === "defeat"
+						? effectiveAttack
+						: 0,
+				phase: cannotPayTransition.resolution.phase,
+				jestersAvailable: cannotPayTransition.resolution.jestersAvailable,
+				jestersUsed: cannotPayTransition.resolution.jestersUsed,
 				stats: newStats,
 			};
-			setGameState(next);
-			persist(next);
+
+			const autoJesterUses = next.jestersUsed - gameState.jestersUsed;
+
+			if (cannotPayTransition.usedJester) {
+				queueAutoJesterSequence(
+					buildAutoJesterDisplayState(
+						next,
+						cannotPayTransition.preDrawTavernDeck,
+						cannotPayTransition.preDrawDiscardPile,
+					),
+					next,
+					autoJesterUses,
+				);
+				return;
+			}
+
+			if (emptyTransition?.usedJester) {
+				queueAutoJesterSequence(
+					buildAutoJesterDisplayState(
+						next,
+						emptyTransition.preDrawTavernDeck,
+						emptyTransition.preDrawDiscardPile,
+					),
+					next,
+					1,
+				);
+				return;
+			}
+
+			commitState(next, drewCardsFromPlay && next.phase !== "defeat");
 			return;
 		}
-
-		const handValue = activeHand.reduce((sum, c) => sum + c.value, 0);
-		const canSatisfy = handValue >= effectiveAttack;
-		const newPhase: GamePhase = canSatisfy ? "suffer_damage" : "defeat";
 
 		const next: GameState = {
 			...gameState,
@@ -333,17 +608,31 @@ export const useGame = () => {
 			currentDamage: newCurrentDamage,
 			spadesShield: result.newShield,
 			pendingDamage: effectiveAttack,
-			phase: newPhase,
-			jestersAvailable: emptyResolution ? emptyResolution.jestersAvailable : gameState.jestersAvailable,
-			jestersUsed: emptyResolution ? emptyResolution.jestersUsed : gameState.jestersUsed,
+			phase: "suffer_damage",
+			jestersAvailable: activeJestersAvailable,
+			jestersUsed: activeJestersUsed,
 			stats: newStats,
 		};
-		setGameState(next);
-		persist(next);
+
+		if (emptyTransition?.usedJester) {
+			queueAutoJesterSequence(
+				buildAutoJesterDisplayState(
+					next,
+					emptyTransition.preDrawTavernDeck,
+					emptyTransition.preDrawDiscardPile,
+				),
+				next,
+				1,
+			);
+			return;
+		}
+
+		commitState(next, drewCardsFromPlay && next.phase !== "defeat");
 	};
 
 	// ─── Passar turno ─────────────────────────────────────────────────────────
 	const yieldTurn = () => {
+		if (autoJesterPending) return;
 		if (gameState.phase !== "player_turn") return;
 		const enemy = gameState.castle[0];
 		if (!enemy) return;
@@ -352,19 +641,57 @@ export const useGame = () => {
 		if (effectiveAttack === 0) return;
 
 		const handValue = gameState.playerHand.reduce((sum, c) => sum + c.value, 0);
-		const newPhase: GamePhase = handValue >= effectiveAttack ? "suffer_damage" : "defeat";
+
+		if (handValue < effectiveAttack) {
+			const cannotPayTransition = resolveCannotPayTransition(
+				gameState.playerHand,
+				gameState.tavernDeck,
+				gameState.discardPile,
+				gameState.jestersAvailable,
+				gameState.jestersUsed,
+			);
+			const next: GameState = {
+				...gameState,
+				playerHand: cannotPayTransition.resolution.playerHand,
+				tavernDeck: cannotPayTransition.resolution.tavernDeck,
+				discardPile: cannotPayTransition.resolution.discardPile,
+				pendingDamage:
+					cannotPayTransition.resolution.phase === "defeat"
+						? effectiveAttack
+						: 0,
+				phase: cannotPayTransition.resolution.phase,
+				jestersAvailable: cannotPayTransition.resolution.jestersAvailable,
+				jestersUsed: cannotPayTransition.resolution.jestersUsed,
+			};
+
+			if (cannotPayTransition.usedJester) {
+				queueAutoJesterSequence(
+					buildAutoJesterDisplayState(
+						next,
+						cannotPayTransition.preDrawTavernDeck,
+						cannotPayTransition.preDrawDiscardPile,
+					),
+					next,
+					1,
+				);
+				return;
+			}
+
+			commitState(next);
+			return;
+		}
 
 		const next: GameState = {
 			...gameState,
 			pendingDamage: effectiveAttack,
-			phase: newPhase,
+			phase: "suffer_damage",
 		};
-		setGameState(next);
-		persist(next);
+		commitState(next);
 	};
 
 	// ─── Confirmar descarte ───────────────────────────────────────────────────
 	const confirmDiscard = () => {
+		if (autoJesterPending) return;
 		if (gameState.phase !== "suffer_damage") return;
 
 		const selected = gameState.playerHand.filter((c) => selectedIds.has(c.id));
@@ -392,22 +719,38 @@ export const useGame = () => {
 		};
 
 		if (newHand.length === 0) {
-			const emptyResolution = resolveEmptyHand(gameState, gameState.tavernDeck, newDiscard);
-			if (emptyResolution.playerHand.length > 0) bumpDraw();
+			const emptyTransition = resolveEmptyHandTransition(
+				gameState,
+				gameState.tavernDeck,
+				newDiscard,
+			);
 			const next: GameState = {
 				...gameState,
-				playerHand: emptyResolution.playerHand,
-				tavernDeck: emptyResolution.tavernDeck,
-				discardPile: emptyResolution.discardPile,
+				playerHand: emptyTransition.resolution.playerHand,
+				tavernDeck: emptyTransition.resolution.tavernDeck,
+				discardPile: emptyTransition.resolution.discardPile,
 				discardedThisFight: newDiscardedThisFight,
 				pendingDamage: 0,
-				phase: emptyResolution.phase,
-				jestersAvailable: emptyResolution.jestersAvailable,
-				jestersUsed: emptyResolution.jestersUsed,
+				phase: emptyTransition.resolution.phase,
+				jestersAvailable: emptyTransition.resolution.jestersAvailable,
+				jestersUsed: emptyTransition.resolution.jestersUsed,
 				stats: newStats,
 			};
-			setGameState(next);
-			persist(next);
+
+			if (emptyTransition.usedJester) {
+				queueAutoJesterSequence(
+					buildAutoJesterDisplayState(
+						next,
+						emptyTransition.preDrawTavernDeck,
+						emptyTransition.preDrawDiscardPile,
+					),
+					next,
+					1,
+				);
+				return;
+			}
+
+			commitState(next);
 			return;
 		}
 
@@ -420,8 +763,7 @@ export const useGame = () => {
 			phase: "player_turn",
 			stats: newStats,
 		};
-		setGameState(next);
-		persist(next);
+		commitState(next);
 	};
 
 	// ─── Ordenação ────────────────────────────────────────────────────────────
@@ -457,6 +799,7 @@ export const useGame = () => {
 
 	const resetGame = () => {
 		const next = createInitialState();
+		resetAutoJesterQueue();
 		setSelectedIds(new Set());
 		setPlayError(null);
 		setGameState(next);
@@ -508,10 +851,13 @@ export const useGame = () => {
 		defeatedEnemies: gameState.defeatedEnemies,
 		cardsDrawnSignal,
 		dealSignal,
+		autoJesterSignal,
+		autoJesterPending,
 		toggleCard,
 		playSelected,
 		yieldTurn,
 		confirmDiscard,
+		completeAutoJesterAnimation,
 		useJester,
 		sortHand,
 		sortHandByClass,
