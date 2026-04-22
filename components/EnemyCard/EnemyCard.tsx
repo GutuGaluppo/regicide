@@ -28,12 +28,16 @@ export const EnemyCard = ({
 	shieldCards,
 	jestersAvailable,
 	jestersUsed,
+	autoJesterSignal,
+	hidden = false,
 	onUseJester,
+	onAutoJesterComplete,
 	onPress,
 	previewDamage = 0,
 	previewShieldGain = 0,
 	defeated = false,
 	hideShieldPile = false,
+	onCardMeasure,
 	onShieldPileMeasure,
 	onJesterAnimationStateChange,
 }: {
@@ -45,12 +49,21 @@ export const EnemyCard = ({
 	shieldCards?: Card[];
 	jestersAvailable?: number;
 	jestersUsed?: number;
+	autoJesterSignal?: number;
+	hidden?: boolean;
 	onUseJester?: () => void;
+	onAutoJesterComplete?: (signal: number) => void;
 	onPress?: () => void;
 	previewDamage?: number;
 	previewShieldGain?: number;
 	defeated?: boolean;
 	hideShieldPile?: boolean;
+	onCardMeasure?: (rect: {
+		x: number;
+		y: number;
+		w: number;
+		h: number;
+	}) => void;
 	onShieldPileMeasure?: (rect: {
 		x: number;
 		y: number;
@@ -89,7 +102,19 @@ export const EnemyCard = ({
 
 	const prevHP = useRef(currentHP);
 	const prevShield = useRef(spadesShield ?? 0);
+	const cardBodyRef = useRef<View>(null);
 	const shieldPileRef = useRef<View>(null);
+
+	const measureCardBody = () => {
+		if (!onCardMeasure) return;
+
+		requestAnimationFrame(() => {
+			cardBodyRef.current?.measureInWindow((x, y, w, h) => {
+				if (w === 0 || h === 0) return;
+				onCardMeasure({ x, y, w, h });
+			});
+		});
+	};
 
 	// ─── Entry animation ──────────────────────────────────────────────────────
 	useEffect(() => {
@@ -160,9 +185,13 @@ export const EnemyCard = ({
 		spadesShield,
 	]);
 
+	useEffect(() => {
+		measureCardBody();
+	}, [enemy.id, onCardMeasure]); // eslint-disable-line react-hooks/exhaustive-deps
+
 	// ─── Animated styles ──────────────────────────────────────────────────────
 	const cardAnimStyle = useAnimatedStyle(() => ({
-		opacity: defeated ? 0.4 : entryOpacity.value,
+		opacity: hidden ? 0 : defeated ? 0.4 : entryOpacity.value,
 		transform: [
 			{ scale: entryScale.value },
 			{ translateY: entryY.value },
@@ -192,7 +221,12 @@ export const EnemyCard = ({
 			disabled={!onPress}
 		>
 			<Animated.View style={[styles.card, cardAnimStyle]}>
-				<View style={styles.imageWrapper}>
+				<View
+					ref={cardBodyRef}
+					collapsable={false}
+					onLayout={measureCardBody}
+					style={styles.imageWrapper}
+				>
 					<Image
 						source={getCardImage(enemy.rank, enemy.suit)}
 						style={styles.image}
@@ -206,7 +240,9 @@ export const EnemyCard = ({
 								jestersAvailable={jestersAvailable ?? 0}
 								jestersUsed={jestersUsed ?? 0}
 								jesterActive={!!jesterActive}
+								autoUseSignal={autoJesterSignal}
 								onUseJester={onUseJester}
+								onAutoUseComplete={onAutoJesterComplete}
 								onAnimationStateChange={onJesterAnimationStateChange}
 							/>
 						</View>

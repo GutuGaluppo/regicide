@@ -7,7 +7,7 @@ import { SuitTracker } from "@/components/SuitTracker";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
-import { useTracker } from "@/hooks/useTracker";
+import { useTrackerStore } from "@/store/trackerStore";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getHpColor } from "@/utils/hpColor";
 import { EnemySelectionScreen } from "@/screens/EnemySelectionScreen/EnemySelectionScreen";
@@ -38,7 +38,6 @@ export const TrackerScreen = () => {
 		currentHP,
 		currentShield,
 		effectiveAttack,
-		defeatedIds,
 		footerEnemies,
 		isVictory,
 		isJesterActive,
@@ -49,7 +48,8 @@ export const TrackerScreen = () => {
 		applyAttack,
 		defeatCurrentEnemy,
 		resetTracker,
-	} = useTracker();
+	} = useTrackerStore();
+	const defeatedIds = useTrackerStore((s) => s.trackerState.defeatedIds);
 
 	const [settingsVisible, setSettingsVisible] = useState(false);
 	const [selectedCardInfo, setSelectedCardInfo] =

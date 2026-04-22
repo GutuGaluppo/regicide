@@ -39,24 +39,32 @@ export const JesterCard = ({
 	onAnimationComplete?: (animationId: number) => void;
 }) => {
 	const progress = useSharedValue(0);
-	const rotateY = useSharedValue(isBack ? 180 : 0);
+	const flipRotation = useSharedValue(isBack ? 180 : 0);
 	const animatedZIndex = useSharedValue(zIndex);
 	const lastAnimationIdRef = useRef<number | null>(null);
 	const isAnimatingRef = useRef(false);
+	const latestIsBackRef = useRef(isBack);
+	const latestZIndexRef = useRef(zIndex);
+
+	latestIsBackRef.current = isBack;
+	latestZIndexRef.current = zIndex;
 
 	useEffect(() => {
 		if (isAnimatingRef.current) return;
 
 		progress.value = 0;
-		rotateY.value = isBack ? 180 : 0;
+		flipRotation.value = isBack ? 180 : 0;
 		animatedZIndex.value = zIndex;
-	}, [animatedZIndex, isBack, progress, rotateY, zIndex]);
+	}, [animatedZIndex, flipRotation, isBack, progress, zIndex]);
 
 	useEffect(() => {
 		if (!animation || lastAnimationIdRef.current === animation.id) return;
 
 		const finishAnimation = (animationId: number, shouldNotify: boolean) => {
 			isAnimatingRef.current = false;
+			progress.value = 0;
+			flipRotation.value = latestIsBackRef.current ? 180 : 0;
+			animatedZIndex.value = latestZIndexRef.current;
 			if (shouldNotify) {
 				onAnimationComplete?.(animationId);
 			}
@@ -66,10 +74,11 @@ export const JesterCard = ({
 		lastAnimationIdRef.current = animation.id;
 		progress.value = 0;
 		animatedZIndex.value = animation.role === "promote" ? 30 : 2;
-		rotateY.value = animation.role === "demote" ? 0 : isBack ? 180 : 0;
+		const initialFlip = isBack ? 180 : 0;
+		flipRotation.value = initialFlip;
 
 		if (animation.role === "demote") {
-			rotateY.value = withTiming(180, {
+			flipRotation.value = withTiming(initialFlip + 180, {
 				duration: SWAP_DURATION,
 				easing: SWAP_EASING,
 			});
@@ -90,10 +99,10 @@ export const JesterCard = ({
 	}, [
 		animatedZIndex,
 		animation,
+		flipRotation,
 		isBack,
 		onAnimationComplete,
 		progress,
-		rotateY,
 	]);
 
 	const animStyle = useAnimatedStyle(() => {
@@ -112,14 +121,26 @@ export const JesterCard = ({
 		return {
 			zIndex: animatedZIndex.value,
 			transform: [
-				{ perspective: 900 },
 				{ translateX },
 				{ translateY: travelY + arcY },
 				{ scale },
-				{ rotateY: `${rotateY.value}deg` },
 			],
 		};
 	});
+
+	const frontFaceStyle = useAnimatedStyle(() => ({
+		transform: [
+			{ perspective: 900 },
+			{ rotateY: `${flipRotation.value}deg` },
+		],
+	}));
+
+	const backFaceStyle = useAnimatedStyle(() => ({
+		transform: [
+			{ perspective: 900 },
+			{ rotateY: `${flipRotation.value + 180}deg` },
+		],
+	}));
 
 	return (
 		<Animated.View
@@ -129,10 +150,10 @@ export const JesterCard = ({
 				animStyle,
 			]}
 		>
-			<Animated.View style={[styles.face, styles.frontFace]}>
+			<Animated.View style={[styles.face, styles.frontFace, frontFaceStyle]}>
 				<Image source={imageSource} style={styles.img} contentFit="cover" />
 			</Animated.View>
-			<Animated.View style={[styles.face, styles.backFace]}>
+			<Animated.View style={[styles.face, styles.backFace, backFaceStyle]}>
 				<Image source={CARD_BACK} style={styles.img} contentFit="cover" />
 			</Animated.View>
 		</Animated.View>

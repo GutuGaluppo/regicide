@@ -2,8 +2,7 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { getCardImage } from "@/data/images";
 import { Enemy } from "@/data/types";
-import { useGame } from "@/hooks/useGame";
-import { useTracker } from "@/hooks/useTracker";
+import { useTrackerStore } from "@/store/trackerStore";
 import React, { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { Image as ExpoImage } from "expo-image";
@@ -28,8 +27,8 @@ export const EnemySelectionScreen = ({
 	bgShift,
 	onSelectEnemy,
 }: EnemySelectionScreenProps) => {
-	const { defeatedIds } = useTracker();
-	const { resetGame } = useGame();
+	const defeatedIds = useTrackerStore((s) => s.trackerState.defeatedIds);
+	const resetTracker = useTrackerStore((s) => s.resetTracker);
 
 	const [settingsVisible, setSettingsVisible] = useState(false);
 
@@ -74,7 +73,7 @@ export const EnemySelectionScreen = ({
 			<SettingsDrawer
 				visible={settingsVisible}
 				onClose={() => setSettingsVisible(false)}
-				onReset={resetGame}
+				onReset={resetTracker}
 			/>
 		</View>
 	);
