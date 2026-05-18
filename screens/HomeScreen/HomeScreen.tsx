@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 import { useAudio } from "@/contexts/AudioContext";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -39,8 +40,40 @@ const NAV_ITEMS = [
 export const HomeScreen = () => {
 	const { t, i18n: i18nHook } = useTranslation();
 	const { playTap } = useAudio();
+	const { isDesktop, contentMaxWidth, screenPadding } = useResponsiveLayout();
 	const [langVisible, setLangVisible] = useState(false);
 	const currentLang = i18nHook.language;
+
+	const navButtons = (
+		<View style={[styles.navList, isDesktop && styles.navListDesktop]}>
+			{NAV_ITEMS.map(({ route, tKey }) => (
+				<TouchableOpacity
+					key={route}
+					style={isDesktop ? styles.navItemDesktop : undefined}
+					onPress={() => {
+						playTap();
+						router.push(route);
+					}}
+					activeOpacity={0.8}
+				>
+					<ImageBackground
+						source={require("@/assets/buttons/big-rock.png")}
+						style={[styles.navBtn, isDesktop && styles.navBtnDesktop]}
+						resizeMode="stretch"
+					>
+						<Text
+							style={[
+								styles.navLabel,
+								isDesktop && styles.navLabelDesktop,
+							]}
+						>
+							{t(tKey)}
+						</Text>
+					</ImageBackground>
+				</TouchableOpacity>
+			))}
+		</View>
+	);
 
 	return (
 		<ImageBackground
@@ -49,10 +82,18 @@ export const HomeScreen = () => {
 			resizeMode="cover"
 			imageStyle={{ width: "100%", height: "100%" }}
 		>
-			<View style={styles.overlay}>
+			<View
+				style={[
+					styles.overlay,
+					isDesktop && { paddingHorizontal: screenPadding },
+				]}
+			>
 				<TouchableOpacity
 					style={styles.globeBtn}
-					onPress={() => { playTap(); setLangVisible(true); }}
+					onPress={() => {
+						playTap();
+						setLangVisible(true);
+					}}
 					activeOpacity={0.7}
 				>
 					<Text style={styles.globeAbbr}>
@@ -61,28 +102,29 @@ export const HomeScreen = () => {
 					<Ionicons name="globe-outline" size={26} color="#94A3B8" />
 				</TouchableOpacity>
 
-				<Image
-					source={require("@/assets/images/regicide_logo.png")}
-					style={styles.logo}
-				/>
-
-				<View style={styles.navList}>
-					{NAV_ITEMS.map(({ route, tKey }) => (
-						<TouchableOpacity
-							key={route}
-							onPress={() => { playTap(); router.push(route); }}
-							activeOpacity={0.8}
-						>
-							<ImageBackground
-								source={require("@/assets/buttons/big-rock.png")}
-								style={styles.navBtn}
-								resizeMode="stretch"
-							>
-								<Text style={styles.navLabel}>{t(tKey)}</Text>
-							</ImageBackground>
-						</TouchableOpacity>
-					))}
-				</View>
+				{isDesktop ? (
+					<View
+						style={[
+							styles.hero,
+							styles.heroDesktop,
+							{ maxWidth: Math.min(contentMaxWidth, 1080) },
+						]}
+					>
+						<Image
+							source={require("@/assets/images/regicide_logo.png")}
+							style={[styles.logo, styles.logoDesktop]}
+						/>
+						{navButtons}
+					</View>
+				) : (
+					<>
+						<Image
+							source={require("@/assets/images/regicide_logo.png")}
+							style={styles.logo}
+						/>
+						{navButtons}
+					</>
+				)}
 
 				<Modal
 					visible={langVisible}
@@ -93,7 +135,10 @@ export const HomeScreen = () => {
 					<TouchableOpacity
 						style={styles.modalOverlay}
 						activeOpacity={1}
-						onPress={() => { playTap(); setLangVisible(false); }}
+						onPress={() => {
+							playTap();
+							setLangVisible(false);
+						}}
 					>
 						<View style={styles.langDropdown}>
 							{LANGUAGES.map(({ code, label }) => {

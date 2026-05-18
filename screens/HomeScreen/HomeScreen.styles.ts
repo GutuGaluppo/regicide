@@ -9,6 +9,16 @@ export const styles = StyleSheet.create({
 		alignItems: "center",
 		gap: 48,
 	},
+	hero: {
+		width: "100%",
+		alignItems: "center",
+		gap: 32,
+	},
+	heroDesktop: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
 
 	// Globe button — top-right corner
 	globeBtn: {
@@ -34,22 +44,40 @@ export const styles = StyleSheet.create({
 		height: 240,
 		resizeMode: "contain",
 	},
+	logoDesktop: {
+		width: 360,
+		height: 360,
+	},
 
 	// ── Nav buttons ───────────────────────────────────────────────────────────
 	navList: {
 		width: "100%",
 		gap: 12,
 		paddingHorizontal: 24,
+		alignItems: "center",
+	},
+	navListDesktop: {
+		maxWidth: 400,
+		paddingHorizontal: 0,
+		alignItems: "stretch",
+	},
+	navItemDesktop: {
+		width: "100%",
 	},
 	navBtn: {
 		flexDirection: "row",
 		justifyContent: "center",
 		alignItems: "center",
 		width: 280,
-		marginHorizontal: "auto",
 		paddingVertical: 22,
 		paddingHorizontal: 32,
 		overflow: "hidden",
+	},
+	navBtnDesktop: {
+		width: "100%",
+		alignSelf: "center",
+		minHeight: 92,
+		paddingVertical: 24,
 	},
 	navIcon: {
 		width: 28,
@@ -62,6 +90,9 @@ export const styles = StyleSheet.create({
 		textAlign: "center",
 		color: "#000",
 		letterSpacing: 0.8,
+	},
+	navLabelDesktop: {
+		fontSize: 28,
 	},
 
 	// ── Language modal ─────────────────────────────────────────────────────────
