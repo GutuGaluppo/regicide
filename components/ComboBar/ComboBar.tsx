@@ -18,7 +18,7 @@ interface ComboBarProps {
 	/** Valid additions not yet selected (from getComboOptions) */
 	comboOptions: ComboOption[];
 	/** Already-selected combo cards */
-	selectedComboCards: Array<{ suit: RegularSuit; rank: SuitRank }>;
+	selectedComboCards: { suit: RegularSuit; rank: SuitRank }[];
 	/** Tap to add (option) or remove (selected) */
 	onToggleCombo: (suit: RegularSuit, rank: SuitRank) => void;
 	/** Formatted power preview for all selected cards combined */

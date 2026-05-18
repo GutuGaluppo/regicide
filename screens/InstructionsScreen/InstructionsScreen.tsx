@@ -4,6 +4,7 @@ import { styles } from "./InstructionsScreen.styles";
 
 import BG from "@/assets/backgrounds/gold_mountains.webp";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import Combos from "./Sections/components/Combos";
 import Communication from "./Sections/components/Communication";
@@ -24,6 +25,8 @@ import StepThree from "./Sections/components/StepThree";
 import StepTwo from "./Sections/components/StepTwo";
 
 export const InstructionsScreen = () => {
+	const { readingMaxWidth, screenPadding, isDesktop } = useResponsiveLayout();
+
 	return (
 		<ImageBackground
 			source={BG}
@@ -35,61 +38,74 @@ export const InstructionsScreen = () => {
 				<ScreenHeader />
 				<ScrollView
 					style={styles.scroll}
-					contentContainerStyle={styles.scrollContent}
+					contentContainerStyle={[
+						styles.scrollContent,
+						{
+							paddingHorizontal: screenPadding,
+							paddingTop: isDesktop ? 18 : 0,
+						},
+					]}
 					showsVerticalScrollIndicator={false}
 				>
-					{/* ── Intro ── */}
-					<Intro />
+					<View
+						style={[
+							styles.contentColumn,
+							{ maxWidth: readingMaxWidth },
+						]}
+					>
+						{/* ── Intro ── */}
+						<Intro />
 
-					{/* ── Objetivo do Jogo ── */}
-					<Objective />
+						{/* ── Objetivo do Jogo ── */}
+						<Objective />
 
-					{/* ── Preparação ── */}
-					<Preparation />
+						{/* ── Preparação ── */}
+						<Preparation />
 
-					{/* ── Como Jogar — 4 passos ── */}
-					<HowToPlay />
+						{/* ── Como Jogar — 4 passos ── */}
+						<HowToPlay />
 
-					{/* ── Passo 1 ── */}
-					<StepOne />
+						{/* ── Passo 1 ── */}
+						<StepOne />
 
-					{/* ── Passo 2 — Poderes dos Naipes ── */}
-					<StepTwo />
+						{/* ── Passo 2 — Poderes dos Naipes ── */}
+						<StepTwo />
 
-					{/* ── Passo 3 — Dano e Derrota ── */}
-					<StepThree />
+						{/* ── Passo 3 — Dano e Derrota ── */}
+						<StepThree />
 
-					{/* ── Passo 4 ── */}
-					<StepFour />
+						{/* ── Passo 4 ── */}
+						<StepFour />
 
-					{/* ── Animais Companheiros ── */}
-					<Companions />
+						{/* ── Animais Companheiros ── */}
+						<Companions />
 
-					{/* ── Combinações ── */}
-					<Combos />
+						{/* ── Combinações ── */}
+						<Combos />
 
-					{/* ── Imunidade Inimiga ── */}
-					<Immunity />
+						{/* ── Imunidade Inimiga ── */}
+						<Immunity />
 
-					{/* ── Usando o Jóquer ── */}
-					<Jester />
+						{/* ── Usando o Jóquer ── */}
+						<Jester />
 
-					{/* ── Aproveitando Inimigos Derrotados ── */}
-					<DefeatedEnemy />
+						{/* ── Aproveitando Inimigos Derrotados ── */}
+						<DefeatedEnemy />
 
-					{/* ── Passar ── */}
-					<Pass />
+						{/* ── Passar ── */}
+						<Pass />
 
-					{/* ── Comunicação ── */}
-					<Communication />
+						{/* ── Comunicação ── */}
+						<Communication />
 
-					{/* ── Final do Jogo ── */}
-					<EndConditions />
+						{/* ── Final do Jogo ── */}
+						<EndConditions />
 
-					{/* ── Jogo Solo ── */}
-					<Solo />
+						{/* ── Jogo Solo ── */}
+						<Solo />
 
-					<View style={{ height: 32 }} />
+						<View style={styles.bottomSpacer} />
+					</View>
 				</ScrollView>
 			</View>
 		</ImageBackground>

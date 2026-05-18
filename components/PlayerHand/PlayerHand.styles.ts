@@ -3,6 +3,9 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
 	container: {
 		paddingVertical: 8,
+		width: "100%",
+		maxWidth: 1160,
+		alignSelf: "center",
 	},
 	label: {
 		color: "#94A3B8",
@@ -20,6 +23,7 @@ export const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "flex-end",
 		paddingHorizontal: 12,
+		alignSelf: "center",
 	},
 	empty: {
 		color: "#64748B",
@@ -33,7 +37,7 @@ export const styles = StyleSheet.create({
 		justifyContent: "center",
 		gap: 8,
 		minWidth: 200,
-		marginHorizontal: "auto",
+		alignSelf: "center",
 		marginBottom: 6,
 		paddingVertical: 10,
 		paddingHorizontal: 20,

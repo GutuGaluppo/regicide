@@ -6,6 +6,7 @@ import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { SuitTracker } from "@/components/SuitTracker";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
 import { useTrackerStore } from "@/store/trackerStore";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +23,7 @@ import { useBgShift } from "./hooks/useBgShift";
 import { useDefeatTransition } from "./hooks/useDefeatTransition";
 import { styles } from "./TrackerScreen.styles";
 import { ModalState, ScreenState } from "./TrackerScreen.types";
+import { SHIFT_PER_ENEMY } from "./TrackerScreen.constants";
 
 const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 const BG = require("@/assets/backgrounds/bg_cave.webp");
@@ -29,6 +31,8 @@ const BG = require("@/assets/backgrounds/bg_cave.webp");
 export const TrackerScreen = () => {
 	const insets = useSafeAreaInsets();
 	const { playTap } = useAudio();
+	const { width, contentMaxWidth, screenPadding, isDesktop } =
+		useResponsiveLayout();
 	useSoundtrack(
 		require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource,
 	);
@@ -66,6 +70,7 @@ export const TrackerScreen = () => {
 	}, [lastResult]);
 
 	const bgShift = useBgShift(defeatedIds.length);
+	const bgWidth = width + SHIFT_PER_ENEMY * 12;
 	const { isDefeatingRef, defeatFade, handleDefeatWithTransition } =
 		useDefeatTransition({
 			defeatCurrentEnemy,
@@ -124,11 +129,10 @@ export const TrackerScreen = () => {
 		<View style={styles.bg}>
 			<AnimatedImage
 				source={BG}
-				style={[styles.bgImage, bgAnimStyle]}
+				style={[styles.bgImage, bgAnimStyle, { width: bgWidth }]}
 				contentFit="cover"
 			/>
 			<View style={styles.overlay}>
-				{/* ── Top (fixed) ── */}
 				<ScreenHeader
 					onSettingsPress={() => setSettingsVisible(true)}
 					rightExtra={
@@ -144,55 +148,77 @@ export const TrackerScreen = () => {
 						</TouchableOpacity>
 					}
 				/>
-				<View style={[styles.top, { paddingTop: insets.top + 52 }]}>
-					<SuitTracker enemies={footerEnemies} defeatedIds={defeatedIds} />
-				</View>
-
-				{/* ── Center (flex) ── */}
-				<View style={styles.center}>
-					<ScrollView
-						style={styles.scroll}
-						contentContainerStyle={styles.scrollContent}
-						showsVerticalScrollIndicator={false}
+				<View
+					style={[
+						styles.frame,
+						{ maxWidth: contentMaxWidth },
+						isDesktop && styles.frameDesktop,
+					]}
+				>
+					{/* ── Top (fixed) ── */}
+					<View
+						style={[
+							styles.top,
+							{
+								paddingTop: insets.top + 52,
+								paddingHorizontal: screenPadding,
+							},
+						]}
 					>
-						{currentEnemy && (
-							<EnemyStatsCard
-								enemy={currentEnemy}
-								isDead={isDead}
-								defeatFade={defeatFade}
-								isDefeatingTransition={
-									screenState === "ENEMY_DEFEATED_TRANSITION"
-								}
-								previewHP={previewHP}
-								hpPercent={hpPercent}
-								hpColor={hpColor}
-								previewAttack={previewAttack}
-								attackPercent={attackPercent}
-								currentShield={currentShield}
-								onDefeat={handleDefeatWithTransition}
+						<SuitTracker enemies={footerEnemies} defeatedIds={defeatedIds} />
+					</View>
+
+					{/* ── Center (flex) ── */}
+					<View
+						style={[
+							styles.center,
+							{ paddingHorizontal: screenPadding },
+						]}
+					>
+						<ScrollView
+							style={styles.scroll}
+							contentContainerStyle={styles.scrollContent}
+							showsVerticalScrollIndicator={false}
+						>
+							{currentEnemy && (
+								<EnemyStatsCard
+									enemy={currentEnemy}
+									isDead={isDead}
+									defeatFade={defeatFade}
+									isDefeatingTransition={
+										screenState === "ENEMY_DEFEATED_TRANSITION"
+									}
+									previewHP={previewHP}
+									hpPercent={hpPercent}
+									hpColor={hpColor}
+									previewAttack={previewAttack}
+									attackPercent={attackPercent}
+									currentShield={currentShield}
+									onDefeat={handleDefeatWithTransition}
+								/>
+							)}
+						</ScrollView>
+					</View>
+
+					{/* ── Footer (fixed) ── */}
+					<View style={styles.footer}>
+						{lastResult && !resultDismissed && selectedCardInfo === null && (
+							<LastResultBadge
+								result={lastResult}
+								onDismiss={() => setResultDismissed(true)}
 							/>
 						)}
-					</ScrollView>
-				</View>
-
-				{/* ── Footer (fixed) ── */}
-				<View style={styles.footer}>
-					{lastResult && !resultDismissed && selectedCardInfo === null && (
-						<LastResultBadge
-							result={lastResult}
-							onDismiss={() => setResultDismissed(true)}
+						<AttackFooter
+							enemy={currentEnemy}
+							jesterActive={isJesterActive}
+							onApply={(cards) => {
+								applyAttack(cards);
+								setSelectedCardInfo(null);
+							}}
+							onSelectionChange={setSelectedCardInfo}
+							onImmuneWarning={() => setModalState("IMMUNE_WARNING")}
 						/>
-					)}
-					<AttackFooter
-						enemy={currentEnemy}
-						jesterActive={isJesterActive}
-						onApply={(cards) => {
-							applyAttack(cards);
-							setSelectedCardInfo(null);
-						}}
-						onSelectionChange={setSelectedCardInfo}
-						onImmuneWarning={() => setModalState("IMMUNE_WARNING")}
-					/>
+					</View>
 				</View>
 			</View>
 

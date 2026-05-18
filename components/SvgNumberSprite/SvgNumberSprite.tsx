@@ -50,3 +50,5 @@ export const SvgNumberSprite = React.memo(({
 		</View>
 	);
 });
+
+SvgNumberSprite.displayName = "SvgNumberSprite";

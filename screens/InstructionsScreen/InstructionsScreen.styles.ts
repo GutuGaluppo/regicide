@@ -8,8 +8,14 @@ export const styles = StyleSheet.create({
 	},
 	scroll: { flex: 1 },
 	scrollContent: {
-		paddingHorizontal: 16,
 		paddingBottom: 16,
+	},
+	contentColumn: {
+		width: "100%",
+		alignSelf: "center",
 		gap: 16,
+	},
+	bottomSpacer: {
+		height: 32,
 	},
 });

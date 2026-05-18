@@ -7,16 +7,24 @@ export const styles = StyleSheet.create({
 		backgroundColor: "rgba(0, 0, 0, 0.55)",
 		justifyContent: "space-between",
 	},
+	frame: {
+		flex: 1,
+		width: "100%",
+		alignSelf: "center",
+	},
+	frameDesktop: {
+		backgroundColor: "rgba(2,6,23,0.16)",
+	},
 	statusBar: {
 		position: "absolute",
 		top: 50,
-		left: "50%",
-		transform: [{ translateX: -110 }],
+		left: 0,
+		right: 0,
 		flexDirection: "row",
 		justifyContent: "center",
 		alignItems: "flex-end",
 		gap: 12,
-		paddingHorizontal: 16,
+		zIndex: 10,
 	},
 	statusItem: { alignItems: "center", gap: 5 },
 	statusCard: {
@@ -45,6 +53,10 @@ export const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		paddingTop: 90,
+	},
+	handSection: {
+		width: "100%",
+		alignSelf: "center",
 	},
 	error: {
 		color: "#FCA5A5",

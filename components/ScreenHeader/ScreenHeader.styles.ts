@@ -6,12 +6,15 @@ export const styles = StyleSheet.create({
 		top: 10,
 		left: 0,
 		width: "100%",
+		zIndex: 1000,
+	},
+	headerInner: {
+		width: "100%",
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "space-between",
-		paddingHorizontal: 12,
+		alignSelf: "center",
 		paddingBottom: 4,
-		zIndex: 1000,
 	},
 	btn: {
 		padding: 6,

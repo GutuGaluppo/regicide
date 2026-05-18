@@ -32,3 +32,5 @@ export const NumberSprite = React.memo(({
 		/>
 	);
 });
+
+NumberSprite.displayName = "NumberSprite";

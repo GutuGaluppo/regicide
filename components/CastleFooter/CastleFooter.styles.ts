@@ -8,6 +8,9 @@ export const styles = StyleSheet.create({
 		borderTopWidth: 1,
 		borderTopColor: "rgba(148,163,184,0.15)",
 		gap: 6,
+		width: "100%",
+		maxWidth: 1120,
+		alignSelf: "center",
 	},
 	label: {
 		color: "#94A3B8",

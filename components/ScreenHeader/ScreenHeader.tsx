@@ -1,6 +1,7 @@
 import GearFlat from "@/assets/icons/gear_flat.png";
 import TavernSilver from "@/assets/icons/tavern_silver.png";
 import { useAudio } from "@/contexts/AudioContext";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { router } from "expo-router";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
@@ -18,38 +19,49 @@ export const ScreenHeader = ({
 	rightExtra,
 }: ScreenHeaderProps) => {
 	const { playTap } = useAudio();
+	const { contentMaxWidth, screenPadding } = useResponsiveLayout();
 
 	return (
 		<View style={styles.header}>
-			<TouchableOpacity
-				onPress={() => {
-					playTap();
-					if (router.canGoBack()) {
-						router.back();
-					} else {
-						router.replace("/");
-					}
-				}}
-				style={styles.btn}
-				activeOpacity={0.7}
+			<View
+				style={[
+					styles.headerInner,
+					{
+						maxWidth: contentMaxWidth,
+						paddingHorizontal: screenPadding,
+					},
+				]}
 			>
-				<Image source={TavernSilver} style={styles.icon} contentFit="contain" />
-			</TouchableOpacity>
+				<TouchableOpacity
+					onPress={() => {
+						playTap();
+						if (router.canGoBack()) {
+							router.back();
+						} else {
+							router.replace("/");
+						}
+					}}
+					style={styles.btn}
+					activeOpacity={0.7}
+				>
+					<Image source={TavernSilver} style={styles.icon} contentFit="contain" />
+				</TouchableOpacity>
 
-			<View style={styles.rightGroup}>
-				{rightExtra}
-				{onSettingsPress && (
-					<TouchableOpacity
-						onPress={() => {
-							playTap();
-							onSettingsPress();
-						}}
-						style={styles.btn}
-						activeOpacity={0.7}
-					>
-						<Image source={GearFlat} style={styles.icon} contentFit="contain" />
-					</TouchableOpacity>
-				)}
+				<View style={styles.rightGroup}>
+					{rightExtra}
+					{onSettingsPress && (
+						<TouchableOpacity
+							onPress={() => {
+								playTap();
+								onSettingsPress();
+							}}
+							style={styles.btn}
+							activeOpacity={0.7}
+						>
+							<Image source={GearFlat} style={styles.icon} contentFit="contain" />
+						</TouchableOpacity>
+					)}
+				</View>
 			</View>
 		</View>
 	);

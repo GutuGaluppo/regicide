@@ -55,3 +55,5 @@ export const ProgressRing = React.memo(({
 		</View>
 	);
 });
+
+ProgressRing.displayName = "ProgressRing";

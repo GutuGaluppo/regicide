@@ -9,6 +9,9 @@ export const styles = StyleSheet.create({
 		backgroundColor: "rgba(15,23,42,0.75)",
 		borderTopWidth: 1,
 		borderTopColor: "rgba(255,255,255,0.08)",
+		width: "100%",
+		maxWidth: 1120,
+		alignSelf: "center",
 	},
 	actionRow: {
 		flexDirection: "row",
@@ -82,13 +85,17 @@ export const styles = StyleSheet.create({
 		height: 100,
 	},
 	rankRow: {
+		minWidth: "100%",
 		gap: 8,
 		paddingTop: 14,
 		paddingBottom: 4,
+		paddingHorizontal: 4,
+		justifyContent: "center",
 	},
 	jesterRow: {
 		flexDirection: "row",
 		justifyContent: "center",
+		minWidth: "100%",
 		height: 100,
 		gap: 12,
 		paddingTop: 14,

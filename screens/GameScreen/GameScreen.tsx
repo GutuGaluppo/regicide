@@ -12,6 +12,7 @@ import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
 import { Card, Enemy } from "@/data/types";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useGameStore } from "@/store/gameStore";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
 import { enemyToCard, validatePlay } from "@/utils/gameLogic";
@@ -106,6 +107,7 @@ const StatusCard = ({ count, label }: { count: number; label: string }) => (
 export const GameScreen = () => {
 	const { t } = useTranslation();
 	const { playShuffleCards } = useAudio();
+	const { contentMaxWidth, screenPadding, isDesktop } = useResponsiveLayout();
 	useSoundtrack(
 		require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource,
 	);
@@ -592,84 +594,94 @@ export const GameScreen = () => {
 			imageStyle={{ width: "100%", height: "100%" }}
 		>
 			<View style={styles.overlay}>
-				<View style={styles.statusBar}>
-					<StatusCard
-						count={gameState.castle.length}
-						label={t("game.status.castle")}
-					/>
-					<View ref={tavernRef} collapsable={false}>
+				<View
+					style={[
+						styles.frame,
+						{ maxWidth: contentMaxWidth },
+						isDesktop && styles.frameDesktop,
+					]}
+				>
+					<View style={[styles.statusBar, { paddingHorizontal: screenPadding }]}>
 						<StatusCard
-							count={tavernDeck.length}
-							label={t("game.status.tavern")}
+							count={gameState.castle.length}
+							label={t("game.status.castle")}
 						/>
-					</View>
-					<View ref={discardRef} collapsable={false}>
-						<StatusCard
-							count={discardPile.length}
-							label={t("game.status.discard")}
-						/>
-					</View>
-				</View>
-
-				<View style={styles.center}>
-					{(phase === "player_turn" || phase === "suffer_damage") &&
-						currentEnemy && (
-							<EnemyCard
-								enemy={currentEnemy}
-								currentHP={currentHP}
-								effectiveAttack={effectiveAttack}
-								jesterActive={jesterActive}
-								spadesShield={spadesShield}
-								shieldCards={shieldCards}
-								jestersAvailable={gameState.jestersAvailable}
-								jestersUsed={gameState.jestersUsed}
-								autoJesterSignal={autoJesterSignal}
-								hidden={activeEnemyCapture !== null}
-								hideShieldPile={hideShieldPile}
-								onCardMeasure={handleEnemyCardMeasure}
-								onShieldPileMeasure={handleShieldPileMeasure}
-								onUseJester={phase === "player_turn" && !actionLocked ? useJester : undefined}
-								onAutoJesterComplete={completeAutoJesterAnimation}
-								onJesterAnimationStateChange={setJesterAnimating}
-								onPress={!actionLocked ? () => setModalVisible(true) : undefined}
-								previewDamage={phase === "player_turn" ? previewDamage : 0}
-								previewShieldGain={
-									phase === "player_turn" ? previewShieldGain : 0
-								}
+						<View ref={tavernRef} collapsable={false}>
+							<StatusCard
+								count={tavernDeck.length}
+								label={t("game.status.tavern")}
 							/>
-						)}
-				</View>
+						</View>
+						<View ref={discardRef} collapsable={false}>
+							<StatusCard
+								count={discardPile.length}
+								label={t("game.status.discard")}
+							/>
+						</View>
+					</View>
 
-				{playError && <Text style={styles.error}>{playError}</Text>}
+					<View style={[styles.center, { paddingHorizontal: screenPadding }]}>
+						{(phase === "player_turn" || phase === "suffer_damage") &&
+							currentEnemy && (
+								<EnemyCard
+									enemy={currentEnemy}
+									currentHP={currentHP}
+									effectiveAttack={effectiveAttack}
+									jesterActive={jesterActive}
+									spadesShield={spadesShield}
+									shieldCards={shieldCards}
+									jestersAvailable={gameState.jestersAvailable}
+									jestersUsed={gameState.jestersUsed}
+									autoJesterSignal={autoJesterSignal}
+									hidden={activeEnemyCapture !== null}
+									hideShieldPile={hideShieldPile}
+									onCardMeasure={handleEnemyCardMeasure}
+									onShieldPileMeasure={handleShieldPileMeasure}
+									onUseJester={phase === "player_turn" && !actionLocked ? useJester : undefined}
+									onAutoJesterComplete={completeAutoJesterAnimation}
+									onJesterAnimationStateChange={setJesterAnimating}
+									onPress={!actionLocked ? () => setModalVisible(true) : undefined}
+									previewDamage={phase === "player_turn" ? previewDamage : 0}
+									previewShieldGain={
+										phase === "player_turn" ? previewShieldGain : 0
+									}
+								/>
+							)}
+					</View>
 
-				{(phase === "player_turn" || phase === "suffer_damage") && (
-					<PlayerHand
-						hand={gameState.playerHand}
-						selectedIds={selectedIds}
-						phase={phase}
-						immuneSuit={jesterActive ? null : currentEnemy?.suit}
-						dealingIds={dealingIds}
-						activeDeal={activeDeal}
-						activeDiscard={activeDiscard}
-						locked={actionLocked}
-						pendingDamage={pendingDamage}
-						selectedTotal={selectedTotal}
-						onCardPress={toggleCard}
-						onDiscard={handleConfirmDiscard}
-						onSort={sortHand}
-						onSortByClass={sortHandByClass}
-						onPlay={handlePlay}
-						playDisabled={selectedIds.size === 0}
-						onCardDealComplete={handleCardDealComplete}
-						onCardDiscardComplete={handleCardDiscardComplete}
+					{playError && <Text style={styles.error}>{playError}</Text>}
+
+					{(phase === "player_turn" || phase === "suffer_damage") && (
+						<View style={[styles.handSection, { paddingHorizontal: screenPadding }]}>
+							<PlayerHand
+								hand={gameState.playerHand}
+								selectedIds={selectedIds}
+								phase={phase}
+								immuneSuit={jesterActive ? null : currentEnemy?.suit}
+								dealingIds={dealingIds}
+								activeDeal={activeDeal}
+								activeDiscard={activeDiscard}
+								locked={actionLocked}
+								pendingDamage={pendingDamage}
+								selectedTotal={selectedTotal}
+								onCardPress={toggleCard}
+								onDiscard={handleConfirmDiscard}
+								onSort={sortHand}
+								onSortByClass={sortHandByClass}
+								onPlay={handlePlay}
+								playDisabled={selectedIds.size === 0}
+								onCardDealComplete={handleCardDealComplete}
+								onCardDiscardComplete={handleCardDiscardComplete}
+							/>
+						</View>
+					)}
+
+					<CastleFooter
+						castle={gameState.castle}
+						defeatedEnemies={gameState.defeatedEnemies}
+						currentEnemyId={currentEnemy?.id ?? ""}
 					/>
-				)}
-
-				<CastleFooter
-					castle={gameState.castle}
-					defeatedEnemies={gameState.defeatedEnemies}
-					currentEnemyId={currentEnemy?.id ?? ""}
-				/>
+				</View>
 
 				<ScreenHeader onSettingsPress={() => setSettingsVisible(true)} />
 			</View>

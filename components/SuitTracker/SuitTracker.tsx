@@ -57,3 +57,5 @@ export const SuitTracker = React.memo(({ enemies, defeatedIds }: SuitTrackerProp
 		</View>
 	);
 });
+
+SuitTracker.displayName = "SuitTracker";

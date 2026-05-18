@@ -16,6 +16,7 @@ export const styles = StyleSheet.create({
 		alignItems: "center",
 		gap: 12,
 		width: "100%",
+		maxWidth: 540,
 	},
 	title: {
 		fontFamily: "IMFellEnglish-Regular",
@@ -40,7 +41,8 @@ export const styles = StyleSheet.create({
 	image: {
 		position: "absolute",
 		top: -160,
-		width: "50%",
+		width: "55%",
+		maxWidth: 260,
 		height: 180,
 	},
 	actions: {

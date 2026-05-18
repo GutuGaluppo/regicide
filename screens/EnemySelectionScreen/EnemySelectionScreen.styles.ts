@@ -1,11 +1,4 @@
-import { Dimensions, StyleSheet } from "react-native";
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-// 2 columns with 24px padding each side and 16px gap
-const CARD_WIDTH = (SCREEN_WIDTH - 48 - 16) / 2;
-const CARD_HEIGHT = CARD_WIDTH / 0.67;
-const BG_MAX_SHIFT = 12 * 18;
-const BG_WIDTH = SCREEN_WIDTH + BG_MAX_SHIFT;
+import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
 	root: {
@@ -16,8 +9,6 @@ export const styles = StyleSheet.create({
 		position: "absolute",
 		top: 0,
 		left: 0,
-		width: BG_WIDTH,
-		height: SCREEN_HEIGHT,
 	},
 	overlay: {
 		flex: 1,
@@ -26,15 +17,13 @@ export const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	grid: {
+		width: "100%",
 		flexDirection: "row",
 		flexWrap: "wrap",
 		justifyContent: "center",
-		gap: 16,
-		paddingHorizontal: 24,
+		alignSelf: "center",
 	},
 	cell: {
-		width: CARD_WIDTH,
-		height: CARD_HEIGHT,
 		position: "relative",
 	},
 	card: {

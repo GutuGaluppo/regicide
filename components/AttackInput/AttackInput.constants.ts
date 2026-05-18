@@ -175,7 +175,7 @@ function isValidComboAddition(
 export function getComboOptions(
 	mainSuit: RegularSuit,
 	mainRank: SuitRank,
-	comboCards: Array<{ suit: RegularSuit; rank: SuitRank }>,
+	comboCards: { suit: RegularSuit; rank: SuitRank }[],
 ): ComboOption[] {
 	const alreadySelected = new Set([
 		`${mainSuit}-${mainRank}`,

@@ -8,6 +8,7 @@ import {
 	Pressable,
 	Text,
 	TouchableOpacity,
+	useWindowDimensions,
 	View,
 } from "react-native";
 import { styles } from "./SettingsDrawer.styles";
@@ -37,6 +38,9 @@ export const SettingsDrawer = ({
 	const [mounted, setMounted] = useState(false);
 	const slideY = useRef(new Animated.Value(400)).current;
 	const backdropOpacity = useRef(new Animated.Value(0)).current;
+	const { width } = useWindowDimensions();
+	const isDesktop = width >= 1100;
+	const panelWidth = Math.min(420, width - 48);
 
 	useEffect(() => {
 		if (visible) {
@@ -100,7 +104,16 @@ export const SettingsDrawer = ({
 			</Animated.View>
 
 			<Animated.View
-				style={[styles.panel, { transform: [{ translateY: slideY }] }]}
+				style={[
+					styles.panel,
+					isDesktop && {
+						left: (width - panelWidth) / 2,
+						right: (width - panelWidth) / 2,
+						bottom: 24,
+						borderRadius: 20,
+					},
+					{ transform: [{ translateY: slideY }] },
+				]}
 			>
 				<View style={styles.handle} />
 				<Text style={styles.title}>{t("settings.title")}</Text>
