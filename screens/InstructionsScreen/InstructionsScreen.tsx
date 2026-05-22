@@ -2,7 +2,7 @@ import React from "react";
 import { ImageBackground, ScrollView, View } from "react-native";
 import { styles } from "./InstructionsScreen.styles";
 
-import BG from "@/assets/backgrounds/gold_mountains.webp";
+import BG from "@/assets/backgrounds/blue_mountains.webp";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
@@ -47,12 +47,7 @@ export const InstructionsScreen = () => {
 					]}
 					showsVerticalScrollIndicator={false}
 				>
-					<View
-						style={[
-							styles.contentColumn,
-							{ maxWidth: readingMaxWidth },
-						]}
-					>
+					<View style={[styles.contentColumn, { maxWidth: readingMaxWidth }]}>
 						{/* ── Intro ── */}
 						<Intro />
 

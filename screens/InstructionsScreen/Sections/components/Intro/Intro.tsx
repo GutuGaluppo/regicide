@@ -2,13 +2,11 @@ import { Image } from "expo-image";
 import { t } from "i18next";
 import { Text, View } from "react-native";
 import { styles } from "./Intro.styles";
+const HOURGLASS = require("@/assets/icons/duration.png");
+const AGE_ICON = require("@/assets/icons/age_icon.png");
+const PLAYERS = require("@/assets/icons/players.png");
 
 export default function Intro() {
-	const gameInfo = t("instructions.gameInfo", { returnObjects: true }) as {
-		players: string;
-		age: string;
-		time: string;
-	};
 	return (
 		<View style={styles.introBlock}>
 			<Image
@@ -19,17 +17,14 @@ export default function Intro() {
 			<Text style={styles.gameName}>{t("instructions.gameName")}</Text>
 			<Text style={styles.gameSubtitle}>{t("instructions.gameSubtitle")}</Text>
 			<View style={styles.gameInfoRow}>
-				<View style={styles.gameInfoBadge}>
-					<Text style={styles.gameInfoIcon}>👥</Text>
-					<Text style={styles.gameInfoText}>{gameInfo.players}</Text>
+				<View>
+					<Image source={PLAYERS} style={styles.gameInfoImage} />
 				</View>
-				<View style={styles.gameInfoBadge}>
-					<Text style={styles.gameInfoIcon}>📅</Text>
-					<Text style={styles.gameInfoText}>{gameInfo.age}</Text>
+				<View>
+					<Image source={AGE_ICON} style={styles.gameInfoImage} />
 				</View>
-				<View style={styles.gameInfoBadge}>
-					<Text style={styles.gameInfoIcon}>⏱</Text>
-					<Text style={styles.gameInfoText}>{gameInfo.time}</Text>
+				<View>
+					<Image source={HOURGLASS} style={styles.gameInfoImage} />
 				</View>
 			</View>
 		</View>

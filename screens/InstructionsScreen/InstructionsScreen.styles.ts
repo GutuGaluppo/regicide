@@ -4,7 +4,6 @@ export const styles = StyleSheet.create({
 	container: { flex: 1 },
 	overlay: {
 		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.65)",
 	},
 	scroll: { flex: 1 },
 	scrollContent: {
