@@ -30,9 +30,6 @@ export const styles = StyleSheet.create({
 		fontSize: 28,
 		fontWeight: "900",
 		letterSpacing: 2,
-		textShadowColor: "#7F1D1D",
-		textShadowOffset: { width: 0, height: 0 },
-		textShadowRadius: 12,
 	},
 	newGameBtn: {
 		paddingVertical: 12,

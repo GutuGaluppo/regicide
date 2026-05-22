@@ -111,11 +111,6 @@ export const styles = StyleSheet.create({
 		borderColor: "rgba(148,163,184,0.25)",
 		overflow: "hidden",
 		minWidth: 150,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 6 },
-		shadowOpacity: 0.5,
-		shadowRadius: 12,
-		elevation: 10,
 	},
 	langOption: {
 		paddingHorizontal: 20,

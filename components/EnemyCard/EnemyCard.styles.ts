@@ -58,9 +58,6 @@ export const styles = StyleSheet.create({
 		fontWeight: "700",
 		letterSpacing: 0.8,
 		textTransform: "uppercase",
-		textShadowColor: "rgba(0,0,0,0.8)",
-		textShadowOffset: { width: 0, height: 1 },
-		textShadowRadius: 3,
 	},
 	shieldedWrapper: {
 		width: 60,
