@@ -3,6 +3,7 @@ import { router } from "expo-router";
 
 import { useAudio } from "@/contexts/AudioContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -41,6 +42,7 @@ export const HomeScreen = () => {
 	const { t, i18n: i18nHook } = useTranslation();
 	const { playTap } = useAudio();
 	const { isDesktop, contentMaxWidth, screenPadding } = useResponsiveLayout();
+	useBackgroundCaching("home_bg", require("@/assets/backgrounds/bg_cave.webp"));
 	const [langVisible, setLangVisible] = useState(false);
 	const currentLang = i18nHook.language;
 
@@ -62,10 +64,7 @@ export const HomeScreen = () => {
 						resizeMode="stretch"
 					>
 						<Text
-							style={[
-								styles.navLabel,
-								isDesktop && styles.navLabelDesktop,
-							]}
+							style={[styles.navLabel, isDesktop && styles.navLabelDesktop]}
 						>
 							{t(tKey)}
 						</Text>

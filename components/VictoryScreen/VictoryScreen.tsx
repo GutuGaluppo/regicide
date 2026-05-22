@@ -10,6 +10,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import { ParallaxLayer } from "./components/ParallaxLayer";
 import { styles } from "./VictoryScreen.styles";
 
@@ -48,6 +49,11 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 	const slideAnim = useRef(new Animated.Value(40)).current;
 	const scaleAnim = useRef(new Animated.Value(0.85)).current;
+
+	useBackgroundCaching("victory_bg_0", require("@/assets/backgrounds/parallaxi_bgs/4Background-Clouds-trans.png"));
+	useBackgroundCaching("victory_bg_1", require("@/assets/backgrounds/parallaxi_bgs/3Background.png"));
+	useBackgroundCaching("victory_bg_2", require("@/assets/backgrounds/parallaxi_bgs/2Foreground2.png"));
+	useBackgroundCaching("victory_bg_3", require("@/assets/backgrounds/parallaxi_bgs/1Foreground-Rocks.png"));
 
 	useEffect(() => {
 		Animated.parallel([
@@ -94,14 +100,20 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 					<View style={styles.actions}>
 						<TouchableOpacity
 							style={styles.btnReset}
-							onPress={() => { playTap(); onReset(); }}
+							onPress={() => {
+								playTap();
+								onReset();
+							}}
 							activeOpacity={0.8}
 						>
 							<Text style={styles.btnResetText}>{t("victory.playAgain")}</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={styles.btnHome}
-							onPress={() => { playTap(); router.back(); }}
+							onPress={() => {
+								playTap();
+								router.back();
+							}}
 							activeOpacity={0.8}
 						>
 							<Text style={styles.btnHomeText}>{t("victory.home")}</Text>

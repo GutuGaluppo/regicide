@@ -1,4 +1,7 @@
 import { useAudio } from "@/contexts/AudioContext";
+import { getCardImage } from "@/data/images";
+import { Card, Enemy, GameStats } from "@/data/types";
+import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,8 +15,6 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { getCardImage } from "@/data/images";
-import { Enemy, GameStats, Card } from "@/data/types";
 import { styles } from "./DefeatScreen.styles";
 import {
 	GhostActions,
@@ -43,6 +44,7 @@ export const DefeatScreen = ({
 }: DefeatScreenPropsType) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
+	useBackgroundCaching("defeat_bg", BG);
 
 	const [ghostsVisible, setGhostsVisible] = useState(true);
 	const othersScale = useRef(new Animated.Value(1)).current;
@@ -98,7 +100,10 @@ export const DefeatScreen = ({
 			<View style={styles.overlay}>
 				<View style={styles.header}>
 					<TouchableOpacity
-						onPress={() => { playTap(); router.back(); }}
+						onPress={() => {
+							playTap();
+							router.back();
+						}}
 						style={styles.backBtn}
 					>
 						<Image
@@ -152,7 +157,10 @@ export const DefeatScreen = ({
 					<Animated.View style={{ opacity: msgOpacity }}>
 						<TouchableOpacity
 							style={styles.newGameBtn}
-							onPress={() => { playTap(); onReset(); }}
+							onPress={() => {
+								playTap();
+								onReset();
+							}}
 							activeOpacity={0.8}
 						>
 							<Text style={styles.newGameText}>{t("defeat.newGame")}</Text>
