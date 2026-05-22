@@ -3,10 +3,7 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
 	bg: { flex: 1, overflow: "hidden" },
 	bgImage: {
-		position: "absolute",
-		top: 0,
-		left: 0,
-		height: "100%",
+		...StyleSheet.absoluteFillObject,
 	},
 	overlay: {
 		flex: 1,

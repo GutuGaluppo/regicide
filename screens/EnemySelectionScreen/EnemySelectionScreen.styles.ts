@@ -1,18 +1,8 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-	root: {
+	content: {
 		flex: 1,
-		overflow: "hidden",
-	},
-	bg: {
-		position: "absolute",
-		top: 0,
-		left: 0,
-	},
-	overlay: {
-		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.55)",
 		justifyContent: "center",
 		alignItems: "center",
 	},

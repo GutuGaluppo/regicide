@@ -8,34 +8,42 @@ import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
-import { useTrackerStore } from "@/store/trackerStore";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getHpColor } from "@/utils/hpColor";
+import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import { EnemySelectionScreen } from "@/screens/EnemySelectionScreen/EnemySelectionScreen";
+import { useTrackerStore } from "@/store/trackerStore";
+import { getHpColor } from "@/utils/hpColor";
 import { Ionicons } from "@expo/vector-icons";
+import { Image as ExpoImage } from "expo-image";
 import React, { useEffect, useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
-import Animated, { useAnimatedStyle } from "react-native-reanimated";
-import { Image as ExpoImage } from "expo-image";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EnemyStatsCard } from "./components/EnemyStatsCard/EnemyStatsCard";
 import { LastResultBadge } from "./components/LastResultBadge/LastResultBadge";
-import { useBgShift } from "./hooks/useBgShift";
 import { useDefeatTransition } from "./hooks/useDefeatTransition";
 import { styles } from "./TrackerScreen.styles";
 import { ModalState, ScreenState } from "./TrackerScreen.types";
-import { SHIFT_PER_ENEMY } from "./TrackerScreen.constants";
 
-const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 const BG = require("@/assets/backgrounds/bg_cave.webp");
+
+const TrackerBackground = React.memo(function TrackerBackground() {
+	return (
+		<ExpoImage
+			source={BG}
+			style={styles.bgImage}
+			contentFit="cover"
+			cachePolicy="memory-disk"
+		/>
+	);
+});
 
 export const TrackerScreen = () => {
 	const insets = useSafeAreaInsets();
 	const { playTap } = useAudio();
-	const { width, contentMaxWidth, screenPadding, isDesktop } =
-		useResponsiveLayout();
+	const { contentMaxWidth, screenPadding, isDesktop } = useResponsiveLayout();
 	useSoundtrack(
 		require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource,
 	);
+	useBackgroundCaching("tracker_bg", BG);
 
 	const {
 		currentEnemy,
@@ -69,8 +77,6 @@ export const TrackerScreen = () => {
 		setResultDismissed(false);
 	}, [lastResult]);
 
-	const bgShift = useBgShift(defeatedIds.length);
-	const bgWidth = width + SHIFT_PER_ENEMY * 12;
 	const { isDefeatingRef, defeatFade, handleDefeatWithTransition } =
 		useDefeatTransition({
 			defeatCurrentEnemy,
@@ -102,124 +108,109 @@ export const TrackerScreen = () => {
 		: 0;
 	const isDead = currentHP <= 0;
 
-	const bgAnimStyle = useAnimatedStyle(() => ({
-		transform: [{ translateX: bgShift.value }],
-	}));
-
 	// ── Early returns ─────────────────────────────────────────────────────────
 	if (isVictory) {
 		return <VictoryScreen onReset={resetTracker} />;
 	}
 
-	if (screenState === "ENEMY_SELECTION") {
-		return (
-			<EnemySelectionScreen
-				enemies={footerEnemies}
-				bgShift={bgShift}
-				onSelectEnemy={(id) => {
-					playTap();
-					selectEnemy(id);
-				}}
-				onSettingsPress={() => setSettingsVisible(true)}
-			/>
-		);
-	}
-
 	return (
 		<View style={styles.bg}>
-			<AnimatedImage
-				source={BG}
-				style={[styles.bgImage, bgAnimStyle, { width: bgWidth }]}
-				contentFit="cover"
-			/>
+			<TrackerBackground />
 			<View style={styles.overlay}>
 				<ScreenHeader
 					onSettingsPress={() => setSettingsVisible(true)}
 					rightExtra={
-						<TouchableOpacity
-							onPress={() => {
-								playTap();
-								undo();
-							}}
-							style={[styles.backBtn, !canUndo && { opacity: 0.3 }]}
-							disabled={!canUndo}
-						>
-							<Ionicons name="arrow-undo" size={26} color="#F1F5F9" />
-						</TouchableOpacity>
+						screenState === "ENEMY_SELECTION" ? undefined : (
+							<TouchableOpacity
+								onPress={() => {
+									playTap();
+									undo();
+								}}
+								style={[styles.backBtn, !canUndo && { opacity: 0.3 }]}
+								disabled={!canUndo}
+							>
+								<Ionicons name="arrow-undo" size={26} color="#F1F5F9" />
+							</TouchableOpacity>
+						)
 					}
 				/>
-				<View
-					style={[
-						styles.frame,
-						{ maxWidth: contentMaxWidth },
-						isDesktop && styles.frameDesktop,
-					]}
-				>
-					{/* ── Top (fixed) ── */}
+				{screenState === "ENEMY_SELECTION" ? (
+					<EnemySelectionScreen
+						enemies={footerEnemies}
+						onSelectEnemy={(id) => {
+							playTap();
+							selectEnemy(id);
+						}}
+					/>
+				) : (
 					<View
 						style={[
-							styles.top,
-							{
-								paddingTop: insets.top + 52,
-								paddingHorizontal: screenPadding,
-							},
+							styles.frame,
+							{ maxWidth: contentMaxWidth },
+							isDesktop && styles.frameDesktop,
 						]}
 					>
-						<SuitTracker enemies={footerEnemies} defeatedIds={defeatedIds} />
-					</View>
-
-					{/* ── Center (flex) ── */}
-					<View
-						style={[
-							styles.center,
-							{ paddingHorizontal: screenPadding },
-						]}
-					>
-						<ScrollView
-							style={styles.scroll}
-							contentContainerStyle={styles.scrollContent}
-							showsVerticalScrollIndicator={false}
+						{/* ── Top (fixed) ── */}
+						<View
+							style={[
+								styles.top,
+								{
+									paddingTop: insets.top + 52,
+									paddingHorizontal: screenPadding,
+								},
+							]}
 						>
-							{currentEnemy && (
-								<EnemyStatsCard
-									enemy={currentEnemy}
-									isDead={isDead}
-									defeatFade={defeatFade}
-									isDefeatingTransition={
-										screenState === "ENEMY_DEFEATED_TRANSITION"
-									}
-									previewHP={previewHP}
-									hpPercent={hpPercent}
-									hpColor={hpColor}
-									previewAttack={previewAttack}
-									attackPercent={attackPercent}
-									currentShield={currentShield}
-									onDefeat={handleDefeatWithTransition}
+							<SuitTracker enemies={footerEnemies} defeatedIds={defeatedIds} />
+						</View>
+
+						{/* ── Center (flex) ── */}
+						<View style={[styles.center, { paddingHorizontal: screenPadding }]}>
+							<ScrollView
+								style={styles.scroll}
+								contentContainerStyle={styles.scrollContent}
+								showsVerticalScrollIndicator={false}
+							>
+								{currentEnemy && (
+									<EnemyStatsCard
+										enemy={currentEnemy}
+										isDead={isDead}
+										defeatFade={defeatFade}
+										isDefeatingTransition={
+											screenState === "ENEMY_DEFEATED_TRANSITION"
+										}
+										previewHP={previewHP}
+										hpPercent={hpPercent}
+										hpColor={hpColor}
+										previewAttack={previewAttack}
+										attackPercent={attackPercent}
+										currentShield={currentShield}
+										onDefeat={handleDefeatWithTransition}
+									/>
+								)}
+							</ScrollView>
+						</View>
+
+						{/* ── Footer (fixed) ── */}
+						<View style={styles.footer}>
+							{lastResult && !resultDismissed && selectedCardInfo === null && (
+								<LastResultBadge
+									result={lastResult}
+									onDismiss={() => setResultDismissed(true)}
 								/>
 							)}
-						</ScrollView>
-					</View>
-
-					{/* ── Footer (fixed) ── */}
-					<View style={styles.footer}>
-						{lastResult && !resultDismissed && selectedCardInfo === null && (
-							<LastResultBadge
-								result={lastResult}
-								onDismiss={() => setResultDismissed(true)}
+							<AttackFooter
+								enemy={currentEnemy}
+								jesterActive={isJesterActive}
+								onApply={(cards) => {
+									applyAttack(cards);
+									setSelectedCardInfo(null);
+								}}
+								onSelectionChange={setSelectedCardInfo}
+								onImmuneWarning={() => setModalState("IMMUNE_WARNING")}
 							/>
-						)}
-						<AttackFooter
-							enemy={currentEnemy}
-							jesterActive={isJesterActive}
-							onApply={(cards) => {
-								applyAttack(cards);
-								setSelectedCardInfo(null);
-							}}
-							onSelectionChange={setSelectedCardInfo}
-							onImmuneWarning={() => setModalState("IMMUNE_WARNING")}
-						/>
+						</View>
 					</View>
-				</View>
+				)}
 			</View>
 
 			<SettingsDrawer
