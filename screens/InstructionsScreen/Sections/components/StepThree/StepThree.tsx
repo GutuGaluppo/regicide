@@ -1,6 +1,7 @@
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { t } from "i18next";
 import React from "react";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import DefeatStepList from "@/screens/InstructionsScreen/components/DefeatStepList";
 import EnemyTable from "@/screens/InstructionsScreen/components/EnemyTable";
 import Section from "@/screens/InstructionsScreen/Sections/Section";
@@ -8,6 +9,7 @@ import { styles } from "./StepThree.styles";
 
 export default function StepThree() {
 	const s = (key: string) => `instructions.sections.${key}`;
+	const { isTablet } = useResponsiveLayout();
 
 	const enemyHeader = t(`${s("step3")}.enemyHeader`, {
 		returnObjects: true,
@@ -29,9 +31,20 @@ export default function StepThree() {
 
 	return (
 		<Section title={t(`${s("step3")}.title`)}>
-			<Text style={styles.stepSubtitle}>{t(`${s("step3")}.subtitle`)}</Text>
-			<Text style={styles.bodyText}>{t(`${s("step3")}.body`)}</Text>
-			<EnemyTable header={enemyHeader} rows={enemyRows} />
+			<View
+				style={[
+					styles.contentLayout,
+					isTablet ? styles.contentLayoutRow : styles.contentLayoutColumn,
+				]}
+			>
+				<View style={styles.textColumn}>
+					<Text style={styles.stepSubtitle}>{t(`${s("step3")}.subtitle`)}</Text>
+					<Text style={styles.bodyText}>{t(`${s("step3")}.body`)}</Text>
+				</View>
+				<View style={styles.tableColumn}>
+					<EnemyTable header={enemyHeader} rows={enemyRows} />
+				</View>
+			</View>
 			<Text style={styles.labelText}>{t(`${s("step3")}.defeatTitle`)}</Text>
 			<DefeatStepList steps={defeatSteps} />
 		</Section>

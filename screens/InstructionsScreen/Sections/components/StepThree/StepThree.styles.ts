@@ -1,6 +1,26 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+	contentLayout: {
+		gap: 16,
+		alignItems: "flex-start",
+	},
+	contentLayoutColumn: {
+		flexDirection: "column",
+	},
+	contentLayoutRow: {
+		flexDirection: "row",
+	},
+	textColumn: {
+		flex: 1.15,
+		minWidth: 0,
+		gap: 12,
+	},
+	tableColumn: {
+		flex: 0.85,
+		minWidth: 0,
+		alignSelf: "stretch",
+	},
 	stepSubtitle: {
 		color: "#F1F5F9",
 		fontSize: 14,

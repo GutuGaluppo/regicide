@@ -14,6 +14,25 @@ export const styles = StyleSheet.create({
 		fontSize: 14,
 		lineHeight: 22,
 	},
+	contentLayout: {
+		gap: 16,
+		alignItems: "flex-start",
+	},
+	contentLayoutColumn: {
+		flexDirection: "column",
+	},
+	contentLayoutRow: {
+		flexDirection: "row",
+	},
+	textColumn: {
+		flex: 1.15,
+		minWidth: 0,
+	},
+	tableColumn: {
+		flex: 0.85,
+		minWidth: 0,
+		alignSelf: "stretch",
+	},
 	noteBlock: {
 		backgroundColor: "rgba(251,191,36,0.06)",
 		borderRadius: 8,
