@@ -29,6 +29,10 @@ const NAV_ITEMS = [
 		tKey: "home.play.title" as const,
 	},
 	{
+		route: "/lobby",
+		tKey: "home.multiplayer.title" as const,
+	},
+	{
 		route: "/tracker",
 		tKey: "home.tracker.title" as const,
 	},

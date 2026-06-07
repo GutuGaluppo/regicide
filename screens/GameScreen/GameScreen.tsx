@@ -21,7 +21,7 @@ import { Card, Enemy } from "@/data/types";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
-import { useGameStore } from "@/store/gameStore";
+import { useGameScreenStore } from "@/contexts/GameStoreContext";
 import { enemyToCard, validatePlay } from "@/utils/gameLogic";
 import { Image } from "expo-image";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -135,16 +135,20 @@ export const GameScreen = () => {
 		dealSignal,
 		autoJesterSignal,
 		autoJesterPending,
+		isMyTurn,
 		initialize,
 		toggleCard,
 		playSelected,
+		yieldTurn,
 		confirmDiscard,
 		completeAutoJesterAnimation,
 		useJester,
 		sortHand,
 		sortHandByClass,
 		resetGame,
-	} = useGameStore();
+		onAbandon,
+		lastPlayedCards,
+	} = useGameScreenStore();
 
 	useEffect(() => {
 		initialize();
@@ -532,7 +536,7 @@ export const GameScreen = () => {
 	};
 
 	const handlePlay = () => {
-		if (phase !== "player_turn" || selectedCards.length === 0 || actionLocked) {
+		if (phase !== "player_turn" || selectedCards.length === 0 || actionLocked || !isMyTurn) {
 			return;
 		}
 
@@ -564,11 +568,17 @@ export const GameScreen = () => {
 		);
 	};
 
+	const handleYield = () => {
+		if (phase !== "player_turn" || actionLocked || !isMyTurn) return;
+		yieldTurn();
+	};
+
 	const handleConfirmDiscard = () => {
 		if (
 			phase !== "suffer_damage" ||
 			selectedCards.length === 0 ||
-			actionLocked
+			actionLocked ||
+			!isMyTurn
 		) {
 			return;
 		}
@@ -657,7 +667,7 @@ export const GameScreen = () => {
 									onCardMeasure={handleEnemyCardMeasure}
 									onShieldPileMeasure={handleShieldPileMeasure}
 									onUseJester={
-										phase === "player_turn" && !actionLocked
+										phase === "player_turn" && !actionLocked && isMyTurn
 											? useJester
 											: undefined
 									}
@@ -696,7 +706,9 @@ export const GameScreen = () => {
 								onSort={sortHand}
 								onSortByClass={sortHandByClass}
 								onPlay={handlePlay}
-								playDisabled={selectedIds.size === 0}
+								onYield={isMyTurn ? handleYield : undefined}
+								playDisabled={selectedIds.size === 0 || !isMyTurn}
+								waitingPlayedCards={!isMyTurn ? lastPlayedCards : undefined}
 								onCardDealComplete={handleCardDealComplete}
 								onCardDiscardComplete={handleCardDiscardComplete}
 							/>
@@ -741,6 +753,7 @@ export const GameScreen = () => {
 				visible={settingsVisible}
 				onClose={() => setSettingsVisible(false)}
 				onReset={resetGame}
+				onAbandon={onAbandon}
 			/>
 		</ImageBackground>
 	);

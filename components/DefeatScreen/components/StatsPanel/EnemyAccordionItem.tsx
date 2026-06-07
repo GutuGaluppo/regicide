@@ -2,6 +2,7 @@ import { getHandCardImage } from "@/data/images";
 import { Card, Enemy } from "@/data/types";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
@@ -73,6 +74,7 @@ export const EnemyAccordionItem = ({
 	label: string;
 	emptyLabel: string;
 }) => {
+	const { t } = useTranslation();
 	const [expanded, setExpanded] = useState(false);
 	const rotation = useSharedValue(0);
 
@@ -132,13 +134,13 @@ export const EnemyAccordionItem = ({
 						<>
 							<CardSection
 								icon={SWORD}
-								title="Heróis utilizados"
+								title={t("defeat.stats.attackCards")}
 								cards={attackCards}
 								emptyLabel={emptyLabel}
 							/>
 							<CardSection
 								icon={SHIELD}
-								title="Dano sofrido"
+								title={t("defeat.stats.damageCards")}
 								cards={discardedCards ?? []}
 								emptyLabel={emptyLabel}
 							/>

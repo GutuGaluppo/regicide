@@ -111,6 +111,8 @@ const fr: Translations = {
 			discardPile: "🗑 Défausse",
 			hand: "🃏 Main disponible",
 			noCards: "Aucune carte",
+			attackCards: "Héros utilisés",
+			damageCards: "Dégâts subis",
 		},
 	},
 	settings: {
@@ -119,6 +121,7 @@ const fr: Translations = {
 		sfx: "Effets sonores",
 		restart: "Recommencer la partie",
 		exit: "Retour à l'accueil",
+		abandon: "Abandonner la partie",
 	},
 	victory: {
 		title: "Victoire!",
@@ -150,6 +153,10 @@ const fr: Translations = {
 		play: {
 			title: "JOUER",
 			desc: "Version numérique complète — deck, main et pouvoirs des couleurs",
+		},
+		multiplayer: {
+			title: "MULTIJOUEUR",
+			desc: "Jouez avec des amis en temps réel via Firebase",
 		},
 		tracker: {
 			title: "SUIVI",
@@ -310,6 +317,59 @@ const fr: Translations = {
 				],
 			},
 		},
+	},
+	multiplayer: {
+		turnToast: {
+			title: "C'est votre tour, {{name}} !",
+			subtitle: "Choisissez vos cartes pour attaquer",
+			waiting: "En attente d'une action...",
+		},
+		abandon: {
+			title: "Abandonner la partie ?",
+			bodySuffix: " veut mettre fin à la partie.\nTous doivent accepter.",
+			sent: "Demande d'abandon envoyée",
+			sentWaiting: "En attente de confirmation des autres joueurs...",
+			voted: "Vote enregistré",
+			agreed: "Vous avez accepté l'abandon.",
+			refused: "Vous avez refusé l'abandon.",
+			waitingOthers: "En attente des autres joueurs...",
+			refuse: "Refuser",
+			agree: "Accepter",
+			progress: "{{agreed}} sur {{total}} ont accepté",
+			progressPending: " · {{pending}} en attente",
+		},
+	},
+	lobby: {
+		title: "MULTIJOUEUR",
+		nameSection: "VOTRE NOM",
+		namePlaceholder: "Comment souhaitez-vous être appelé ?",
+		createSection: "CRÉER UNE SALLE",
+		joinSection: "REJOINDRE UNE SALLE",
+		joinPlaceholder: "Code (ex : ABC123)",
+		divider: "ou",
+		createBtn: "Créer une nouvelle salle",
+		creating: "Création…",
+		joinBtn: "Rejoindre",
+		waitingTitle: "EN ATTENTE",
+		shareCode: "Partagez ce code avec vos amis",
+		players: "JOUEURS ({{count}}/4)",
+		you: "(vous)",
+		host: "hôte",
+		startBtn: "Démarrer la partie",
+		starting: "Démarrage…",
+		waitingHost: "En attente que l'hôte démarre la partie…",
+		leaveRoom: "Quitter la salle",
+		errors: {
+			nameRequired: "Veuillez entrer votre nom",
+			createFailed: "Erreur lors de la création de la salle",
+			joinFailed: "Erreur lors de l'entrée dans la salle",
+			startFailed: "Erreur au démarrage",
+			invalidCode: "Code de salle invalide (6 caractères)",
+			minPlayers: "Il faut au moins 2 joueurs",
+		},
+	},
+	notifications: {
+		turnBody: "C'est votre tour de jouer ! 🎴",
 	},
 };
 

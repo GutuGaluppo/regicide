@@ -110,6 +110,8 @@ const es: Translations = {
 			discardPile: "🗑 Descarte",
 			hand: "🃏 Mano disponible",
 			noCards: "Sin cartas",
+			attackCards: "Héroes utilizados",
+			damageCards: "Daño sufrido",
 		},
 	},
 	settings: {
@@ -118,6 +120,7 @@ const es: Translations = {
 		sfx: "Efectos de sonido",
 		restart: "Reiniciar partida",
 		exit: "Salir al inicio",
+		abandon: "Abandonar partida",
 	},
 	victory: {
 		title: "¡Victoria!",
@@ -149,6 +152,10 @@ const es: Translations = {
 		play: {
 			title: "JUGAR",
 			desc: "Versión digital completa — mazo, mano y poderes de palos",
+		},
+		multiplayer: {
+			title: "MULTIJUGADOR",
+			desc: "Juega con amigos en tiempo real via Firebase",
 		},
 		tracker: {
 			title: "MARCADOR",
@@ -309,6 +316,59 @@ const es: Translations = {
 				],
 			},
 		},
+	},
+	multiplayer: {
+		turnToast: {
+			title: "¡Es tu turno, {{name}}!",
+			subtitle: "Elige tus cartas para atacar",
+			waiting: "Esperando jugada...",
+		},
+		abandon: {
+			title: "¿Abandonar partida?",
+			bodySuffix: " quiere terminar la partida.\nTodos deben estar de acuerdo.",
+			sent: "Solicitud de abandono enviada",
+			sentWaiting: "Esperando confirmación de los otros jugadores...",
+			voted: "Voto registrado",
+			agreed: "Aceptaste el abandono.",
+			refused: "Rechazaste el abandono.",
+			waitingOthers: "Esperando a los otros jugadores...",
+			refuse: "Rechazar",
+			agree: "Aceptar",
+			progress: "{{agreed}} de {{total}} aceptaron",
+			progressPending: " · {{pending}} esperando",
+		},
+	},
+	lobby: {
+		title: "MULTIJUGADOR",
+		nameSection: "TU NOMBRE",
+		namePlaceholder: "¿Cómo quieres que te llamen?",
+		createSection: "CREAR SALA",
+		joinSection: "UNIRSE A SALA",
+		joinPlaceholder: "Código (ej: ABC123)",
+		divider: "o",
+		createBtn: "Crear Nueva Sala",
+		creating: "Creando…",
+		joinBtn: "Unirse",
+		waitingTitle: "ESPERANDO",
+		shareCode: "Comparte este código con tus amigos",
+		players: "JUGADORES ({{count}}/4)",
+		you: "(tú)",
+		host: "anfitrión",
+		startBtn: "Iniciar Partida",
+		starting: "Iniciando…",
+		waitingHost: "Esperando al anfitrión para iniciar la partida…",
+		leaveRoom: "Salir de la sala",
+		errors: {
+			nameRequired: "Introduce tu nombre",
+			createFailed: "Error al crear la sala",
+			joinFailed: "Error al unirse a la sala",
+			startFailed: "Error al iniciar",
+			invalidCode: "Código de sala inválido (6 caracteres)",
+			minPlayers: "Se necesitan al menos 2 jugadores",
+		},
+	},
+	notifications: {
+		turnBody: "¡Es tu turno de jugar! 🎴",
 	},
 };
 

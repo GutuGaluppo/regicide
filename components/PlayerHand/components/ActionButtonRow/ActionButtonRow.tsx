@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useAudio } from "@/contexts/AudioContext";
 import { GamePhase } from "@/data/types";
 import { LayoutAnimation, TouchableOpacity, View } from "react-native";
@@ -10,6 +11,7 @@ type PropsType = {
 	onSort?: () => void;
 	onSortByClass?: () => void;
 	onPlay?: () => void;
+	onYield?: () => void;
 	playDisabled?: boolean;
 	locked?: boolean;
 };
@@ -18,6 +20,7 @@ export const ActionButtonRow = ({
 	onSort,
 	onSortByClass,
 	onPlay,
+	onYield,
 	playDisabled,
 	locked,
 }: PropsType) => {
@@ -58,6 +61,21 @@ export const ActionButtonRow = ({
 							}}
 							contentFit="contain"
 						/>
+					</View>
+				</TouchableOpacity>
+			)}
+			{phase === "player_turn" && onYield && (
+				<TouchableOpacity
+					style={styles.yieldBtn}
+					onPress={() => {
+						playTap();
+						onYield();
+					}}
+					disabled={locked}
+					activeOpacity={0.8}
+				>
+					<View style={[styles.playBtnInner, styles.yieldBtnInner]}>
+						<Ionicons name="play-skip-forward" size={22} color="#94A3B8" />
 					</View>
 				</TouchableOpacity>
 			)}

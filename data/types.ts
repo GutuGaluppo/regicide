@@ -57,3 +57,48 @@ export interface GameState {
 	jestersUsed: number;
 	stats: GameStats;
 }
+
+// ─── Tipos Multiplayer ────────────────────────────────────────────────────────
+
+export interface RoomPlayer {
+	id: string;
+	displayName: string;
+	hand: string; // JSON.stringify(Card[])
+}
+
+export interface SharedState {
+	castle: string; // JSON.stringify(Enemy[])
+	defeatedEnemies: string;
+	tavernDeck: string;
+	discardPile: string;
+	playedThisFight: string;
+	discardedThisFight: string;
+	currentDamage: number;
+	spadesShield: number;
+	jesterActive: boolean;
+	pendingDamage: number;
+	phase: GamePhase;
+	jestersAvailable: number;
+	jestersUsed: number;
+	stats: string; // JSON.stringify(GameStats)
+	currentPlayerIndex: number;
+	playerOrder: string; // JSON.stringify(string[])
+	playerCount: number;
+}
+
+export type RoomStatus = "lobby" | "playing" | "finished";
+
+export interface AbandonRequest {
+	requestedBy: string;
+	requestedByName: string;
+	votes: Record<string, boolean>; // playerId → true (agree) | false (refuse)
+}
+
+export interface Room {
+	hostId: string;
+	status: RoomStatus;
+	createdAt: number;
+	players: Record<string, RoomPlayer>;
+	shared?: SharedState;
+	abandonRequest?: AbandonRequest;
+}

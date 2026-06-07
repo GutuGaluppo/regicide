@@ -63,6 +63,9 @@ export const styles = StyleSheet.create({
 	rowLabelMuted: {
 		color: "#64748B",
 	},
+	rowLabelDanger: {
+		color: "#F87171",
+	},
 	volumeRow: {
 		gap: 10,
 		paddingVertical: 12,

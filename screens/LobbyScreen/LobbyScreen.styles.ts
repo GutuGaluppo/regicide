@@ -1,0 +1,177 @@
+import { StyleSheet } from "react-native";
+
+export const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+	},
+	overlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.62)",
+		paddingHorizontal: 24,
+		paddingTop: 60,
+		paddingBottom: 40,
+	},
+	title: {
+		fontFamily: "Cinzel",
+		fontSize: 28,
+		color: "#E8D5A3",
+		textAlign: "center",
+		marginBottom: 32,
+		letterSpacing: 2,
+		textShadowColor: "#000",
+		textShadowOffset: { width: 0, height: 2 },
+		textShadowRadius: 6,
+	},
+	section: {
+		backgroundColor: "rgba(255,255,255,0.06)",
+		borderRadius: 12,
+		borderWidth: 1,
+		borderColor: "rgba(232,213,163,0.2)",
+		padding: 20,
+		marginBottom: 20,
+	},
+	sectionTitle: {
+		fontFamily: "Cinzel",
+		fontSize: 14,
+		color: "#94A3B8",
+		marginBottom: 12,
+		letterSpacing: 1,
+	},
+	input: {
+		backgroundColor: "rgba(255,255,255,0.1)",
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: "rgba(232,213,163,0.25)",
+		color: "#E8D5A3",
+		fontFamily: "IMFellEnglish",
+		fontSize: 16,
+		paddingHorizontal: 14,
+		paddingVertical: 10,
+		marginBottom: 12,
+	},
+	button: {
+		backgroundColor: "rgba(232,213,163,0.15)",
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: "rgba(232,213,163,0.4)",
+		paddingVertical: 12,
+		alignItems: "center",
+	},
+	buttonPrimary: {
+		backgroundColor: "rgba(180,130,60,0.4)",
+		borderColor: "rgba(232,213,163,0.7)",
+	},
+	buttonDisabled: {
+		opacity: 0.4,
+	},
+	buttonText: {
+		fontFamily: "Cinzel",
+		fontSize: 14,
+		color: "#E8D5A3",
+		letterSpacing: 1,
+	},
+	row: {
+		flexDirection: "row",
+		gap: 10,
+	},
+	inputFlex: {
+		flex: 1,
+		marginBottom: 0,
+	},
+	joinButton: {
+		justifyContent: "center",
+		paddingHorizontal: 18,
+		marginBottom: 0,
+	},
+	divider: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginVertical: 8,
+		gap: 8,
+	},
+	dividerLine: {
+		flex: 1,
+		height: 1,
+		backgroundColor: "rgba(232,213,163,0.15)",
+	},
+	dividerText: {
+		color: "#64748B",
+		fontFamily: "IMFellEnglish",
+		fontSize: 13,
+	},
+	// Lobby view
+	roomCode: {
+		fontFamily: "Cinzel",
+		fontSize: 36,
+		color: "#E8D5A3",
+		textAlign: "center",
+		letterSpacing: 10,
+		marginBottom: 4,
+	},
+	roomCodeLabel: {
+		fontFamily: "IMFellEnglish",
+		fontSize: 12,
+		color: "#64748B",
+		textAlign: "center",
+		marginBottom: 20,
+		letterSpacing: 1,
+	},
+	playerList: {
+		gap: 8,
+		marginBottom: 16,
+	},
+	playerRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+	},
+	playerDot: {
+		width: 8,
+		height: 8,
+		borderRadius: 4,
+		backgroundColor: "#4ADE80",
+	},
+	playerDotHost: {
+		backgroundColor: "#FBBF24",
+	},
+	playerName: {
+		fontFamily: "IMFellEnglish",
+		fontSize: 15,
+		color: "#CBD5E1",
+	},
+	playerNameSelf: {
+		color: "#E8D5A3",
+	},
+	playerTag: {
+		fontFamily: "IMFellEnglish",
+		fontSize: 11,
+		color: "#64748B",
+		marginLeft: 4,
+	},
+	waitingText: {
+		fontFamily: "IMFellEnglish",
+		fontSize: 13,
+		color: "#64748B",
+		textAlign: "center",
+		marginTop: 8,
+		fontStyle: "italic",
+	},
+	error: {
+		fontFamily: "IMFellEnglish",
+		fontSize: 13,
+		color: "#F87171",
+		textAlign: "center",
+		marginTop: 8,
+	},
+	backButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 6,
+		marginBottom: 24,
+	},
+	backText: {
+		fontFamily: "IMFellEnglish",
+		fontSize: 14,
+		color: "#94A3B8",
+	},
+});

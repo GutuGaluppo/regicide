@@ -2,7 +2,7 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
 	container: {
-		paddingVertical: 8,
+		paddingVertical: 4,
 		width: "100%",
 		maxWidth: 1160,
 		alignSelf: "center",
@@ -59,5 +59,28 @@ export const styles = StyleSheet.create({
 		fontSize: 18,
 		fontWeight: "600",
 		marginHorizontal: 2,
+	},
+	waitingArea: {
+		justifyContent: "center",
+		alignItems: "center",
+		paddingVertical: -4,
+		paddingHorizontal: 12,
+	},
+	waitingCard: {
+		// CardView gerencia suas próprias dimensões via useCardSize
+	},
+	waitingLabel: {
+		fontFamily: "IMFellEnglish",
+		fontSize: 13,
+		color: "#475569",
+		fontStyle: "italic",
+		paddingVertical: 14,
+	},
+	waitingScroll: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 2,
+		paddingHorizontal: 4,
+		marginVertical: -10,
 	},
 });

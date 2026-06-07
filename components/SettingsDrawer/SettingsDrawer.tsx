@@ -18,10 +18,12 @@ export const SettingsDrawer = ({
 	visible,
 	onClose,
 	onReset,
+	onAbandon,
 }: {
 	visible: boolean;
 	onClose: () => void;
 	onReset: () => void;
+	onAbandon?: () => void;
 }) => {
 	const { t } = useTranslation();
 	const {
@@ -91,6 +93,12 @@ export const SettingsDrawer = ({
 		setTimeout(() => router.back(), 220);
 	};
 
+	const handleAbandon = () => {
+		playTap();
+		onClose();
+		setTimeout(() => onAbandon?.(), 220);
+	};
+
 	return (
 		<Modal
 			transparent
@@ -149,6 +157,22 @@ export const SettingsDrawer = ({
 				</TouchableOpacity>
 
 				<View style={styles.divider} />
+
+				{onAbandon && (
+					<>
+						<TouchableOpacity
+							style={styles.row}
+							onPress={handleAbandon}
+							activeOpacity={0.7}
+						>
+							<Text style={styles.rowIcon}>🏳️</Text>
+							<Text style={[styles.rowLabel, styles.rowLabelDanger]}>
+								{t("settings.abandon")}
+							</Text>
+						</TouchableOpacity>
+						<View style={styles.divider} />
+					</>
+				)}
 
 				<TouchableOpacity
 					style={styles.row}

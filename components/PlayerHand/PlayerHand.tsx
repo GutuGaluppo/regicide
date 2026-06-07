@@ -6,10 +6,26 @@ import { getCompatibleCardIds } from "@/utils/gameLogic";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { styles } from "./PlayerHand.styles";
 import { ActionButtonRow } from "./components/ActionButtonRow";
 import { DiscardButton } from "./components/DiscardButton/DiscardButton";
+
+const WAITING_SCALE = 0.75;
+
+// Renderiza CardView em tamanho reduzido usando margens negativas para
+// colapsar o espaço de layout extra criado pelo transform: scale.
+const ScaledCard = ({ card }: { card: Card }) => {
+	return (
+		<View
+			style={{
+				transform: [{ scale: WAITING_SCALE }],
+			}}
+		>
+			<CardView card={card} selected={false} pressDisabled />
+		</View>
+	);
+};
 
 type ScreenRect = {
 	x: number;
@@ -47,9 +63,12 @@ type PropsType = {
 	onSortByClass?: () => void;
 	onDiscard?: () => void;
 	onPlay?: () => void;
+	onYield?: () => void;
 	playDisabled?: boolean;
 	onCardDealComplete?: (dealId: number, cardId: string) => void;
 	onCardDiscardComplete?: (discardId: number, cardId: string) => void;
+	// Multiplayer: cartas jogadas pelo jogador ativo (exibidas quando !isMyTurn)
+	waitingPlayedCards?: Card[];
 };
 
 export const PlayerHand = ({
@@ -68,9 +87,11 @@ export const PlayerHand = ({
 	onSortByClass,
 	onDiscard,
 	onPlay,
+	onYield,
 	playDisabled,
 	onCardDealComplete,
 	onCardDiscardComplete,
+	waitingPlayedCards,
 }: PropsType) => {
 	const { t } = useTranslation();
 	const [detailCard, setDetailCard] = useState<Card | null>(null);
@@ -99,7 +120,26 @@ export const PlayerHand = ({
 
 	return (
 		<View style={styles.container}>
-			{phase === "suffer_damage" && pending > 0 && onDiscard ? (
+			{waitingPlayedCards !== undefined ? (
+				// Modo espera: exibe cartas jogadas pelo jogador ativo
+				<View style={styles.waitingArea}>
+					{waitingPlayedCards.length === 0 ? (
+						<Text style={styles.waitingLabel}>
+							{t("multiplayer.turnToast.waiting")}
+						</Text>
+					) : (
+						<ScrollView
+							horizontal
+							showsHorizontalScrollIndicator={false}
+							contentContainerStyle={styles.waitingScroll}
+						>
+							{waitingPlayedCards.map((card) => (
+								<ScaledCard key={card.id} card={card} />
+							))}
+						</ScrollView>
+					)}
+				</View>
+			) : phase === "suffer_damage" && pending > 0 && onDiscard ? (
 				<DiscardButton
 					enough={enough}
 					damageSubtraction={damageSubtraction}
@@ -112,6 +152,7 @@ export const PlayerHand = ({
 					onSort={onSort}
 					onSortByClass={onSortByClass}
 					onPlay={onPlay}
+					onYield={onYield}
 					playDisabled={playDisabled || isDealing}
 					locked={locked || isDealing}
 				/>

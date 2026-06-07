@@ -108,6 +108,8 @@ const ptBR = {
 			discardPile: "🗑 Descarte",
 			hand: "🃏 Mão disponível",
 			noCards: "Nenhuma carta",
+			attackCards: "Heróis utilizados",
+			damageCards: "Dano sofrido",
 		},
 	},
 	settings: {
@@ -116,6 +118,7 @@ const ptBR = {
 		sfx: "Efeitos sonoros",
 		restart: "Reiniciar partida",
 		exit: "Sair para o início",
+		abandon: "Abandonar Partida",
 	},
 	victory: {
 		title: "Vitória!",
@@ -147,6 +150,10 @@ const ptBR = {
 		play: {
 			title: "JOGAR",
 			desc: "Versão digital completa — deck, mão e poderes dos naipes",
+		},
+		multiplayer: {
+			title: "MULTIPLAYER",
+			desc: "Jogue com amigos em tempo real via Firebase",
 		},
 		tracker: {
 			title: "MARCADOR",
@@ -306,6 +313,59 @@ const ptBR = {
 				],
 			},
 		},
+	},
+	multiplayer: {
+		turnToast: {
+			title: "É sua vez, {{name}}!",
+			subtitle: "Escolha suas cartas para atacar",
+			waiting: "Aguardando jogada...",
+		},
+		abandon: {
+			title: "Abandonar Partida?",
+			bodySuffix: " quer encerrar a partida.\nTodos precisam concordar.",
+			sent: "Pedido de abandono enviado",
+			sentWaiting: "Aguardando confirmação dos outros jogadores...",
+			voted: "Voto registrado",
+			agreed: "Você concordou com o abandono.",
+			refused: "Você recusou o abandono.",
+			waitingOthers: "Aguardando os outros jogadores...",
+			refuse: "Recusar",
+			agree: "Concordar",
+			progress: "{{agreed}} de {{total}} concordaram",
+			progressPending: " · {{pending}} aguardando",
+		},
+	},
+	lobby: {
+		title: "MULTIPLAYER",
+		nameSection: "SEU NOME",
+		namePlaceholder: "Como quer ser chamado?",
+		createSection: "CRIAR SALA",
+		joinSection: "ENTRAR EM SALA",
+		joinPlaceholder: "Código (ex: ABC123)",
+		divider: "ou",
+		createBtn: "Criar Nova Sala",
+		creating: "Criando…",
+		joinBtn: "Entrar",
+		waitingTitle: "AGUARDANDO",
+		shareCode: "Compartilhe este código com seus amigos",
+		players: "JOGADORES ({{count}}/4)",
+		you: "(você)",
+		host: "host",
+		startBtn: "Iniciar Partida",
+		starting: "Iniciando…",
+		waitingHost: "Aguardando o host iniciar a partida…",
+		leaveRoom: "Sair da sala",
+		errors: {
+			nameRequired: "Insira seu nome",
+			createFailed: "Erro ao criar sala",
+			joinFailed: "Erro ao entrar na sala",
+			startFailed: "Erro ao iniciar",
+			invalidCode: "Código de sala inválido (6 caracteres)",
+			minPlayers: "Precisa de pelo menos 2 jogadores",
+		},
+	},
+	notifications: {
+		turnBody: "É sua vez de jogar! 🎴",
 	},
 };
 

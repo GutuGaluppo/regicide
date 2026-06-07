@@ -110,6 +110,8 @@ const en: Translations = {
 			discardPile: "🗑 Discard pile",
 			hand: "🃏 Available hand",
 			noCards: "No cards",
+			attackCards: "Heroes used",
+			damageCards: "Damage suffered",
 		},
 	},
 	settings: {
@@ -118,6 +120,7 @@ const en: Translations = {
 		sfx: "Sound effects",
 		restart: "Restart game",
 		exit: "Exit to home",
+		abandon: "Abandon game",
 	},
 	victory: {
 		title: "Victory!",
@@ -149,6 +152,10 @@ const en: Translations = {
 		play: {
 			title: "PLAY",
 			desc: "Full digital version — deck, hand and suit powers",
+		},
+		multiplayer: {
+			title: "MULTIPLAYER",
+			desc: "Play with friends in real time via Firebase",
 		},
 		tracker: {
 			title: "TRACKER",
@@ -309,6 +316,59 @@ const en: Translations = {
 				],
 			},
 		},
+	},
+	multiplayer: {
+		turnToast: {
+			title: "It's your turn, {{name}}!",
+			subtitle: "Choose your cards to attack",
+			waiting: "Waiting for a move...",
+		},
+		abandon: {
+			title: "Abandon game?",
+			bodySuffix: " wants to end the game.\nEveryone must agree.",
+			sent: "Abandon request sent",
+			sentWaiting: "Waiting for other players to confirm...",
+			voted: "Vote recorded",
+			agreed: "You agreed to abandon.",
+			refused: "You refused to abandon.",
+			waitingOthers: "Waiting for other players...",
+			refuse: "Refuse",
+			agree: "Agree",
+			progress: "{{agreed}} of {{total}} agreed",
+			progressPending: " · {{pending}} waiting",
+		},
+	},
+	lobby: {
+		title: "MULTIPLAYER",
+		nameSection: "YOUR NAME",
+		namePlaceholder: "What should we call you?",
+		createSection: "CREATE ROOM",
+		joinSection: "JOIN ROOM",
+		joinPlaceholder: "Code (e.g. ABC123)",
+		divider: "or",
+		createBtn: "Create New Room",
+		creating: "Creating…",
+		joinBtn: "Join",
+		waitingTitle: "WAITING",
+		shareCode: "Share this code with your friends",
+		players: "PLAYERS ({{count}}/4)",
+		you: "(you)",
+		host: "host",
+		startBtn: "Start Game",
+		starting: "Starting…",
+		waitingHost: "Waiting for the host to start the game…",
+		leaveRoom: "Leave room",
+		errors: {
+			nameRequired: "Enter your name",
+			createFailed: "Failed to create room",
+			joinFailed: "Failed to join room",
+			startFailed: "Failed to start",
+			invalidCode: "Invalid room code (6 characters)",
+			minPlayers: "Need at least 2 players",
+		},
+	},
+	notifications: {
+		turnBody: "It's your turn to play! 🎴",
 	},
 };
 
