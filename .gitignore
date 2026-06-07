@@ -44,3 +44,7 @@ app-example
 assets/icons/*.dmg
 deleted/
 pt-rulebook.pdf
+
+# markdown
+*.md
+!/README.md
