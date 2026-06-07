@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+coverage/
 
 # Expo
 .expo/
@@ -17,24 +18,43 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+*.ipa
+*.apk
+*.aab
 
 # Metro
 .metro-health-check*
 
 # debug
+*.log
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
 # macOS
 .DS_Store
+Thumbs.db
 *.pem
 
-# local env files
-.env*.local
+# local env files and secrets
+.env
+.env.*
+!.env.example
+.envrc
+.direnv/
+
+# local tooling / agent metadata
+.claude/
+.kiro/
+
+# IDE / editor local files
+.idea/
+*.code-workspace
 
 # typescript
 *.tsbuildinfo
+*.swp
+*.tmp
 
 app-example
 
