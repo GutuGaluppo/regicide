@@ -31,12 +31,4 @@ export const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 	},
-	yieldBtn: {
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	yieldBtnInner: {
-		backgroundColor: "rgba(51, 65, 85, 0.7)",
-		borderColor: "#475569",
-	},
 });

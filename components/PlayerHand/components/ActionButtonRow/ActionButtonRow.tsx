@@ -1,8 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useAudio } from "@/contexts/AudioContext";
 import { GamePhase } from "@/data/types";
-import { LayoutAnimation, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
+import { LayoutAnimation, TouchableOpacity, View } from "react-native";
 import { styles } from "./ActionButtonRow.styles";
 import { SortButton } from "./SortButton";
 
@@ -65,19 +64,14 @@ export const ActionButtonRow = ({
 				</TouchableOpacity>
 			)}
 			{phase === "player_turn" && onYield && (
-				<TouchableOpacity
-					style={styles.yieldBtn}
-					onPress={() => {
+				<SortButton
+					icon={require("@/assets/icons/skip_icon.png")}
+					handleSort={() => {
 						playTap();
 						onYield();
 					}}
 					disabled={locked}
-					activeOpacity={0.8}
-				>
-					<View style={[styles.playBtnInner, styles.yieldBtnInner]}>
-						<Ionicons name="play-skip-forward" size={22} color="#94A3B8" />
-					</View>
-				</TouchableOpacity>
+				/>
 			)}
 			<View style={{ flexDirection: "row", marginLeft: "auto", gap: 4 }}>
 				{onSort && phase === "player_turn" && (
