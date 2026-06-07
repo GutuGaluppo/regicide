@@ -706,7 +706,7 @@ export const GameScreen = () => {
 								onSort={sortHand}
 								onSortByClass={sortHandByClass}
 								onPlay={handlePlay}
-								onYield={isMyTurn ? handleYield : undefined}
+								onYield={isMyTurn && onAbandon ? handleYield : undefined}
 								playDisabled={selectedIds.size === 0 || !isMyTurn}
 								waitingPlayedCards={!isMyTurn ? lastPlayedCards : undefined}
 								onCardDealComplete={handleCardDealComplete}
