@@ -125,7 +125,7 @@ export const EnemyCard = ({
 		prevShield.current = spadesShield ?? 0;
 
 		entryOpacity.value = withTiming(1, { duration: 450 });
-		entryScale.value = withSpring(1, { stiffness: 90, damping: 12 });
+		entryScale.value = withSpring(1, { stiffness: 72, damping: 18 });
 		entryY.value = withTiming(0, { duration: 400 });
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [enemy.id]);

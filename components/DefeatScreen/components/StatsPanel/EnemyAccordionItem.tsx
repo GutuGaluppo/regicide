@@ -80,8 +80,8 @@ export const EnemyAccordionItem = ({
 
 	const toggle = () => {
 		rotation.value = withSpring(expanded ? 0 : 1, {
-			stiffness: 80,
-			damping: 14,
+			stiffness: 64,
+			damping: 18,
 		});
 		setExpanded((v) => !v);
 	};

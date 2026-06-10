@@ -253,7 +253,7 @@ export const CardView = ({
 	return (
 		<Animated.View
 			ref={wrapperRef}
-			layout={LinearTransition.springify().damping(18).stiffness(180)}
+			layout={LinearTransition.springify().damping(26).stiffness(145)}
 			collapsable={false}
 			style={[styles.wrapper, { marginHorizontal: -12 }, animStyle]}
 		>

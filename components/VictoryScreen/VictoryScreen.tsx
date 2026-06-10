@@ -64,14 +64,14 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 			}),
 			Animated.spring(slideAnim, {
 				toValue: 0,
-				tension: 60,
-				friction: 10,
+				tension: 48,
+				friction: 14,
 				useNativeDriver: true,
 			}),
 			Animated.spring(scaleAnim, {
 				toValue: 1,
-				tension: 60,
-				friction: 10,
+				tension: 48,
+				friction: 14,
 				useNativeDriver: true,
 			}),
 		]).start();
