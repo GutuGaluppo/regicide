@@ -102,11 +102,19 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 		shuffleRef.current?.setVolumeAsync(effectiveSfxVolume).catch(() => {});
 	}, [effectiveSfxVolume]);
 
+	// Mobile browsers ignore setVolumeAsync(0) — use setIsMutedAsync as fallback
+	useEffect(() => {
+		tapRef.current?.setIsMutedAsync(sfxMuted).catch(() => {});
+		shuffleRef.current?.setIsMutedAsync(sfxMuted).catch(() => {});
+	}, [sfxMuted]);
+
 	const playTap = () => {
+		if (sfxMuted) return;
 		tapRef.current?.replayAsync().catch(() => {});
 	};
 
 	const playShuffleCards = () => {
+		if (sfxMuted) return;
 		shuffleRef.current?.replayAsync().catch(() => {});
 	};
 
