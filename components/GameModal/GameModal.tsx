@@ -5,10 +5,12 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Modal,
+	Platform,
 	Pressable,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
+	useWindowDimensions,
 	View,
 } from "react-native";
 import { ModalState } from "@/screens/TrackerScreen/TrackerScreen.types";
@@ -30,6 +32,11 @@ export const GameModal = ({
 }: GameModalProps) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
+	const { width } = useWindowDimensions();
+	const panelWidth = Math.min(480, width - 40);
+	const webSheetStyle = Platform.OS === "web"
+		? { width: panelWidth, alignSelf: "center" as const, borderRadius: 20, marginBottom: 24 }
+		: undefined;
 
 	const handleClose = () => {
 		playTap();
@@ -58,7 +65,7 @@ export const GameModal = ({
 				animationType="fade"
 			>
 				<Pressable style={styles.backdrop} onPress={handleClose}>
-					<View style={styles.sheet}>
+					<View style={[styles.sheet, webSheetStyle]}>
 						<View style={styles.handle} />
 						<Text style={styles.title}>{t("modal.immuneWarning.title")}</Text>
 						<Text style={styles.body}>{t("modal.immuneWarning.body")}</Text>
@@ -81,7 +88,7 @@ export const GameModal = ({
 				animationType="fade"
 			>
 				<Pressable style={styles.backdrop} onPress={handleClose}>
-					<View style={styles.sheet}>
+					<View style={[styles.sheet, webSheetStyle]}>
 						<View style={styles.handle} />
 						<Text style={styles.title}>{t("modal.hint.title")}</Text>
 						<Text style={styles.body}>{t("modal.hint.body")}</Text>
@@ -123,12 +130,12 @@ const styles = StyleSheet.create({
 	title: {
 		color: "#F1F5F9",
 		fontWeight: "700",
-		fontSize: 17,
+		fontSize: 19,
 	},
 	body: {
 		color: "#94A3B8",
-		fontSize: 14,
-		lineHeight: 20,
+		fontSize: 16,
+		lineHeight: 24,
 	},
 	btn: {
 		marginTop: 4,
@@ -140,6 +147,6 @@ const styles = StyleSheet.create({
 	btnText: {
 		color: "#F1F5F9",
 		fontWeight: "700",
-		fontSize: 15,
+		fontSize: 16,
 	},
 });

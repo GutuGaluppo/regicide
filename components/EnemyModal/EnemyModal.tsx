@@ -3,11 +3,13 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Modal,
+	Platform,
 	Pressable,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
+	useWindowDimensions,
 	View,
 } from "react-native";
 import { Image } from "expo-image";
@@ -21,6 +23,7 @@ import Animated, {
 import { NumberSprite } from "@/components/NumberSprite";
 import { ProgressRing } from "@/components/ProgressRing";
 import { getCardImage } from "@/data/images";
+import { getEnemyName } from "@/data/enemyNames";
 import { Enemy, Suit } from "@/data/types";
 import { styles } from "./EnemyModal.styles";
 
@@ -51,6 +54,11 @@ export const EnemyModal = ({
 }) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
+	const { width } = useWindowDimensions();
+	const panelWidth = Math.min(560, width - 40);
+	const webPanelStyle = Platform.OS === "web"
+		? { left: (width - panelWidth) / 2, right: (width - panelWidth) / 2, bottom: 24, borderRadius: 20 }
+		: undefined;
 	const hpPercent = Math.max(0, currentHP / enemy.health);
 	const attackPercent = Math.min(1, effectiveAttack / enemy.attack);
 	const hpColor =
@@ -102,7 +110,7 @@ export const EnemyModal = ({
 
 			{/* Panel */}
 			<Animated.View
-				style={[styles.panel, panelStyle]}
+				style={[styles.panel, webPanelStyle, panelStyle]}
 				pointerEvents="box-none"
 			>
 				{/* Drag handle */}
@@ -126,10 +134,10 @@ export const EnemyModal = ({
 						/>
 						<View style={styles.statsCol}>
 							<Text style={styles.enemyName}>
-								{t(`ranks.${enemy.rank}`) ?? enemy.rank}
+								{getEnemyName(enemy.rank, enemy.suit)}
 							</Text>
 							<Text style={styles.enemySuit}>
-								{t(`suitLabels.${enemy.suit}`)}
+								{t(`ranks.${enemy.rank}`)} — {t(`suitLabels.${enemy.suit}`)}
 							</Text>
 
 							<View style={styles.statBlock}>

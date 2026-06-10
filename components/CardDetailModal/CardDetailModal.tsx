@@ -6,11 +6,13 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Modal,
+	Platform,
 	Pressable,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
+	useWindowDimensions,
 	View,
 } from "react-native";
 import { Image } from "expo-image";
@@ -36,6 +38,11 @@ export const CardDetailModal = ({
 	onClose: () => void;
 }) => {
 	const { t } = useTranslation();
+	const { width } = useWindowDimensions();
+	const panelWidth = Math.min(560, width - 40);
+	const webPanelStyle = Platform.OS === "web"
+		? { left: (width - panelWidth) / 2, right: (width - panelWidth) / 2, bottom: 24, borderRadius: 20 }
+		: undefined;
 
 	const [mounted, setMounted] = useState(false);
 	const slideY = useSharedValue(500);
@@ -93,7 +100,7 @@ export const CardDetailModal = ({
 
 			{/* Panel */}
 			<Animated.View
-				style={[styles.panel, panelStyle]}
+				style={[styles.panel, webPanelStyle, panelStyle]}
 				pointerEvents="box-none"
 			>
 				{/* Drag handle */}

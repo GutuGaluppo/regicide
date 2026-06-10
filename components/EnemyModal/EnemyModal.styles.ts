@@ -58,14 +58,14 @@ export const styles = StyleSheet.create({
 	enemyName: {
 		color: "#F1F5F9",
 		fontFamily: "IMFellEnglish-Regular",
-		fontSize: 22,
+		fontSize: 24,
 		fontWeight: "700",
 		letterSpacing: 0.5,
 	},
 	enemySuit: {
 		color: "#94A3B8",
 		fontFamily: "IMFellEnglish-Regular",
-		fontSize: 14,
+		fontSize: 16,
 		letterSpacing: 0.5,
 	},
 	statBlock: {
@@ -76,7 +76,7 @@ export const styles = StyleSheet.create({
 	statLabel: {
 		color: "#94A3B8",
 		fontFamily: "IMFellEnglish-Regular",
-		fontSize: 13,
+		fontSize: 15,
 		fontWeight: "600",
 		letterSpacing: 0.8,
 		textTransform: "uppercase",
@@ -88,7 +88,7 @@ export const styles = StyleSheet.create({
 	sectionTitle: {
 		color: "#CBD5E1",
 		fontFamily: "IMFellEnglish-Regular",
-		fontSize: 14,
+		fontSize: 16,
 		fontWeight: "700",
 		letterSpacing: 1,
 		textTransform: "uppercase",
@@ -118,7 +118,7 @@ export const styles = StyleSheet.create({
 	},
 	suitName: {
 		color: "#E2E8F0",
-		fontSize: 14,
+		fontSize: 16,
 		fontWeight: "700",
 		letterSpacing: 0.3,
 	},
@@ -127,8 +127,8 @@ export const styles = StyleSheet.create({
 	},
 	powerDesc: {
 		color: "#64748B",
-		fontSize: 12,
-		lineHeight: 17,
+		fontSize: 14,
+		lineHeight: 20,
 	},
 	powerDescImmune: {
 		color: "#94A3B8",

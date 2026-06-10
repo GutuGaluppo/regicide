@@ -80,7 +80,7 @@ export const styles = StyleSheet.create({
 		backgroundColor: "rgba(15,23,42,0.6)",
 	},
 	valueText: {
-		fontSize: 13,
+		fontSize: 15,
 		fontWeight: "700",
 		letterSpacing: 0.3,
 	},
@@ -104,7 +104,7 @@ export const styles = StyleSheet.create({
 		fontWeight: "700",
 	},
 	className: {
-		fontSize: 12,
+		fontSize: 14,
 		fontWeight: "800",
 		letterSpacing: 0.8,
 		textTransform: "uppercase",
@@ -112,13 +112,13 @@ export const styles = StyleSheet.create({
 	heroName: {
 		color: "#F1F5F9",
 		fontFamily: "IMFellEnglish-Regular",
-		fontSize: 22,
+		fontSize: 24,
 		fontWeight: "700",
 		letterSpacing: 0.5,
 	},
 	rankSubtitle: {
 		color: "#64748B",
-		fontSize: 13,
+		fontSize: 15,
 		fontWeight: "500",
 		letterSpacing: 0.3,
 		marginTop: -6,
@@ -129,7 +129,7 @@ export const styles = StyleSheet.create({
 	},
 	sectionLabel: {
 		color: "#64748B",
-		fontSize: 11,
+		fontSize: 13,
 		fontWeight: "700",
 		letterSpacing: 1,
 		textTransform: "uppercase",
@@ -147,14 +147,14 @@ export const styles = StyleSheet.create({
 	},
 	immuneTag: {
 		color: "#F87171",
-		fontSize: 12,
+		fontSize: 14,
 		fontWeight: "700",
 		letterSpacing: 0.3,
 	},
 	powerDesc: {
 		color: "#94A3B8",
-		fontSize: 13,
-		lineHeight: 19,
+		fontSize: 15,
+		lineHeight: 22,
 	},
 	powerDescImmune: {
 		color: "#CBD5E1",
@@ -168,14 +168,14 @@ export const styles = StyleSheet.create({
 	loreLabel: {
 		color: "#CBD5E1",
 		fontFamily: "IMFellEnglish-Regular",
-		fontSize: 13,
+		fontSize: 15,
 		fontWeight: "700",
 		letterSpacing: 0.5,
 	},
 	loreText: {
 		color: "#64748B",
-		fontSize: 12,
-		lineHeight: 18,
+		fontSize: 14,
+		lineHeight: 21,
 		fontStyle: "italic",
 	},
 });
