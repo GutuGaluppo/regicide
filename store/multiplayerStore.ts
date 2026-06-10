@@ -37,8 +37,49 @@ import { create } from "zustand";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
-// Player ID gerado uma vez por sessão — sem necessidade de persistência para MVP
-const SESSION_PLAYER_ID = generatePlayerId();
+// ─── Persistência de sessão (web) ────────────────────────────────────────────
+
+// Player ID persiste entre recarregamentos na mesma origem (localStorage)
+const getOrCreatePlayerId = (): string => {
+	try {
+		if (typeof localStorage !== "undefined") {
+			const stored = localStorage.getItem("regicide_player_id");
+			if (stored) return stored;
+			const id = generatePlayerId();
+			localStorage.setItem("regicide_player_id", id);
+			return id;
+		}
+	} catch {}
+	return generatePlayerId();
+};
+
+const SESSION_PLAYER_ID = getOrCreatePlayerId();
+
+type SessionData = { roomId: string; displayName: string; isHost: boolean };
+
+const saveSession = (roomId: string, displayName: string, isHost: boolean): void => {
+	try {
+		if (typeof sessionStorage !== "undefined")
+			sessionStorage.setItem("regicide_room", JSON.stringify({ roomId, displayName, isHost }));
+	} catch {}
+};
+
+const loadSession = (): SessionData | null => {
+	try {
+		if (typeof sessionStorage !== "undefined") {
+			const s = sessionStorage.getItem("regicide_room");
+			return s ? (JSON.parse(s) as SessionData) : null;
+		}
+	} catch {}
+	return null;
+};
+
+const clearSession = (): void => {
+	try {
+		if (typeof sessionStorage !== "undefined")
+			sessionStorage.removeItem("regicide_room");
+	} catch {}
+};
 
 const emptyStats = (): GameStats => ({
 	startTime: Date.now(),
@@ -212,6 +253,7 @@ export interface MultiplayerStore {
 	joinRoom: (roomId: string, displayName: string) => Promise<void>;
 	startGame: () => Promise<void>;
 	leaveRoom: () => Promise<void>;
+	tryReconnect: () => Promise<boolean>;
 
 	// Ações de jogo (interface compatível com GameScreen)
 	initialize: () => Promise<void>;
@@ -500,6 +542,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			await createRoom(roomId, myPlayerId, displayName);
 			_unsubscribeFn?.();
 			const unsub = subscribeToRoom(roomId, onRoomUpdate);
+			saveSession(roomId, displayName, true);
 			set({ roomId, myDisplayName: displayName, isHost: true, roomStatus: "lobby", _unsubscribeFn: unsub });
 			return roomId;
 		},
@@ -515,6 +558,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			await joinRoom(roomId, myPlayerId, displayName);
 			_unsubscribeFn?.();
 			const unsub = subscribeToRoom(roomId, onRoomUpdate);
+			saveSession(roomId, displayName, false);
 			set({ roomId, myDisplayName: displayName, isHost: false, roomStatus: "lobby", _unsubscribeFn: unsub });
 		},
 
@@ -573,6 +617,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			const { roomId, myPlayerId, _unsubscribeFn } = get();
 			_unsubscribeFn?.();
 			if (roomId) await leaveRoom(roomId, myPlayerId);
+			clearSession();
 			set({
 				roomId: null,
 				roomStatus: "idle",
@@ -1067,6 +1112,26 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			const { roomId, isHost } = get();
 			if (!roomId || !isHost) return;
 			get().startGame();
+		},
+
+		// ── Reconexão após refresh ────────────────────────────────────────────
+		tryReconnect: async () => {
+			const session = loadSession();
+			if (!session) return false;
+			const room = await fetchRoom(session.roomId);
+			if (!room || room.status === "finished") { clearSession(); return false; }
+			const { myPlayerId, _unsubscribeFn } = get();
+			if (!room.players?.[myPlayerId]) { clearSession(); return false; }
+			_unsubscribeFn?.();
+			const unsub = subscribeToRoom(session.roomId, onRoomUpdate);
+			set({
+				roomId: session.roomId,
+				myDisplayName: session.displayName,
+				isHost: session.isHost,
+				roomStatus: room.status,
+				_unsubscribeFn: unsub,
+			});
+			return true;
 		},
 
 		// ── Interno ───────────────────────────────────────────────────────────

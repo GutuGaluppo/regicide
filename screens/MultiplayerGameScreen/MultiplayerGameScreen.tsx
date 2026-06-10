@@ -86,12 +86,20 @@ export const MultiplayerGameScreen = () => {
 	const {
 		turnToastSignal, isMyTurn, myDisplayName,
 		abandonRequest, myPlayerId, roomPlayers, roomStatus,
-		requestAbandon, voteAbandon,
+		requestAbandon, voteAbandon, roomId, tryReconnect,
 	} = store;
 
 	useEffect(() => {
 		requestTurnNotificationPermission();
 	}, []);
+
+	// Reconecta automaticamente após refresh na web
+	useEffect(() => {
+		if (roomId) return;
+		tryReconnect().then((ok) => {
+			if (!ok) router.replace("/");
+		});
+	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Navega para home quando a partida é encerrada por abandono
 	useEffect(() => {

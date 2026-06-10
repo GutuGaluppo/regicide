@@ -1,4 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
+import { useMultiplayerStore } from "@/store/multiplayerStore";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,10 +13,14 @@ import {
 	UIManager,
 	View,
 } from "react-native";
-import { useMultiplayerStore } from "@/store/multiplayerStore";
 import { styles } from "./LobbyScreen.styles";
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+const TavernSilver = require("@/assets/icons/tavern_silver.png");
+
+if (
+	Platform.OS === "android" &&
+	UIManager.setLayoutAnimationEnabledExperimental
+) {
 	UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -67,7 +72,10 @@ export const LobbyScreen = () => {
 
 	const handleCreate = async () => {
 		const name = displayName.trim();
-		if (!name) { setError(t("lobby.errors.nameRequired")); return; }
+		if (!name) {
+			setError(t("lobby.errors.nameRequired"));
+			return;
+		}
 		setLoading(true);
 		setError(null);
 		try {
@@ -83,8 +91,14 @@ export const LobbyScreen = () => {
 	const handleJoin = async () => {
 		const name = displayName.trim();
 		const code = joinCode.trim().toUpperCase();
-		if (!name) { setError(t("lobby.errors.nameRequired")); return; }
-		if (code.length !== 6) { setError(t("lobby.errors.invalidCode")); return; }
+		if (!name) {
+			setError(t("lobby.errors.nameRequired"));
+			return;
+		}
+		if (code.length !== 6) {
+			setError(t("lobby.errors.invalidCode"));
+			return;
+		}
 		setLoading(true);
 		setError(null);
 		try {
@@ -104,7 +118,10 @@ export const LobbyScreen = () => {
 	};
 
 	const handleStart = async () => {
-		if (roomPlayers.length < 2) { setError(t("lobby.errors.minPlayers")); return; }
+		if (roomPlayers.length < 2) {
+			setError(t("lobby.errors.minPlayers"));
+			return;
+		}
 		setLoading(true);
 		setError(null);
 		try {
@@ -123,86 +140,104 @@ export const LobbyScreen = () => {
 			resizeMode="cover"
 		>
 			<View style={styles.overlay}>
+				<View style={styles.content}>
 				{view === "entry" ? (
 					<>
-						<TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-							<Ionicons name="chevron-back" size={18} color="#94A3B8" />
-							<Text style={styles.backText}>{t("common.back")}</Text>
+						<TouchableOpacity
+							style={styles.backButton}
+							onPress={() => router.back()}
+						>
+							<Image source={TavernSilver} style={styles.backIcon} contentFit="contain" />
 						</TouchableOpacity>
 
 						<Text style={styles.title}>{t("lobby.title")}</Text>
 
 						{!joinFocused && (
 							<View style={styles.section}>
-								<Text style={styles.sectionTitle}>{t("lobby.nameSection")}</Text>
+								<Text style={styles.sectionTitle}>
+									{t("lobby.nameSection")}
+								</Text>
 								<TextInput
 									style={styles.input}
 									value={displayName}
 									onChangeText={setDisplayName}
 									placeholder={t("lobby.namePlaceholder")}
-									placeholderTextColor="#475569"
+									placeholderTextColor="#63748b"
 									maxLength={20}
 									autoCapitalize="words"
 								/>
 							</View>
 						)}
 
-						{!joinFocused && (
+						{displayName && !joinFocused && (
+							<>
+								<View style={styles.section}>
+									<Text style={styles.sectionTitle}>
+										{t("lobby.createSection")}
+									</Text>
+									<TouchableOpacity
+										style={[
+											styles.button,
+											styles.buttonPrimary,
+											loading && styles.buttonDisabled,
+										]}
+										onPress={handleCreate}
+										disabled={loading}
+									>
+										<Text style={styles.buttonText}>
+											{loading ? t("lobby.creating") : t("lobby.createBtn")}
+										</Text>
+									</TouchableOpacity>
+								</View>
+
+								<View style={styles.divider}>
+									<View style={styles.dividerLine} />
+									<Text style={styles.dividerText}>{t("lobby.divider")}</Text>
+									<View style={styles.dividerLine} />
+								</View>
+							</>
+						)}
+
+						{displayName && (
 							<View style={styles.section}>
-								<Text style={styles.sectionTitle}>{t("lobby.createSection")}</Text>
-								<TouchableOpacity
-									style={[styles.button, styles.buttonPrimary, loading && styles.buttonDisabled]}
-									onPress={handleCreate}
-									disabled={loading}
-								>
-									<Text style={styles.buttonText}>
-										{loading ? t("lobby.creating") : t("lobby.createBtn")}
-									</Text>
-								</TouchableOpacity>
+								<Text style={styles.sectionTitle}>
+									{t("lobby.joinSection")}
+								</Text>
+								<View style={styles.row}>
+									<TextInput
+										style={[styles.input, styles.inputFlex]}
+										value={joinCode}
+										onChangeText={(v) => setJoinCode(v.toUpperCase())}
+										placeholder={t("lobby.joinPlaceholder")}
+										placeholderTextColor="#475569"
+										maxLength={6}
+										autoCapitalize="characters"
+										onFocus={handleJoinFocus}
+										onBlur={handleJoinBlur}
+									/>
+									<TouchableOpacity
+										style={[
+											styles.button,
+											styles.joinButton,
+											loading && styles.buttonDisabled,
+										]}
+										onPress={handleJoin}
+										disabled={loading}
+									>
+										<Text style={styles.buttonText}>
+											{loading ? "…" : t("lobby.joinBtn")}
+										</Text>
+									</TouchableOpacity>
+								</View>
 							</View>
 						)}
-
-						{!joinFocused && (
-							<View style={styles.divider}>
-								<View style={styles.dividerLine} />
-								<Text style={styles.dividerText}>{t("lobby.divider")}</Text>
-								<View style={styles.dividerLine} />
-							</View>
-						)}
-
-						<View style={styles.section}>
-							<Text style={styles.sectionTitle}>{t("lobby.joinSection")}</Text>
-							<View style={styles.row}>
-								<TextInput
-									style={[styles.input, styles.inputFlex]}
-									value={joinCode}
-									onChangeText={(v) => setJoinCode(v.toUpperCase())}
-									placeholder={t("lobby.joinPlaceholder")}
-									placeholderTextColor="#475569"
-									maxLength={6}
-									autoCapitalize="characters"
-									onFocus={handleJoinFocus}
-									onBlur={handleJoinBlur}
-								/>
-								<TouchableOpacity
-									style={[styles.button, styles.joinButton, loading && styles.buttonDisabled]}
-									onPress={handleJoin}
-									disabled={loading}
-								>
-									<Text style={styles.buttonText}>
-										{loading ? "…" : t("lobby.joinBtn")}
-									</Text>
-								</TouchableOpacity>
-							</View>
-						</View>
 
 						{error && <Text style={styles.error}>{error}</Text>}
 					</>
 				) : (
 					<>
 						<TouchableOpacity style={styles.backButton} onPress={handleLeave}>
-							<Ionicons name="chevron-back" size={18} color="#94A3B8" />
-							<Text style={styles.backText}>{t("lobby.leaveRoom")}</Text>
+							<Image source={TavernSilver} style={styles.backIcon} contentFit="contain" />
 						</TouchableOpacity>
 
 						<Text style={styles.title}>{t("lobby.waitingTitle")}</Text>
@@ -220,12 +255,26 @@ export const LobbyScreen = () => {
 									const isRoomHost = isHost && isSelf;
 									return (
 										<View key={p.id} style={styles.playerRow}>
-											<View style={[styles.playerDot, isRoomHost && styles.playerDotHost]} />
-											<Text style={[styles.playerName, isSelf && styles.playerNameSelf]}>
+											<View
+												style={[
+													styles.playerDot,
+													isRoomHost && styles.playerDotHost,
+												]}
+											/>
+											<Text
+												style={[
+													styles.playerName,
+													isSelf && styles.playerNameSelf,
+												]}
+											>
 												{p.displayName}
 											</Text>
-											{isSelf && <Text style={styles.playerTag}>{t("lobby.you")}</Text>}
-											{isRoomHost && <Text style={styles.playerTag}>{t("lobby.host")}</Text>}
+											{isSelf && (
+												<Text style={styles.playerTag}>{t("lobby.you")}</Text>
+											)}
+											{isRoomHost && (
+												<Text style={styles.playerTag}>{t("lobby.host")}</Text>
+											)}
 										</View>
 									);
 								})}
@@ -236,7 +285,8 @@ export const LobbyScreen = () => {
 									style={[
 										styles.button,
 										styles.buttonPrimary,
-										(roomPlayers.length < 2 || loading) && styles.buttonDisabled,
+										(roomPlayers.length < 2 || loading) &&
+											styles.buttonDisabled,
 									]}
 									onPress={handleStart}
 									disabled={roomPlayers.length < 2 || loading}
@@ -246,15 +296,14 @@ export const LobbyScreen = () => {
 									</Text>
 								</TouchableOpacity>
 							) : (
-								<Text style={styles.waitingText}>
-									{t("lobby.waitingHost")}
-								</Text>
+								<Text style={styles.waitingText}>{t("lobby.waitingHost")}</Text>
 							)}
 						</View>
 
 						{error && <Text style={styles.error}>{error}</Text>}
 					</>
 				)}
+				</View>
 			</View>
 		</ImageBackground>
 	);
