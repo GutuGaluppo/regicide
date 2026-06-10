@@ -370,6 +370,31 @@ const es: Translations = {
 	notifications: {
 		turnBody: "¡Es tu turno de jugar! 🎴",
 	},
+	tutorial: {
+		skip: "Omitir",
+		welcome: {
+			title: "¡Bienvenido a Regicide!",
+			body: "Combatirás a los enemigos del castillo jugando cartas de tu mano. El número en el enemigo es su vida. ⚔ es el daño que causa si no es derrotado. ¡Practiquemos!",
+			btn: "Comenzar tutorial",
+		},
+		select_card: {
+			title: "Selecciona una carta",
+			body: "Toca una carta en tu mano para seleccionarla.",
+		},
+		attack: {
+			title: "¡Hora de atacar!",
+			body: "¡Perfecto! Ahora toca Atacar para golpear al enemigo.",
+		},
+		suffer_damage: {
+			title: "El enemigo contraataca",
+			body: "Selecciona cartas para descartar y cubrir el daño recibido. Debes cubrir el monto exacto o descartar toda tu mano.",
+		},
+		complete: {
+			title: "¡Ya lo entendiste!",
+			body: "Ahora conoces lo básico. ¡Buena suerte en la batalla!",
+			btn: "¡Jugar!",
+		},
+	},
 };
 
 export default es;

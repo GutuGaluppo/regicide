@@ -371,6 +371,31 @@ const fr: Translations = {
 	notifications: {
 		turnBody: "C'est votre tour de jouer ! 🎴",
 	},
+	tutorial: {
+		skip: "Passer",
+		welcome: {
+			title: "Bienvenue dans Regicide !",
+			body: "Vous combattrez les ennemis du château en jouant des cartes de votre main. Le chiffre sur l'ennemi est sa vie. ⚔ est le dégât qu'il inflige s'il n'est pas vaincu. Entraînons-nous !",
+			btn: "Commencer le tutoriel",
+		},
+		select_card: {
+			title: "Sélectionnez une carte",
+			body: "Touchez une carte dans votre main pour la sélectionner.",
+		},
+		attack: {
+			title: "Place à l'attaque !",
+			body: "Parfait ! Maintenant touchez Attaquer pour frapper l'ennemi.",
+		},
+		suffer_damage: {
+			title: "L'ennemi contre-attaque",
+			body: "Sélectionnez des cartes à défausser pour couvrir les dégâts reçus. Vous devez couvrir le montant exact ou défausser toute votre main.",
+		},
+		complete: {
+			title: "Vous avez compris !",
+			body: "Vous connaissez maintenant les bases. Bonne chance au combat !",
+			btn: "Jouer !",
+		},
+	},
 };
 
 export default fr;

@@ -367,6 +367,31 @@ const ptBR = {
 	notifications: {
 		turnBody: "É sua vez de jogar! 🎴",
 	},
+	tutorial: {
+		skip: "Pular",
+		welcome: {
+			title: "Bem-vindo ao Regicide!",
+			body: "Você vai batalhar contra os inimigos do castelo jogando cartas da sua mão. O número no inimigo é a vida dele. ⚔ é o dano que ele causa se não for derrotado. Vamos treinar!",
+			btn: "Começar tutorial",
+		},
+		select_card: {
+			title: "Selecione uma carta",
+			body: "Toque em uma carta da sua mão para selecioná-la.",
+		},
+		attack: {
+			title: "Hora de atacar!",
+			body: "Perfeito! Agora toque em Atacar para golpear o inimigo.",
+		},
+		suffer_damage: {
+			title: "O inimigo contra-ataca",
+			body: "Selecione cartas para descartar e cobrir o dano recebido. Você precisa cobrir o valor exato ou descartar a mão inteira.",
+		},
+		complete: {
+			title: "Você entendeu!",
+			body: "Agora você sabe o básico. Boa sorte na batalha!",
+			btn: "Jogar!",
+		},
+	},
 };
 
 export default ptBR;

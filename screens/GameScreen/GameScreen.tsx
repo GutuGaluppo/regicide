@@ -1,115 +1,30 @@
-import cardBack from "@/assets/images/cardBack.png";
 import {
-	CardFlight,
 	CardFlightOverlay,
 } from "@/components/CardFlightOverlay/CardFlightOverlay";
-import { CastleFooter } from "@/components/CastleFooter";
+// LAYOUT_TEST: import mantido — não deletar
+// import { CastleFooter } from "@/components/CastleFooter";
+import { SuitTracker } from "@/components/SuitTracker";
 import { DefeatScreen } from "@/components/DefeatScreen";
-import {
-	EnemyCaptureFlight,
-	EnemyCaptureOverlay,
-} from "@/components/EnemyCaptureOverlay/EnemyCaptureOverlay";
+import { EnemyCaptureOverlay } from "@/components/EnemyCaptureOverlay/EnemyCaptureOverlay";
 import { EnemyCard } from "@/components/EnemyCard";
 import { EnemyModal } from "@/components/EnemyModal";
-import { NumberSprite } from "@/components/NumberSprite";
 import { PlayerHand } from "@/components/PlayerHand";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
+import { TutorialStepPanel, TutorialWelcomeModal } from "@/components/TutorialOverlay";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
-import { Card, Enemy } from "@/data/types";
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
-import { useSoundtrack } from "@/hooks/useSoundtrack";
 import { useGameScreenStore } from "@/contexts/GameStoreContext";
-import { enemyToCard, validatePlay } from "@/utils/gameLogic";
-import { Image } from "expo-image";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import { useSoundtrack } from "@/hooks/useSoundtrack";
+import { useTutorialFlow } from "@/hooks/useTutorialFlow";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ImageBackground, Text, View } from "react-native";
+import { StatusCard } from "./components/StatusCard";
 import { styles } from "./GameScreen.styles";
-
-type ScreenRect = {
-	x: number;
-	y: number;
-	w: number;
-	h: number;
-};
-
-type ActiveDeal = {
-	id: number;
-	source: ScreenRect;
-	orderById: Map<string, number>;
-};
-
-type ActiveDiscard = {
-	id: number;
-	flightById: Map<
-		string,
-		{
-			order: number;
-			dest: ScreenRect;
-		}
-	>;
-};
-
-type PendingAction = {
-	id: number;
-	kind: "play" | "discard";
-	awaitShieldExit: boolean;
-	incomingShieldCards: Card[];
-	enemyCapture: PendingEnemyCapture | null;
-};
-
-type ActiveShieldExit = {
-	id: number;
-	flights: CardFlight[];
-};
-
-type PendingEnemyCapture = {
-	enemy: Enemy;
-	card: Card;
-	destination: "tavern" | "discard";
-};
-
-type ActiveEnemyCapture = EnemyCaptureFlight;
-
-const SHIELD_PILE_CARD_SIZE = {
-	w: 50,
-	h: 66,
-};
-
-const getShieldPileSlotRect = (
-	anchor: ScreenRect,
-	stackIndex: number,
-	totalCards: number,
-): ScreenRect => {
-	const visibleStart = Math.max(0, totalCards - 3);
-	const visibleIndex = Math.min(2, Math.max(0, stackIndex - visibleStart));
-
-	return {
-		x: anchor.x + visibleIndex * 6,
-		y: anchor.y + visibleIndex * 6,
-		w: SHIELD_PILE_CARD_SIZE.w,
-		h: SHIELD_PILE_CARD_SIZE.h,
-	};
-};
-
-const StatusCard = ({ count, label }: { count: number; label: string }) => (
-	<View style={styles.statusItem}>
-		<View style={styles.statusCard}>
-			<Image
-				source={cardBack}
-				style={styles.statusCardImg}
-				contentFit="contain"
-			/>
-			<View style={styles.statusCardOverlay}>
-				<NumberSprite value={count} type="deckstatus" height={25} />
-			</View>
-		</View>
-		<Text style={styles.deckLabel}>{label}</Text>
-	</View>
-);
+import { useGameAnimations } from "./hooks/useGameAnimations";
 
 export const GameScreen = () => {
 	const { t } = useTranslation();
@@ -161,443 +76,70 @@ export const GameScreen = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [cardsDrawnSignal]);
 
-	useEffect(() => {
-		shieldPileRectRef.current = null;
-		enemyCardRectRef.current = null;
-	}, [currentEnemy?.id]);
-
-	const {
-		phase,
-		spadesShield,
-		tavernDeck,
-		discardPile,
-		pendingDamage,
-		jesterActive,
-	} = gameState;
-	const shieldCards = gameState.playedThisFight.filter(
-		(c) => c.suit === "spades",
-	);
+	const { phase, spadesShield, tavernDeck, discardPile, pendingDamage, jesterActive } = gameState;
+	const shieldCards = gameState.playedThisFight.filter((c) => c.suit === "spades");
 
 	const tavernRef = useRef<View>(null);
 	const discardRef = useRef<View>(null);
-	const activeDealRef = useRef<ActiveDeal | null>(null);
-	const dealSequenceRef = useRef(0);
-	const actionSequenceRef = useRef(0);
-	const pendingActionRef = useRef<PendingAction | null>(null);
-	const shieldPileRectRef = useRef<ScreenRect | null>(null);
-	const enemyCardRectRef = useRef<ScreenRect | null>(null);
-	const dealingIdsRef = useRef<Set<string>>(new Set());
-	const discardingIdsRef = useRef<Set<string>>(new Set());
-	const shieldExitIdsRef = useRef<Set<string>>(new Set());
-	const activeEnemyCaptureRef = useRef<ActiveEnemyCapture | null>(null);
-	const isInitialMountRef = useRef(true);
-	const isSaveLoadPossibleRef = useRef(false);
-	const prevHandIdsRef = useRef<Set<string>>(new Set());
 
 	const [modalVisible, setModalVisible] = useState(false);
 	const [settingsVisible, setSettingsVisible] = useState(false);
-	const [dealingIds, setDealingIds] = useState<Set<string>>(new Set());
-	const [discardingIds, setDiscardingIds] = useState<Set<string>>(new Set());
-	const [shieldExitIds, setShieldExitIds] = useState<Set<string>>(new Set());
-	const [activeDeal, setActiveDeal] = useState<ActiveDeal | null>(null);
-	const [activeDiscard, setActiveDiscard] = useState<ActiveDiscard | null>(
-		null,
-	);
-	const [activeShieldExit, setActiveShieldExit] =
-		useState<ActiveShieldExit | null>(null);
-	const [activeEnemyCapture, setActiveEnemyCapture] =
-		useState<ActiveEnemyCapture | null>(null);
-	const [hideShieldPile, setHideShieldPile] = useState(false);
-	const [jesterAnimating, setJesterAnimating] = useState(false);
 
-	const actionLocked =
-		autoJesterPending ||
-		jesterAnimating ||
-		activeDiscard !== null ||
-		activeShieldExit !== null ||
-		activeEnemyCapture !== null ||
-		discardingIds.size > 0 ||
-		shieldExitIds.size > 0;
+	const {
+		dealingIds,
+		activeDeal,
+		activeDiscard,
+		activeShieldExit,
+		activeEnemyCapture,
+		hideShieldPile,
+		actionLocked,
+		setJesterAnimating,
+		handlePlay,
+		handleYield,
+		handleConfirmDiscard,
+		handleCardDealComplete,
+		handleCardDiscardComplete,
+		handleShieldFlightComplete,
+		handleEnemyCaptureComplete,
+		handleShieldPileMeasure,
+		handleEnemyCardMeasure,
+	} = useGameAnimations({
+		tavernRef,
+		discardRef,
+		shieldCards,
+		currentEnemy,
+		currentHP,
+		previewDamage,
+		previewShieldGain,
+		pendingDamage,
+		selectedCards,
+		selectedTotal,
+		phase,
+		isMyTurn,
+		autoJesterPending,
+		dealSignal,
+		playerHand: gameState.playerHand,
+		playSelected,
+		confirmDiscard,
+		yieldTurn,
+	});
 
-	const measureRect = (
-		ref: React.RefObject<View | null>,
-		onMeasured: (rect: ScreenRect) => void,
-		onUnavailable?: () => void,
-	) => {
-		const node = ref.current;
-		if (!node) {
-			onUnavailable?.();
-			return;
-		}
-
-		requestAnimationFrame(() => {
-			node.measureInWindow((x, y, w, h) => {
-				if (w === 0 || h === 0) {
-					onUnavailable?.();
-					return;
-				}
-				onMeasured({ x, y, w, h });
-			});
+	const { isTutorial, step, advanceStep, exitTutorial, effectiveOnPlay, yieldBlocked } =
+		useTutorialFlow({
+			phase,
+			selectedIdsSize: selectedIds.size,
+			handlePlay,
 		});
-	};
 
-	const syncDealingIds = (next: Set<string>) => {
-		dealingIdsRef.current = next;
-		setDealingIds(next);
-	};
-
-	const syncDiscardingIds = (next: Set<string>) => {
-		discardingIdsRef.current = next;
-		setDiscardingIds(next);
-	};
-
-	const syncShieldExitIds = (next: Set<string>) => {
-		shieldExitIdsRef.current = next;
-		setShieldExitIds(next);
-	};
-
-	const resetTransientActionState = () => {
-		pendingActionRef.current = null;
-		activeEnemyCaptureRef.current = null;
-		setActiveDiscard(null);
-		setActiveShieldExit(null);
-		setActiveEnemyCapture(null);
-		setHideShieldPile(false);
-		syncDiscardingIds(new Set());
-		syncShieldExitIds(new Set());
-	};
-
-	const commitPendingAction = (kind: PendingAction["kind"]) => {
-		resetTransientActionState();
-		if (kind === "play") {
-			playSelected();
-			return;
-		}
-		confirmDiscard();
-	};
-
-	const continuePendingPlayFlow = () => {
-		const pending = pendingActionRef.current;
-		if (pending?.enemyCapture) {
-			startEnemyCaptureAnimation(pending.enemyCapture);
-			return;
-		}
-		commitPendingAction("play");
-	};
-
-	const startEnemyCaptureAnimation = (enemyCapture: PendingEnemyCapture) => {
-		const source = enemyCardRectRef.current;
-		if (!source) {
-			commitPendingAction("play");
-			return;
-		}
-
-		const destinationRef =
-			enemyCapture.destination === "tavern" ? tavernRef : discardRef;
-
-		measureRect(
-			destinationRef,
-			(dest) => {
-				const animationId = actionSequenceRef.current + 1;
-				actionSequenceRef.current = animationId;
-				const nextCapture: ActiveEnemyCapture = {
-					animationId,
-					enemy: enemyCapture.enemy,
-					card: enemyCapture.card,
-					source,
-					dest,
-				};
-
-				activeEnemyCaptureRef.current = nextCapture;
-				setActiveEnemyCapture(nextCapture);
-			},
-			() => {
-				commitPendingAction("play");
-			},
-		);
-	};
-
-	const startShieldExitAnimation = (incomingShieldCards: Card[] = []) => {
-		const shieldPileRect = shieldPileRectRef.current;
-		const allShieldCards = [...shieldCards, ...incomingShieldCards];
-		if (!shieldPileRect || allShieldCards.length === 0) {
-			continuePendingPlayFlow();
-			return;
-		}
-
-		measureRect(
-			discardRef,
-			(dest) => {
-				const animationId = actionSequenceRef.current + 1;
-				actionSequenceRef.current = animationId;
-				const flights = allShieldCards.map((card, index) => {
-					return {
-						animationId,
-						order: allShieldCards.length - 1 - index,
-						card,
-						source: getShieldPileSlotRect(
-							shieldPileRect,
-							index,
-							allShieldCards.length,
-						),
-						dest,
-					};
-				});
-
-				setHideShieldPile(true);
-				syncShieldExitIds(new Set(flights.map((flight) => flight.card.id)));
-				setActiveShieldExit({ id: animationId, flights });
-			},
-			() => {
-				continuePendingPlayFlow();
-			},
-		);
-	};
-
-	const startHandDiscardAnimation = (
-		cards: Card[],
-		kind: PendingAction["kind"],
-		incomingShieldCards: Card[] = [],
-		enemyCapture: PendingEnemyCapture | null = null,
-	) => {
-		if (cards.length === 0) return;
-
-		measureRect(
-			discardRef,
-			(discardDest) => {
-				const actionId = actionSequenceRef.current + 1;
-				actionSequenceRef.current = actionId;
-				const shieldDest = shieldPileRectRef.current;
-				const totalShieldCards =
-					shieldCards.length + incomingShieldCards.length;
-				const incomingShieldIds = new Set(
-					incomingShieldCards.map((card) => card.id),
-				);
-				const incomingShieldOrder = new Map<string, number>();
-				incomingShieldCards.forEach((card, index) =>
-					incomingShieldOrder.set(card.id, index),
-				);
-				const flightById = new Map<
-					string,
-					{ order: number; dest: ScreenRect }
-				>();
-
-				cards.forEach((card, index) => {
-					const shieldOrder = incomingShieldOrder.get(card.id);
-					const dest =
-						incomingShieldIds.has(card.id) &&
-						shieldDest &&
-						shieldOrder !== undefined
-							? getShieldPileSlotRect(
-									shieldDest,
-									shieldCards.length + shieldOrder,
-									totalShieldCards,
-								)
-							: discardDest;
-					flightById.set(card.id, { order: index, dest });
-				});
-
-				pendingActionRef.current = {
-					id: actionId,
-					kind,
-					awaitShieldExit:
-						kind === "play" &&
-						previewDamage >= currentHP &&
-						(shieldCards.length > 0 || incomingShieldCards.length > 0),
-					incomingShieldCards,
-					enemyCapture,
-				};
-				syncDiscardingIds(new Set(cards.map((card) => card.id)));
-				setActiveDiscard({
-					id: actionId,
-					flightById,
-				});
-			},
-			() => {
-				commitPendingAction(kind);
-			},
-		);
-	};
-
-	const triggerDeal = (cards: Card[]) => {
-		if (cards.length === 0) return;
-
-		const nextDealId = dealSequenceRef.current + 1;
-		dealSequenceRef.current = nextDealId;
-
-		measureRect(
-			tavernRef,
-			(source) => {
-				const orderById = new Map<string, number>();
-				cards.forEach((card, index) => orderById.set(card.id, index));
-
-				const nextDeal: ActiveDeal = {
-					id: nextDealId,
-					source,
-					orderById,
-				};
-
-				activeDealRef.current = nextDeal;
-				setActiveDeal(nextDeal);
-				syncDealingIds(new Set(cards.map((card) => card.id)));
-			},
-			() => {
-				activeDealRef.current = null;
-				setActiveDeal(null);
-				syncDealingIds(new Set());
-			},
-		);
-	};
-
-	useLayoutEffect(() => {
-		if (dealSignal === 0) return;
-		isSaveLoadPossibleRef.current = false;
-		prevHandIdsRef.current = new Set(gameState.playerHand.map((c) => c.id));
-		triggerDeal(gameState.playerHand);
-	}, [dealSignal]); // eslint-disable-line react-hooks/exhaustive-deps
-
-	useLayoutEffect(() => {
-		const currentIds = new Set(gameState.playerHand.map((c) => c.id));
-
-		if (isInitialMountRef.current) {
-			isInitialMountRef.current = false;
-			isSaveLoadPossibleRef.current = true;
-			prevHandIdsRef.current = currentIds;
-			return;
-		}
-
-		if (isSaveLoadPossibleRef.current) {
-			isSaveLoadPossibleRef.current = false;
-			prevHandIdsRef.current = currentIds;
-			return;
-		}
-
-		const prev = prevHandIdsRef.current;
-		const newCards = gameState.playerHand.filter((c) => !prev.has(c.id));
-		prevHandIdsRef.current = currentIds;
-		if (newCards.length === 0) return;
-		triggerDeal(newCards);
-	}, [gameState.playerHand]); // eslint-disable-line react-hooks/exhaustive-deps
-
-	const handleCardDealComplete = (dealId: number, cardId: string) => {
-		if (activeDealRef.current?.id !== dealId) return;
-
-		const next = new Set(dealingIdsRef.current);
-		if (!next.delete(cardId)) return;
-		syncDealingIds(next);
-
-		if (next.size === 0 && activeDealRef.current?.id === dealId) {
-			activeDealRef.current = null;
-			setActiveDeal(null);
-		}
-	};
-
-	const handleCardDiscardComplete = (discardId: number, cardId: string) => {
-		const pending = pendingActionRef.current;
-		if (!pending || pending.id !== discardId) return;
-
-		const next = new Set(discardingIdsRef.current);
-		if (!next.delete(cardId)) return;
-		syncDiscardingIds(next);
-
-		if (next.size > 0) return;
-
-		setActiveDiscard(null);
-
-		if (pending.kind === "discard") {
-			commitPendingAction("discard");
-			return;
-		}
-
-		if (pending.awaitShieldExit) {
-			startShieldExitAnimation(pending.incomingShieldCards);
-			return;
-		}
-
-		continuePendingPlayFlow();
-	};
-
-	const handleShieldFlightComplete = (animationId: number, cardId: string) => {
-		if (activeShieldExit?.id !== animationId) return;
-
-		const next = new Set(shieldExitIdsRef.current);
-		if (!next.delete(cardId)) return;
-		syncShieldExitIds(next);
-
-		if (next.size > 0) return;
-
-		setActiveShieldExit(null);
-		continuePendingPlayFlow();
-	};
-
-	const handleEnemyCaptureComplete = (animationId: number) => {
-		if (activeEnemyCaptureRef.current?.animationId !== animationId) return;
-		commitPendingAction("play");
-	};
-
-	const handlePlay = () => {
-		if (phase !== "player_turn" || selectedCards.length === 0 || actionLocked || !isMyTurn) {
-			return;
-		}
-
-		const validation = validatePlay(selectedCards);
-		if (!validation.valid) {
-			playSelected();
-			return;
-		}
-
-		const incomingShieldCards =
-			previewShieldGain > 0
-				? selectedCards.filter((card) => card.suit === "spades")
-				: [];
-		const enemyCapture =
-			currentEnemy && previewDamage >= currentHP
-				? {
-						enemy: currentEnemy,
-						card: enemyToCard(currentEnemy),
-						destination: (previewDamage === currentHP
-							? "tavern"
-							: "discard") as "tavern" | "discard",
-					}
-				: null;
-		startHandDiscardAnimation(
-			selectedCards,
-			"play",
-			incomingShieldCards,
-			enemyCapture,
-		);
-	};
-
-	const handleYield = () => {
-		if (phase !== "player_turn" || actionLocked || !isMyTurn) return;
-		yieldTurn();
-	};
-
-	const handleConfirmDiscard = () => {
-		if (
-			phase !== "suffer_damage" ||
-			selectedCards.length === 0 ||
-			actionLocked ||
-			!isMyTurn
-		) {
-			return;
-		}
-
-		if (selectedTotal < (pendingDamage ?? 0)) {
-			confirmDiscard();
-			return;
-		}
-
-		startHandDiscardAnimation(selectedCards, "discard");
-	};
-
-	const handleShieldPileMeasure = (rect: ScreenRect) => {
-		shieldPileRectRef.current = rect;
-	};
-
-	const handleEnemyCardMeasure = (rect: ScreenRect) => {
-		enemyCardRectRef.current = rect;
-	};
+	// Cálculo de fase para o SuitTracker — mesmo critério do CastleFooter
+	const allEnemies = [...gameState.defeatedEnemies, ...gameState.castle];
+	const defeatedIds = gameState.defeatedEnemies.map((e) => e.id);
+	const jEnemies = allEnemies.filter((e) => e.rank === "J");
+	const qEnemies = allEnemies.filter((e) => e.rank === "Q");
+	const jAllDefeated = jEnemies.length > 0 && jEnemies.every((e) => defeatedIds.includes(e.id));
+	const qAllDefeated = qEnemies.length > 0 && qEnemies.every((e) => defeatedIds.includes(e.id));
+	const footerPhase = jAllDefeated ? (qAllDefeated ? "K" : "Q") : "J";
+	const phaseEnemies = allEnemies.filter((e) => e.rank === footerPhase);
 
 	if (phase === "victory") return <VictoryScreen onReset={resetGame} />;
 
@@ -628,68 +170,58 @@ export const GameScreen = () => {
 						isDesktop && styles.frameDesktop,
 					]}
 				>
-					<View
-						style={[styles.statusBar, { paddingHorizontal: screenPadding }]}
-					>
-						<StatusCard
-							count={gameState.castle.length}
-							label={t("game.status.castle")}
-						/>
+					<View style={[styles.statusBar, { paddingHorizontal: screenPadding }]}>
+						<StatusCard count={gameState.castle.length} label={t("game.status.castle")} />
 						<View ref={tavernRef} collapsable={false}>
-							<StatusCard
-								count={tavernDeck.length}
-								label={t("game.status.tavern")}
-							/>
+							<StatusCard count={tavernDeck.length} label={t("game.status.tavern")} />
 						</View>
 						<View ref={discardRef} collapsable={false}>
-							<StatusCard
-								count={discardPile.length}
-								label={t("game.status.discard")}
-							/>
+							<StatusCard count={discardPile.length} label={t("game.status.discard")} />
 						</View>
 					</View>
 
 					<View style={[styles.center, { paddingHorizontal: screenPadding }]}>
-						{(phase === "player_turn" || phase === "suffer_damage") &&
-							currentEnemy && (
-								<EnemyCard
-									enemy={currentEnemy}
-									currentHP={currentHP}
-									effectiveAttack={effectiveAttack}
-									jesterActive={jesterActive}
-									spadesShield={spadesShield}
-									shieldCards={shieldCards}
-									jestersAvailable={gameState.jestersAvailable}
-									jestersUsed={gameState.jestersUsed}
-									autoJesterSignal={autoJesterSignal}
-									hidden={activeEnemyCapture !== null}
-									hideShieldPile={hideShieldPile}
-									onCardMeasure={handleEnemyCardMeasure}
-									onShieldPileMeasure={handleShieldPileMeasure}
-									onUseJester={
-										phase === "player_turn" && !actionLocked && isMyTurn
-											? useJester
-											: undefined
-									}
-									onAutoJesterComplete={completeAutoJesterAnimation}
-									onJesterAnimationStateChange={setJesterAnimating}
-									onPress={
-										!actionLocked ? () => setModalVisible(true) : undefined
-									}
-									previewDamage={phase === "player_turn" ? previewDamage : 0}
-									previewShieldGain={
-										phase === "player_turn" ? previewShieldGain : 0
-									}
-								/>
-							)}
+						{(phase === "player_turn" || phase === "suffer_damage") && currentEnemy && (
+							<EnemyCard
+								enemy={currentEnemy}
+								currentHP={currentHP}
+								effectiveAttack={effectiveAttack}
+								jesterActive={jesterActive}
+								spadesShield={spadesShield}
+								shieldCards={shieldCards}
+								jestersAvailable={gameState.jestersAvailable}
+								jestersUsed={gameState.jestersUsed}
+								autoJesterSignal={autoJesterSignal}
+								hidden={activeEnemyCapture !== null}
+								hideShieldPile={hideShieldPile}
+								onCardMeasure={handleEnemyCardMeasure}
+								onShieldPileMeasure={handleShieldPileMeasure}
+								onUseJester={
+									phase === "player_turn" && !actionLocked && isMyTurn
+										? useJester
+										: undefined
+								}
+								onAutoJesterComplete={completeAutoJesterAnimation}
+								onJesterAnimationStateChange={setJesterAnimating}
+								onPress={!actionLocked ? () => setModalVisible(true) : undefined}
+								previewDamage={phase === "player_turn" ? previewDamage : 0}
+								previewShieldGain={phase === "player_turn" ? previewShieldGain : 0}
+							/>
+						)}
 					</View>
+
+					{isTutorial && (
+						<TutorialStepPanel
+							step={step}
+							onComplete={exitTutorial}
+							onSkip={exitTutorial}
+						/>
+					)}
 
 					{playError && <Text style={styles.error}>{playError}</Text>}
 
 					{(phase === "player_turn" || phase === "suffer_damage") && (
-						<View
-							style={[styles.handSection, { paddingHorizontal: screenPadding }]}
-						>
+						<View style={[styles.handSection, { paddingHorizontal: screenPadding }]}>
 							<PlayerHand
 								hand={gameState.playerHand}
 								selectedIds={selectedIds}
@@ -705,8 +237,8 @@ export const GameScreen = () => {
 								onDiscard={handleConfirmDiscard}
 								onSort={sortHand}
 								onSortByClass={sortHandByClass}
-								onPlay={handlePlay}
-								onYield={isMyTurn && onAbandon ? handleYield : undefined}
+								onPlay={effectiveOnPlay}
+								onYield={!yieldBlocked && isMyTurn && onAbandon ? handleYield : undefined}
 								playDisabled={selectedIds.size === 0 || !isMyTurn}
 								waitingPlayedCards={!isMyTurn ? lastPlayedCards : undefined}
 								onCardDealComplete={handleCardDealComplete}
@@ -715,11 +247,19 @@ export const GameScreen = () => {
 						</View>
 					)}
 
+					<SuitTracker
+						enemies={phaseEnemies}
+						defeatedIds={defeatedIds}
+						currentSuit={currentEnemy?.suit ?? null}
+					/>
+
+					{/* LAYOUT_TEST: CastleFooter oculto — não deletar
 					<CastleFooter
 						castle={gameState.castle}
 						defeatedEnemies={gameState.defeatedEnemies}
 						currentEnemyId={currentEnemy?.id ?? ""}
 					/>
+					*/}
 				</View>
 
 				<ScreenHeader onSettingsPress={() => setSettingsVisible(true)} />
@@ -755,6 +295,13 @@ export const GameScreen = () => {
 				onReset={resetGame}
 				onAbandon={onAbandon}
 			/>
+
+			{isTutorial && step === "welcome" && (
+				<TutorialWelcomeModal
+					onStart={() => advanceStep("select_card")}
+					onSkip={exitTutorial}
+				/>
+			)}
 		</ImageBackground>
 	);
 };
