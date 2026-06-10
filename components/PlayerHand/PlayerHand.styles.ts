@@ -2,7 +2,8 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
 	container: {
-		paddingVertical: 4,
+		paddingTop: 14,
+		paddingBottom: 44,
 		width: "100%",
 		maxWidth: 1160,
 		alignSelf: "center",
@@ -60,11 +61,17 @@ export const styles = StyleSheet.create({
 		fontWeight: "600",
 		marginHorizontal: 2,
 	},
-	waitingArea: {
-		justifyContent: "center",
+	waitingBar: {
+		flexDirection: "row",
 		alignItems: "center",
-		paddingVertical: -4,
 		paddingHorizontal: 12,
+		gap: 8,
+	},
+	waitingArea: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "flex-start",
+		paddingVertical: 4,
 	},
 	waitingCard: {
 		// CardView gerencia suas próprias dimensões via useCardSize
@@ -81,6 +88,10 @@ export const styles = StyleSheet.create({
 		alignItems: "center",
 		gap: 2,
 		paddingHorizontal: 4,
-		marginVertical: -10,
+		marginVertical: 0,
+	},
+	waitingSortRow: {
+		flexDirection: "row",
+		gap: 4,
 	},
 });

@@ -1,75 +1,19 @@
 import { CardDetailModal } from "@/components/CardDetailModal";
 import { CardView } from "@/components/CardView";
-import { Card, GamePhase, Suit } from "@/data/types";
+import { useAudio } from "@/contexts/AudioContext";
+import { Card } from "@/data/types";
 import { useCardSize } from "@/hooks/useCardSize";
 import { getCompatibleCardIds } from "@/utils/gameLogic";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { LayoutAnimation, ScrollView, Text, View } from "react-native";
 import { styles } from "./PlayerHand.styles";
 import { ActionButtonRow } from "./components/ActionButtonRow";
+import { SortButton } from "./components/ActionButtonRow/SortButton";
 import { DiscardButton } from "./components/DiscardButton/DiscardButton";
-
-const WAITING_SCALE = 0.75;
-
-// Renderiza CardView em tamanho reduzido usando margens negativas para
-// colapsar o espaço de layout extra criado pelo transform: scale.
-const ScaledCard = ({ card }: { card: Card }) => {
-	return (
-		<View
-			style={{
-				transform: [{ scale: WAITING_SCALE }],
-			}}
-		>
-			<CardView card={card} selected={false} pressDisabled />
-		</View>
-	);
-};
-
-type ScreenRect = {
-	x: number;
-	y: number;
-	w: number;
-	h: number;
-};
-
-type PropsType = {
-	hand: Card[];
-	selectedIds: Set<string>;
-	phase: GamePhase;
-	immuneSuit?: Suit | null;
-	dealingIds?: Set<string>;
-	activeDeal?: {
-		id: number;
-		source: ScreenRect;
-		orderById: Map<string, number>;
-	} | null;
-	activeDiscard?: {
-		id: number;
-		flightById: Map<
-			string,
-			{
-				order: number;
-				dest: ScreenRect;
-			}
-		>;
-	} | null;
-	locked?: boolean;
-	pendingDamage?: number;
-	selectedTotal?: number;
-	onCardPress: (card: Card) => void;
-	onSort?: () => void;
-	onSortByClass?: () => void;
-	onDiscard?: () => void;
-	onPlay?: () => void;
-	onYield?: () => void;
-	playDisabled?: boolean;
-	onCardDealComplete?: (dealId: number, cardId: string) => void;
-	onCardDiscardComplete?: (discardId: number, cardId: string) => void;
-	// Multiplayer: cartas jogadas pelo jogador ativo (exibidas quando !isMyTurn)
-	waitingPlayedCards?: Card[];
-};
+import ScaledCard from "./components/ScaledCard";
+import { PropsType } from "./types";
 
 export const PlayerHand = ({
 	hand,
@@ -94,7 +38,22 @@ export const PlayerHand = ({
 	waitingPlayedCards,
 }: PropsType) => {
 	const { t } = useTranslation();
+	const { playTap } = useAudio();
 	const [detailCard, setDetailCard] = useState<Card | null>(null);
+
+	const handleSort = () => {
+		if (locked || isDealing) return;
+		playTap();
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		onSort?.();
+	};
+
+	const handleSortByClass = () => {
+		if (locked || isDealing) return;
+		playTap();
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		onSortByClass?.();
+	};
 	const isDealing = (dealingIds?.size ?? 0) > 0;
 	const interactive =
 		(phase === "player_turn" || phase === "suffer_damage") &&
@@ -121,23 +80,41 @@ export const PlayerHand = ({
 	return (
 		<View style={styles.container}>
 			{waitingPlayedCards !== undefined ? (
-				// Modo espera: exibe cartas jogadas pelo jogador ativo
-				<View style={styles.waitingArea}>
-					{waitingPlayedCards.length === 0 ? (
-						<Text style={styles.waitingLabel}>
-							{t("multiplayer.turnToast.waiting")}
-						</Text>
-					) : (
-						<ScrollView
-							horizontal
-							showsHorizontalScrollIndicator={false}
-							contentContainerStyle={styles.waitingScroll}
-						>
-							{waitingPlayedCards.map((card) => (
-								<ScaledCard key={card.id} card={card} />
-							))}
-						</ScrollView>
-					)}
+				// Modo espera: exibe cartas jogadas pelo jogador ativo + botões de sort
+				<View style={styles.waitingBar}>
+					<View style={styles.waitingArea}>
+						{waitingPlayedCards.length === 0 ? (
+							<Text style={styles.waitingLabel}>
+								{t("multiplayer.turnToast.waiting")}
+							</Text>
+						) : (
+							<ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								contentContainerStyle={styles.waitingScroll}
+							>
+								{waitingPlayedCards.map((card) => (
+									<ScaledCard key={card.id} card={card} />
+								))}
+							</ScrollView>
+						)}
+					</View>
+					<View style={styles.waitingSortRow}>
+						{onSort && (
+							<SortButton
+								icon={require("@/assets/icons/sort_icon.png")}
+								handleSort={handleSort}
+								disabled={locked || isDealing}
+							/>
+						)}
+						{onSortByClass && (
+							<SortButton
+								icon={require("@/assets/icons/suits-sort.png")}
+								handleSort={handleSortByClass}
+								disabled={locked || isDealing}
+							/>
+						)}
+					</View>
 				</View>
 			) : phase === "suffer_damage" && pending > 0 && onDiscard ? (
 				<DiscardButton
