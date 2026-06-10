@@ -26,7 +26,7 @@ export const TurnToast = ({ signal, isMyTurn, playerName }: Props) => {
 		backdropOpacity.setValue(0);
 		Animated.parallel([
 			Animated.timing(backdropOpacity, { toValue: 1, duration: ANIM_DURATION, useNativeDriver: true }),
-			Animated.spring(scale, { toValue: 1, bounciness: 8, speed: 14, useNativeDriver: true }),
+			Animated.spring(scale, { toValue: 1, bounciness: 3, speed: 11, useNativeDriver: true }),
 			Animated.timing(opacity, { toValue: 1, duration: ANIM_DURATION, useNativeDriver: true }),
 		]).start();
 	};

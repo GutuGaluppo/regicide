@@ -33,7 +33,7 @@ export const AbandonVoteModal = ({
 	useEffect(() => {
 		Animated.parallel([
 			Animated.timing(backdropOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
-			Animated.spring(slideY, { toValue: 0, tension: 80, friction: 14, useNativeDriver: true }),
+			Animated.spring(slideY, { toValue: 0, tension: 60, friction: 18, useNativeDriver: true }),
 		]).start();
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 

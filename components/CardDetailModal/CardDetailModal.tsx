@@ -47,7 +47,7 @@ export const CardDetailModal = ({
 			slideY.value = 500;
 			backdrop.value = 0;
 			backdrop.value = withTiming(1, { duration: 200 });
-			slideY.value = withSpring(0, { stiffness: 80, damping: 14 });
+			slideY.value = withSpring(0, { stiffness: 64, damping: 18 });
 		} else if (mounted) {
 			backdrop.value = withTiming(0, { duration: 180 });
 			slideY.value = withTiming(500, { duration: 220 }, () => {

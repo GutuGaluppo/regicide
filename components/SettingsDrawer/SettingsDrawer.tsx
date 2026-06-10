@@ -57,8 +57,8 @@ export const SettingsDrawer = ({
 				}),
 				Animated.spring(slideY, {
 					toValue: 0,
-					tension: 80,
-					friction: 14,
+					tension: 60,
+					friction: 18,
 					useNativeDriver: true,
 				}),
 			]).start();
