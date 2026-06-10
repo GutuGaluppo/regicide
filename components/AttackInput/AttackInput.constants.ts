@@ -9,6 +9,7 @@ import SpadesIconShadow from "@/assets/classes/spades_shadow.png";
 import JesterIcon from "@/assets/icons/jasper_circle.png";
 import { CardRank, Suit } from "@/data/types";
 import { cardValue } from "@/utils/gameLogic";
+
 export const SUITS: {
 	suit: Suit;
 	icon: number;
@@ -41,10 +42,7 @@ export const RANKS: SuitRank[] = [
 
 export type RegularSuit = Exclude<Suit, "jester">;
 
-export const CHOSEN_CARDS: Record<
-	RegularSuit,
-	Record<SuitRank, number>
-> = {
+export const CHOSEN_CARDS: Record<RegularSuit, Record<SuitRank, number>> = {
 	clubs: {
 		A: require("@/assets/game/cards/clubs/A_clubs.png"),
 		"2": require("@/assets/game/cards/clubs/2_clubs.png"),
@@ -128,8 +126,24 @@ export type CardSelectionInfo = {
 };
 
 // Playable non-jester ranks (player hand cards)
-const PLAYER_RANKS: SuitRank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
-export const REGULAR_SUITS: RegularSuit[] = ["hearts", "diamonds", "clubs", "spades"];
+const PLAYER_RANKS: SuitRank[] = [
+	"A",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+	"10",
+];
+export const REGULAR_SUITS: RegularSuit[] = [
+	"hearts",
+	"diamonds",
+	"clubs",
+	"spades",
+];
 
 export type ComboOption = {
 	suit: RegularSuit;
