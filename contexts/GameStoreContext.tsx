@@ -33,6 +33,10 @@ export interface GameScreenStore {
 	sortHandByClass: () => void;
 	resetGame: () => void;
 	onAbandon?: () => void; // apenas multiplayer
+	roomPlayers?: { id: string; displayName: string; cardCount: number }[];
+	myPlayerId?: string;
+	playerOrder?: string[];
+	currentPlayerIndex?: number;
 }
 
 const GameStoreContext = createContext<GameScreenStore | null>(null);

@@ -1,20 +1,34 @@
 import { AbandonVoteModal } from "@/components/AbandonVoteModal/AbandonVoteModal";
 import { TurnToast } from "@/components/TurnToast/TurnToast";
 import { MultiplayerStoreProvider } from "@/contexts/GameStoreContext";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { GameScreen } from "@/screens/GameScreen";
 import { requestTurnNotificationPermission } from "@/services/notifications";
 import { useMultiplayerStore } from "@/store/multiplayerStore";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const PLAYER_COLORS = ["#4ADE80", "#60A5FA", "#FBBF24", "#F87171"] as const;
 
-const TurnHud = () => {
-	const { isMyTurn, currentPlayerName, roomPlayers, myPlayerId } =
-		useMultiplayerStore();
-	const insets = useSafeAreaInsets();
+const getOrderedPlayers = (
+	roomPlayers: { id: string; displayName: string; cardCount: number }[],
+	playerOrder: string[],
+) => {
+	const orderIndex = new Map(
+		playerOrder.map((playerId, index) => [playerId, index]),
+	);
+
+	return [...roomPlayers].sort((left, right) => {
+		const leftIndex = orderIndex.get(left.id) ?? Number.MAX_SAFE_INTEGER;
+		const rightIndex = orderIndex.get(right.id) ?? Number.MAX_SAFE_INTEGER;
+		return leftIndex - rightIndex;
+	});
+};
+
+const useTurnPulse = (isMyTurn: boolean) => {
 	const pulseOpacity = useRef(new Animated.Value(1)).current;
 
 	useEffect(() => {
@@ -22,57 +36,117 @@ const TurnHud = () => {
 			pulseOpacity.setValue(1);
 			return;
 		}
+
 		const anim = Animated.loop(
 			Animated.sequence([
-				Animated.timing(pulseOpacity, { toValue: 0.3, duration: 850, useNativeDriver: true }),
-				Animated.timing(pulseOpacity, { toValue: 1, duration: 850, useNativeDriver: true }),
+				Animated.timing(pulseOpacity, {
+					toValue: 0.35,
+					duration: 850,
+					useNativeDriver: true,
+				}),
+				Animated.timing(pulseOpacity, {
+					toValue: 1,
+					duration: 850,
+					useNativeDriver: true,
+				}),
 			]),
 		);
+
 		anim.start();
 		return () => anim.stop();
-	}, [isMyTurn]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [isMyTurn, pulseOpacity]);
+
+	return pulseOpacity;
+};
+
+const BottomTurnHud = () => {
+	const { t } = useTranslation();
+	const {
+		isMyTurn,
+		currentPlayerName,
+		roomPlayers,
+		myPlayerId,
+		_currentPlayerIndex,
+		_playerOrder,
+	} = useMultiplayerStore();
+	const insets = useSafeAreaInsets();
+	const pulseOpacity = useTurnPulse(isMyTurn);
+	const activePlayerId = _playerOrder[_currentPlayerIndex] ?? null;
+	const orderedPlayers = getOrderedPlayers(roomPlayers, _playerOrder);
 
 	return (
-		<View style={[styles.hud, { paddingBottom: Math.max((insets.bottom || 0) - 14, 8) }]}>
-			{/* Fixo: indicador de turno */}
+		<View
+			style={[
+				styles.hud,
+				{
+					paddingBottom: Math.max((insets.bottom || 0) - 14, 8),
+					paddingHorizontal: 16,
+				},
+			]}
+		>
 			<View style={[styles.turnPill, isMyTurn && styles.turnPillActive]}>
 				{isMyTurn ? (
-					<Text style={styles.turnTextActive}>Seu turno</Text>
+					<Text style={styles.turnTextActive}>
+						{t("multiplayer.status.yourTurn")}
+					</Text>
 				) : (
 					<Animated.Text style={{ opacity: pulseOpacity }}>
 						<Text style={styles.turnPlayerName}>{currentPlayerName}</Text>
-						<Text style={styles.turnTextWaiting}>{" está jogando..."}</Text>
+						<Text style={styles.turnTextWaiting}>
+							{` ${t("multiplayer.status.waitingInline")}`}
+						</Text>
 					</Animated.Text>
 				)}
 			</View>
 
-			{/* Fixo: separador */}
 			<View style={styles.separator} />
 
-			{/* Rolável: chips dos jogadores */}
 			<ScrollView
 				horizontal
 				showsHorizontalScrollIndicator={false}
 				contentContainerStyle={styles.playersScroll}
 			>
-				{roomPlayers.map((p, idx) => {
-					const isSelf = p.id === myPlayerId;
-					const dotColor = PLAYER_COLORS[idx % PLAYER_COLORS.length];
+				{orderedPlayers.map((player, index) => {
+					const isSelf = player.id === myPlayerId;
+					const isActive = player.id === activePlayerId;
+					const dotColor = PLAYER_COLORS[index % PLAYER_COLORS.length];
+
 					return (
 						<View
-							key={p.id}
-							style={[styles.playerChip, isSelf && styles.playerChipSelf]}
+							key={player.id}
+							style={[
+								styles.playerChip,
+								isSelf && styles.playerChipSelf,
+								isActive && styles.playerChipActive,
+							]}
 						>
 							<View style={[styles.dot, { backgroundColor: dotColor }]} />
 							<Text
-								style={[styles.chipName, isSelf && styles.chipNameSelf]}
+								style={[
+									styles.chipName,
+									isSelf && styles.chipNameSelf,
+									isActive && styles.chipNameActive,
+								]}
 								numberOfLines={1}
 							>
-								{p.displayName}
+								{player.displayName}
 							</Text>
-							<Text style={[styles.chipCards, isSelf && styles.chipCardsSelf]}>
-								{p.cardCount}
-							</Text>
+							<View
+								style={[
+									styles.chipCardsPill,
+									isActive && styles.chipCardsPillActive,
+								]}
+							>
+								<Text
+									style={[
+										styles.chipCards,
+										isSelf && styles.chipCardsSelf,
+										isActive && styles.chipCardsActive,
+									]}
+								>
+									{player.cardCount}
+								</Text>
+							</View>
 						</View>
 					);
 				})}
@@ -84,16 +158,24 @@ const TurnHud = () => {
 export const MultiplayerGameScreen = () => {
 	const store = useMultiplayerStore();
 	const {
-		turnToastSignal, isMyTurn, myDisplayName,
-		abandonRequest, myPlayerId, roomPlayers, roomStatus,
-		requestAbandon, voteAbandon, roomId, tryReconnect,
+		turnToastSignal,
+		isMyTurn,
+		myDisplayName,
+		abandonRequest,
+		myPlayerId,
+		roomPlayers,
+		roomStatus,
+		requestAbandon,
+		voteAbandon,
+		roomId,
+		tryReconnect,
 	} = store;
+	const { isTablet } = useResponsiveLayout();
 
 	useEffect(() => {
 		requestTurnNotificationPermission();
 	}, []);
 
-	// Reconecta automaticamente após refresh na web
 	useEffect(() => {
 		if (roomId) return;
 		tryReconnect().then((ok) => {
@@ -101,7 +183,6 @@ export const MultiplayerGameScreen = () => {
 		});
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-	// Navega para home quando a partida é encerrada por abandono
 	useEffect(() => {
 		if (roomStatus === "finished") {
 			router.replace("/");
@@ -111,13 +192,24 @@ export const MultiplayerGameScreen = () => {
 	const showAbandonModal = abandonRequest != null;
 
 	return (
-		<MultiplayerStoreProvider value={{ ...store, onAbandon: requestAbandon }}>
+		<MultiplayerStoreProvider
+			value={{
+				...store,
+				onAbandon: requestAbandon,
+				playerOrder: store._playerOrder,
+				currentPlayerIndex: store._currentPlayerIndex,
+			}}
+		>
 			<View style={styles.wrapper}>
 				<View style={styles.gameArea}>
 					<GameScreen />
 				</View>
-				<TurnHud />
-				<TurnToast signal={turnToastSignal} isMyTurn={isMyTurn} playerName={myDisplayName} />
+				{!isTablet && <BottomTurnHud />}
+				<TurnToast
+					signal={turnToastSignal}
+					isMyTurn={isMyTurn}
+					playerName={myDisplayName}
+				/>
 				{showAbandonModal && (
 					<AbandonVoteModal
 						abandonRequest={abandonRequest}
@@ -141,13 +233,12 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	hud: {
+		width: "100%",
 		flexDirection: "row",
 		alignItems: "center",
 		backgroundColor: "rgba(10,10,18,0.9)",
 		borderTopWidth: 1,
 		borderTopColor: "rgba(232,213,163,0.15)",
-		paddingLeft: 16,
-		paddingRight: 8,
 		paddingTop: 8,
 		gap: 6,
 	},
@@ -203,6 +294,11 @@ const styles = StyleSheet.create({
 	playerChipSelf: {
 		backgroundColor: "rgba(255,255,255,0.07)",
 	},
+	playerChipActive: {
+		backgroundColor: "rgba(232,213,163,0.1)",
+		borderWidth: 1,
+		borderColor: "rgba(232,213,163,0.18)",
+	},
 	dot: {
 		width: 5,
 		height: 5,
@@ -212,19 +308,36 @@ const styles = StyleSheet.create({
 	chipName: {
 		fontFamily: "IMFellEnglish",
 		fontSize: 11,
-		color: "#64748B",
+		color: "#91a8c7",
 	},
 	chipNameSelf: {
 		color: "#CBD5E1",
 	},
+	chipNameActive: {
+		color: "#F8E7BC",
+	},
+	chipCardsPill: {
+		minWidth: 18,
+		paddingHorizontal: 5,
+		paddingVertical: 1,
+		borderRadius: 999,
+		backgroundColor: "rgba(148,163,184,0.08)",
+		alignItems: "center",
+	},
+	chipCardsPillActive: {
+		backgroundColor: "rgba(232,213,163,0.12)",
+	},
 	chipCards: {
 		fontFamily: "Cinzel",
 		fontSize: 10,
-		color: "#475569",
+		color: "#93a7c3",
 		minWidth: 10,
 		textAlign: "right",
 	},
 	chipCardsSelf: {
 		color: "#94A3B8",
+	},
+	chipCardsActive: {
+		color: "#F8E7BC",
 	},
 });

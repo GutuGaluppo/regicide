@@ -23,6 +23,7 @@ import { useTutorialFlow } from "@/hooks/useTutorialFlow";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ImageBackground, Text, View } from "react-native";
+import { ParticipantsSidebar } from "./components/ParticipantsSidebar";
 import { StatusCard } from "./components/StatusCard";
 import { styles } from "./GameScreen.styles";
 import { useGameAnimations } from "./hooks/useGameAnimations";
@@ -30,7 +31,7 @@ import { useGameAnimations } from "./hooks/useGameAnimations";
 export const GameScreen = () => {
 	const { t } = useTranslation();
 	const { playShuffleCards } = useAudio();
-	const { contentMaxWidth, screenPadding, isDesktop } = useResponsiveLayout();
+	const { contentMaxWidth, screenPadding, isDesktop, isTablet } = useResponsiveLayout();
 	useSoundtrack(
 		require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource,
 	);
@@ -64,6 +65,10 @@ export const GameScreen = () => {
 		resetGame,
 		onAbandon,
 		lastPlayedCards,
+		roomPlayers,
+		myPlayerId,
+		playerOrder,
+		currentPlayerIndex,
 	} = useGameScreenStore();
 
 	useEffect(() => {
@@ -142,6 +147,16 @@ export const GameScreen = () => {
 	const qAllDefeated = qEnemies.length > 0 && qEnemies.every((e) => defeatedIds.includes(e.id));
 	const footerPhase = jAllDefeated ? (qAllDefeated ? "K" : "Q") : "J";
 	const phaseEnemies = allEnemies.filter((e) => e.rank === footerPhase);
+	const orderedPlayers = roomPlayers && playerOrder
+		? [...roomPlayers].sort((left, right) => {
+			const leftIndex = playerOrder.indexOf(left.id);
+			const rightIndex = playerOrder.indexOf(right.id);
+			return (leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex)
+				- (rightIndex === -1 ? Number.MAX_SAFE_INTEGER : rightIndex);
+		})
+		: [];
+	const activePlayerId = playerOrder?.[currentPlayerIndex ?? 0] ?? null;
+	const showParticipantsSidebar = isTablet && orderedPlayers.length > 0;
 
 	if (phase === "victory") return <VictoryScreen onReset={resetGame} />;
 
@@ -258,6 +273,13 @@ export const GameScreen = () => {
 						defeatedIds={defeatedIds}
 						currentSuit={currentEnemy?.suit ?? null}
 					/>
+					{showParticipantsSidebar && (
+						<ParticipantsSidebar
+							players={orderedPlayers}
+							activePlayerId={activePlayerId}
+							myPlayerId={myPlayerId}
+						/>
+					)}
 
 					{/* LAYOUT_TEST: CastleFooter oculto — não deletar
 					<CastleFooter
