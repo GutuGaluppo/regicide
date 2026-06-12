@@ -4,7 +4,7 @@ import { shuffle } from "@/utils/shuffle";
 
 /**
  * Builds the castle deck: shuffled Jacks, then Queens, then Kings.
- * Shared between useTracker (tracker mode) and useGame (full game mode).
+ * Shared between the tracker store and the full-game store.
  */
 export const buildCastle = (): Enemy[] => {
 	const all = createCastleDeck();
