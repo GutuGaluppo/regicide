@@ -65,6 +65,12 @@ const ptBR = {
 			comboMaxTotal: "Total do combo não pode ultrapassar 10",
 			comboMaxCards: "Máximo de 4 cartas no combo",
 		},
+		confirmYield: {
+			title: "Ceder a vez?",
+			body: "Você passa o turno sem jogar cartas.",
+			confirm: "Confirmar",
+			cancel: "Cancelar",
+		},
 	},
 	enemy: {
 		attack: "Ataque",

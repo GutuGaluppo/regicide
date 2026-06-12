@@ -68,6 +68,12 @@ const fr: Translations = {
 			comboMaxTotal: "Le total du combo ne peut pas dépasser 10",
 			comboMaxCards: "Un combo peut contenir au maximum 4 cartes",
 		},
+		confirmYield: {
+			title: "Passer votre tour ?",
+			body: "Vous passez votre tour sans jouer de cartes.",
+			confirm: "Confirmer",
+			cancel: "Annuler",
+		},
 	},
 	enemy: {
 		attack: "Attaque",

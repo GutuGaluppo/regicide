@@ -10,6 +10,7 @@ import { EnemyCard } from "@/components/EnemyCard";
 import { EnemyModal } from "@/components/EnemyModal";
 import { PlayerHand } from "@/components/PlayerHand";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { TutorialStepPanel, TutorialWelcomeModal } from "@/components/TutorialOverlay";
 import { VictoryScreen } from "@/components/VictoryScreen";
@@ -84,6 +85,7 @@ export const GameScreen = () => {
 
 	const [modalVisible, setModalVisible] = useState(false);
 	const [settingsVisible, setSettingsVisible] = useState(false);
+	const [confirmYieldVisible, setConfirmYieldVisible] = useState(false);
 
 	const {
 		dealingIds,
@@ -238,7 +240,11 @@ export const GameScreen = () => {
 								onSort={sortHand}
 								onSortByClass={sortHandByClass}
 								onPlay={effectiveOnPlay}
-								onYield={!yieldBlocked && isMyTurn && onAbandon ? handleYield : undefined}
+								onYield={
+									!yieldBlocked && isMyTurn && onAbandon
+										? () => setConfirmYieldVisible(true)
+										: undefined
+								}
 								playDisabled={selectedIds.size === 0 || !isMyTurn}
 								waitingPlayedCards={!isMyTurn ? lastPlayedCards : undefined}
 								onCardDealComplete={handleCardDealComplete}
@@ -294,6 +300,19 @@ export const GameScreen = () => {
 				onClose={() => setSettingsVisible(false)}
 				onReset={resetGame}
 				onAbandon={onAbandon}
+			/>
+
+			<ConfirmModal
+				visible={confirmYieldVisible}
+				title={t("game.confirmYield.title")}
+				message={t("game.confirmYield.body")}
+				confirmLabel={t("game.confirmYield.confirm")}
+				cancelLabel={t("game.confirmYield.cancel")}
+				onConfirm={() => {
+					setConfirmYieldVisible(false);
+					handleYield();
+				}}
+				onCancel={() => setConfirmYieldVisible(false)}
 			/>
 
 			{isTutorial && step === "welcome" && (

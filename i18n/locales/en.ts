@@ -67,6 +67,12 @@ const en: Translations = {
 			comboMaxTotal: "The combo total cannot exceed 10",
 			comboMaxCards: "A combo can have at most 4 cards",
 		},
+		confirmYield: {
+			title: "Yield your turn?",
+			body: "You'll pass your turn without playing any cards.",
+			confirm: "Confirm",
+			cancel: "Cancel",
+		},
 	},
 	enemy: {
 		attack: "Attack",
