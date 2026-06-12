@@ -18,19 +18,23 @@ export const enemyToCard = (enemy: Enemy): Card => ({
 
 // ─── Validação ────────────────────────────────────────────────────────────────
 
+/**
+ * `reason` is an i18n key (under `game.errors`), not a display string — the
+ * caller translates it via `t()`. Keeps this pure module free of locale text.
+ */
 export type ValidationResult =
 	| { valid: true }
 	| { valid: false; reason: string };
 
 export const validatePlay = (cards: Card[]): ValidationResult => {
 	if (cards.length === 0)
-		return { valid: false, reason: "Selecione pelo menos uma carta" };
+		return { valid: false, reason: "game.errors.selectAtLeastOne" };
 
 	if (cards.length === 1) return { valid: true };
 
 	// Jester sempre sozinho
 	if (cards.some((c) => c.rank === "Jester"))
-		return { valid: false, reason: "Jester deve ser jogado sozinho" };
+		return { valid: false, reason: "game.errors.jesterAlone" };
 
 	const aces = cards.filter((c) => c.rank === "A");
 	const nonAces = cards.filter((c) => c.rank !== "A");
@@ -39,23 +43,20 @@ export const validatePlay = (cards: Card[]): ValidationResult => {
 	if (aces.length >= 1) {
 		if (aces.length === 1 && nonAces.length === 1) return { valid: true };
 		if (aces.length === 2 && nonAces.length === 0) return { valid: true };
-		return {
-			valid: false,
-			reason: "Companheiro Animal só pode ser combinado com uma carta",
-		};
+		return { valid: false, reason: "game.errors.companionPairOnly" };
 	}
 
 	// Combo: 2–4 cartas do mesmo número, total ≤ 10
 	const ranks = new Set(cards.map((c) => c.rank));
 	if (ranks.size !== 1)
-		return { valid: false, reason: "Combo deve usar cartas do mesmo número" };
+		return { valid: false, reason: "game.errors.comboSameRank" };
 
 	const total = cards.reduce((sum, c) => sum + c.value, 0);
 	if (total > 10)
-		return { valid: false, reason: "Total do combo não pode ultrapassar 10" };
+		return { valid: false, reason: "game.errors.comboMaxTotal" };
 
 	if (cards.length > 4)
-		return { valid: false, reason: "Máximo de 4 cartas no combo" };
+		return { valid: false, reason: "game.errors.comboMaxCards" };
 
 	return { valid: true };
 };

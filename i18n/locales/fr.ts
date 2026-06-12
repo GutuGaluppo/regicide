@@ -61,6 +61,12 @@ const fr: Translations = {
 		errors: {
 			discardNotEnough:
 				"Sélectionnez des cartes avec une valeur totale ≥ {{needed}} (actuel: {{current}})",
+			selectAtLeastOne: "Sélectionnez au moins une carte",
+			jesterAlone: "Le Bouffon doit être joué seul",
+			companionPairOnly: "Un Compagnon Animal ne peut être combiné qu'avec une seule carte",
+			comboSameRank: "Un combo doit utiliser des cartes du même numéro",
+			comboMaxTotal: "Le total du combo ne peut pas dépasser 10",
+			comboMaxCards: "Un combo peut contenir au maximum 4 cartes",
 		},
 	},
 	enemy: {

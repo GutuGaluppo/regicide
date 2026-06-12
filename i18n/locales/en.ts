@@ -60,6 +60,12 @@ const en: Translations = {
 		errors: {
 			discardNotEnough:
 				"Select cards with total value ≥ {{needed}} (current: {{current}})",
+			selectAtLeastOne: "Select at least one card",
+			jesterAlone: "The Jester must be played alone",
+			companionPairOnly: "An Animal Companion can only be paired with one card",
+			comboSameRank: "A combo must use cards of the same number",
+			comboMaxTotal: "The combo total cannot exceed 10",
+			comboMaxCards: "A combo can have at most 4 cards",
 		},
 	},
 	enemy: {

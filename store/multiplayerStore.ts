@@ -30,6 +30,7 @@ import {
 } from "@/services/firebaseGame";
 import { scheduleLocalTurnNotification } from "@/services/notifications";
 import { enemyToCard, resolvePlay, validatePlay } from "@/utils/gameLogic";
+import { computeSuitPreview, resolveCannotPay, resolveEmptyHand } from "@/utils/gameEngine";
 import * as Haptics from "expo-haptics";
 import { t } from "i18next";
 import { AppState } from "react-native";
@@ -154,51 +155,8 @@ const decodeShared = (s: SharedState): Omit<GameState, "playerHand"> & {
 	playerCount: s.playerCount ?? 2,
 });
 
-// ─── Resolução síncrona de mão vazia (sem animações) ─────────────────────────
-
-const resolveEmptyHandSync = (
-	jestersAvailable: number,
-	jestersUsed: number,
-	tavernDeck: Card[],
-	discardPile: Card[],
-	maxHand: number,
-): { playerHand: Card[]; tavernDeck: Card[]; discardPile: Card[]; jestersAvailable: number; jestersUsed: number; phase: GamePhase } => {
-	if (jestersAvailable > 0) {
-		const canDraw = Math.min(maxHand, tavernDeck.length);
-		return {
-			playerHand: tavernDeck.slice(0, canDraw),
-			tavernDeck: tavernDeck.slice(canDraw),
-			discardPile,
-			jestersAvailable: jestersAvailable - 1,
-			jestersUsed: jestersUsed + 1,
-			phase: "player_turn",
-		};
-	}
-	return { playerHand: [], tavernDeck, discardPile, jestersAvailable: 0, jestersUsed, phase: "defeat" };
-};
-
-const resolveCannotPaySync = (
-	hand: Card[],
-	tavernDeck: Card[],
-	discardPile: Card[],
-	jestersAvailable: number,
-	jestersUsed: number,
-	maxHand: number,
-): { playerHand: Card[]; tavernDeck: Card[]; discardPile: Card[]; jestersAvailable: number; jestersUsed: number; phase: GamePhase } => {
-	if (jestersAvailable > 0) {
-		const newDiscard = [...discardPile, ...hand];
-		const canDraw = Math.min(maxHand, tavernDeck.length);
-		return {
-			playerHand: tavernDeck.slice(0, canDraw),
-			tavernDeck: tavernDeck.slice(canDraw),
-			discardPile: newDiscard,
-			jestersAvailable: jestersAvailable - 1,
-			jestersUsed: jestersUsed + 1,
-			phase: "player_turn",
-		};
-	}
-	return { playerHand: hand, tavernDeck, discardPile, jestersAvailable: 0, jestersUsed, phase: "defeat" };
-};
+// As resoluções síncronas de mão vazia / pagamento vivem em @/utils/gameEngine
+// (resolveEmptyHand / resolveCannotPay), compartilhadas com o gameStore.
 
 // ─── Tipagem do store ─────────────────────────────────────────────────────────
 
@@ -308,24 +266,10 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 		const effectiveAttack = currentEnemy
 			? Math.max(0, currentEnemy.attack - gameState.spadesShield)
 			: 0;
-		let previewDamage = 0;
-		let previewShieldGain = 0;
-		if (currentEnemy && selectedCards.length > 0 && gameState.phase === "player_turn") {
-			const isJesterSelected = selectedCards.some((c) => c.rank === "Jester");
-			if (!isJesterSelected) {
-				const suitsPlayed = new Set(
-					selectedCards.map((c) => c.suit).filter((s): s is Suit => s !== null),
-				);
-				const isImmune = (s: Suit) => !gameState.jesterActive && currentEnemy.suit === s;
-				let clubsMultiplier = 1;
-				for (const s of suitsPlayed) {
-					if (isImmune(s)) continue;
-					if (s === "clubs") clubsMultiplier = 2;
-					if (s === "spades") previewShieldGain = selectedTotal;
-				}
-				previewDamage = selectedTotal * clubsMultiplier;
-			}
-		}
+		const { previewDamage, previewShieldGain } =
+			currentEnemy && gameState.phase === "player_turn"
+				? computeSuitPreview(selectedCards, selectedTotal, currentEnemy, gameState.jesterActive)
+				: { previewDamage: 0, previewShieldGain: 0 };
 		return { selectedCards, selectedTotal, currentEnemy, currentHP, effectiveAttack, previewDamage, previewShieldGain };
 	};
 
@@ -669,7 +613,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			const selected = gameState.playerHand.filter((c) => selectedIds.has(c.id));
 			const validation = validatePlay(selected);
 			if (!validation.valid) {
-				set({ playError: validation.reason });
+				set({ playError: t(validation.reason) });
 				return;
 			}
 
@@ -799,7 +743,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 				let finalPhase: GamePhase = "player_turn";
 
 				if (finalHand.length === 0) {
-					const r = resolveEmptyHandSync(
+					const r = resolveEmptyHand(
 						finalJestersAvailable, finalJestersUsed,
 						finalTavern, finalDiscard, maxH,
 					);
@@ -851,7 +795,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 				let finalPhase: GamePhase = "player_turn";
 
 				if (finalHand.length === 0) {
-					const r = resolveEmptyHandSync(
+					const r = resolveEmptyHand(
 						finalJestersAvailable, finalJestersUsed,
 						finalTavern, finalDiscard, maxH,
 					);
@@ -894,7 +838,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			let jestersUsedForDamage = gameState.jestersUsed;
 
 			if (handForDamage.length === 0) {
-				const r = resolveEmptyHandSync(
+				const r = resolveEmptyHand(
 					jestersAvailableForDamage, jestersUsedForDamage,
 					tavernForDamage, discardForDamage, maxH,
 				);
@@ -908,7 +852,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			const handValue = handForDamage.reduce((sum, c) => sum + c.value, 0);
 
 			if (handValue < effectiveAttack) {
-				const r = resolveCannotPaySync(
+				const r = resolveCannotPay(
 					handForDamage, tavernForDamage, discardForDamage,
 					jestersAvailableForDamage, jestersUsedForDamage, maxH,
 				);
@@ -979,7 +923,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			const handValue = gameState.playerHand.reduce((sum, c) => sum + c.value, 0);
 
 			if (handValue < effectiveAttack) {
-				const r = resolveCannotPaySync(
+				const r = resolveCannotPay(
 					gameState.playerHand, gameState.tavernDeck, gameState.discardPile,
 					gameState.jestersAvailable, gameState.jestersUsed, maxH,
 				);
@@ -1046,7 +990,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			let finalPhase: GamePhase = "player_turn";
 
 			if (finalHand.length === 0) {
-				const r = resolveEmptyHandSync(
+				const r = resolveEmptyHand(
 					finalJestersAvailable, finalJestersUsed,
 					finalTavern, finalDiscard, maxH,
 				);

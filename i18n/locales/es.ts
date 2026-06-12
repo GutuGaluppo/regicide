@@ -60,6 +60,12 @@ const es: Translations = {
 		errors: {
 			discardNotEnough:
 				"Selecciona cartas con valor total ≥ {{needed}} (actual: {{current}})",
+			selectAtLeastOne: "Selecciona al menos una carta",
+			jesterAlone: "El Comodín debe jugarse solo",
+			companionPairOnly: "Un Compañero Animal solo puede combinarse con una carta",
+			comboSameRank: "Un combo debe usar cartas del mismo número",
+			comboMaxTotal: "El total del combo no puede superar 10",
+			comboMaxCards: "Un combo puede tener como máximo 4 cartas",
 		},
 	},
 	enemy: {

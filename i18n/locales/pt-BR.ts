@@ -58,6 +58,12 @@ const ptBR = {
 		errors: {
 			discardNotEnough:
 				"Selecione cartas com valor total ≥ {{needed}} (atual: {{current}})",
+			selectAtLeastOne: "Selecione pelo menos uma carta",
+			jesterAlone: "Jester deve ser jogado sozinho",
+			companionPairOnly: "Companheiro Animal só pode ser combinado com uma carta",
+			comboSameRank: "Combo deve usar cartas do mesmo número",
+			comboMaxTotal: "Total do combo não pode ultrapassar 10",
+			comboMaxCards: "Máximo de 4 cartas no combo",
 		},
 	},
 	enemy: {

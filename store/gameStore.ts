@@ -1,8 +1,14 @@
 import { buildCastle } from "@/data/buildCastle";
 import { createTavernDeck, HAND_SIZE } from "@/data/deck";
-import { Card, GameState, GameStats, Suit } from "@/data/types";
+import { Card, GameState, GameStats } from "@/data/types";
 import { loadGame, saveGame } from "@/services/storage";
 import { enemyToCard, resolvePlay, validatePlay } from "@/utils/gameLogic";
+import {
+	computeSuitPreview,
+	resolveCannotPay,
+	resolveEmptyHand,
+	type JesterResolution,
+} from "@/utils/gameEngine";
 import { t } from "i18next";
 import { create } from "zustand";
 
@@ -42,11 +48,8 @@ const createInitialState = (): GameState => {
 };
 
 // ─── Helpers de resolução de Coringa ─────────────────────────────────────────
-
-type JesterResolution = Pick<
-	GameState,
-	"playerHand" | "tavernDeck" | "discardPile" | "jestersAvailable" | "jestersUsed" | "phase"
->;
+// As resoluções puras vivem em @/utils/gameEngine; aqui apenas as embrulhamos
+// com os metadados de transição (estado pré-compra) usados pelas animações.
 
 type JesterTransition = {
 	resolution: JesterResolution;
@@ -55,67 +58,18 @@ type JesterTransition = {
 	preDrawDiscardPile: Card[];
 };
 
-const resolveEmptyHand = (
-	state: GameState,
-	tavernDeck: Card[],
-	discardPile: Card[],
-): JesterResolution => {
-	if (state.jestersAvailable > 0) {
-		const canDraw = Math.min(MAX_HAND, tavernDeck.length);
-		return {
-			playerHand: tavernDeck.slice(0, canDraw),
-			tavernDeck: tavernDeck.slice(canDraw),
-			discardPile,
-			jestersAvailable: state.jestersAvailable - 1,
-			jestersUsed: state.jestersUsed + 1,
-			phase: "player_turn",
-		};
-	}
-	return {
-		playerHand: [],
-		tavernDeck,
-		discardPile,
-		jestersAvailable: 0,
-		jestersUsed: state.jestersUsed,
-		phase: "defeat",
-	};
-};
-
-const resolveCannotPay = (
-	hand: Card[],
-	tavernDeck: Card[],
-	discardPile: Card[],
-	jestersAvailable: number,
-	jestersUsed: number,
-): JesterResolution => {
-	if (jestersAvailable > 0) {
-		const newDiscard = [...discardPile, ...hand];
-		const canDraw = Math.min(MAX_HAND, tavernDeck.length);
-		return {
-			playerHand: tavernDeck.slice(0, canDraw),
-			tavernDeck: tavernDeck.slice(canDraw),
-			discardPile: newDiscard,
-			jestersAvailable: jestersAvailable - 1,
-			jestersUsed: jestersUsed + 1,
-			phase: "player_turn",
-		};
-	}
-	return {
-		playerHand: hand,
-		tavernDeck,
-		discardPile,
-		jestersAvailable: 0,
-		jestersUsed,
-		phase: "defeat",
-	};
-};
-
 const resolveEmptyHandTransition = (
 	state: GameState,
 	tavernDeck: Card[],
 	discardPile: Card[],
 ): JesterTransition => {
-	const resolution = resolveEmptyHand(state, tavernDeck, discardPile);
+	const resolution = resolveEmptyHand(
+		state.jestersAvailable,
+		state.jestersUsed,
+		tavernDeck,
+		discardPile,
+		MAX_HAND,
+	);
 	return {
 		resolution,
 		usedJester: resolution.jestersUsed > state.jestersUsed,
@@ -131,7 +85,14 @@ const resolveCannotPayTransition = (
 	jestersAvailable: number,
 	jestersUsed: number,
 ): JesterTransition => {
-	const resolution = resolveCannotPay(hand, tavernDeck, discardPile, jestersAvailable, jestersUsed);
+	const resolution = resolveCannotPay(
+		hand,
+		tavernDeck,
+		discardPile,
+		jestersAvailable,
+		jestersUsed,
+		MAX_HAND,
+	);
 	return {
 		resolution,
 		usedJester: resolution.jestersUsed > jestersUsed,
@@ -222,24 +183,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 			? Math.max(0, currentEnemy.attack - gameState.spadesShield)
 			: 0;
 
-		let previewDamage = 0;
-		let previewShieldGain = 0;
-		if (currentEnemy && selectedCards.length > 0 && gameState.phase === "player_turn") {
-			const isJesterSelected = selectedCards.some((c) => c.rank === "Jester");
-			if (!isJesterSelected) {
-				const suitsPlayed = new Set(
-					selectedCards.map((c) => c.suit).filter((s): s is Suit => s !== null),
-				);
-				const isImmune = (s: Suit) => !gameState.jesterActive && currentEnemy.suit === s;
-				let clubsMultiplier = 1;
-				for (const s of suitsPlayed) {
-					if (isImmune(s)) continue;
-					if (s === "clubs") clubsMultiplier = 2;
-					if (s === "spades") previewShieldGain = selectedTotal;
-				}
-				previewDamage = selectedTotal * clubsMultiplier;
-			}
-		}
+		const { previewDamage, previewShieldGain } =
+			currentEnemy && gameState.phase === "player_turn"
+				? computeSuitPreview(selectedCards, selectedTotal, currentEnemy, gameState.jesterActive)
+				: { previewDamage: 0, previewShieldGain: 0 };
 
 		return { selectedCards, selectedTotal, currentEnemy, currentHP, effectiveAttack, previewDamage, previewShieldGain };
 	};
@@ -395,7 +342,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 			const selected = gameState.playerHand.filter((c) => selectedIds.has(c.id));
 			const validation = validatePlay(selected);
 			if (!validation.valid) {
-				set({ playError: validation.reason });
+				set({ playError: t(validation.reason) });
 				return;
 			}
 
