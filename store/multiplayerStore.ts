@@ -394,16 +394,24 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 		}
 
 		// ── Abandono: verifica votos ──────────────────────────────────────────
+		// Resolve o resultado localmente a partir dos votos que todos os clientes
+		// já observam — não depende do round-trip do write de status (que poderia
+		// falhar/atrasar e travar a tela em "todos concordaram").
 		const abandonRequest: AbandonRequest | null = room.abandonRequest ?? null;
+		let resolvedStatus: RoomStatus = room.status;
+		let resolvedAbandon: AbandonRequest | null = abandonRequest;
 		if (abandonRequest && room.status === "playing") {
 			const playerIds = Object.keys(room.players ?? {});
 			const votes = abandonRequest.votes ?? {};
 			const allAgreed = playerIds.length > 0 && playerIds.every((pid) => votes[pid] === true);
 			const anyRefused = playerIds.some((pid) => votes[pid] === false);
 			const { roomId } = get();
-			if (roomId) {
-				if (allAgreed) finishRoom(roomId);
-				else if (anyRefused) clearAbandonRequest(roomId);
+			if (allAgreed) {
+				resolvedStatus = "finished";
+				if (roomId) finishRoom(roomId);
+			} else if (anyRefused) {
+				resolvedAbandon = null;
+				if (roomId) clearAbandonRequest(roomId);
 			}
 		}
 
@@ -411,12 +419,12 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			...derived,
 			gameState,
 			selectedIds,
-			roomStatus: room.status,
+			roomStatus: resolvedStatus,
 			roomPlayers: players,
 			isMyTurn,
 			currentPlayerName,
 			lastPlayedCards,
-			abandonRequest,
+			abandonRequest: resolvedAbandon,
 			_playerOrder: decoded.playerOrder,
 			_playerCount: decoded.playerCount,
 			_currentPlayerIndex: decoded.currentPlayerIndex,
