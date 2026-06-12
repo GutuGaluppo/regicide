@@ -354,6 +354,11 @@ const ptBR = {
 		joinBtn: "Entrar",
 		waitingTitle: "AGUARDANDO",
 		shareCode: "Compartilhe este código com seus amigos",
+		shareBtn: "Compartilhar código",
+		shareTitle: "Regicide — Sala multiplayer",
+		shareMessage:
+			"Venha jogar Regicide comigo! Código da sala: {{code}}\n{{url}}",
+		codeCopied: "Código copiado!",
 		players: "JOGADORES ({{count}}/4)",
 		you: "(você)",
 		host: "host",

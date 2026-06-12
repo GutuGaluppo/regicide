@@ -357,6 +357,11 @@ const es: Translations = {
 		joinBtn: "Unirse",
 		waitingTitle: "ESPERANDO",
 		shareCode: "Comparte este código con tus amigos",
+		shareBtn: "Compartir código",
+		shareTitle: "Regicide — Sala multijugador",
+		shareMessage:
+			"¡Ven a jugar Regicide conmigo! Código de sala: {{code}}\n{{url}}",
+		codeCopied: "¡Código copiado!",
 		players: "JUGADORES ({{count}}/4)",
 		you: "(tú)",
 		host: "anfitrión",

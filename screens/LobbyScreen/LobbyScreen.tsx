@@ -1,6 +1,8 @@
 import { useMultiplayerStore } from "@/store/multiplayerStore";
+import { buildJoinUrl, shareRoom } from "@/utils/shareRoom";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -42,12 +44,22 @@ export const LobbyScreen = () => {
 		leaveRoom,
 	} = useMultiplayerStore();
 
+	const params = useLocalSearchParams<{ code?: string }>();
+
 	const [view, setView] = useState<LobbyView>("entry");
 	const [displayName, setDisplayName] = useState("");
 	const [joinCode, setJoinCode] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [joinFocused, setJoinFocused] = useState(false);
+	const [copied, setCopied] = useState(false);
+
+	// Pre-fill the join code when arriving from a shared link (?code=ABC123).
+	useEffect(() => {
+		if (typeof params.code === "string" && params.code) {
+			setJoinCode(params.code.toUpperCase().slice(0, 6));
+		}
+	}, [params.code]);
 
 	const handleJoinFocus = () => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -115,6 +127,21 @@ export const LobbyScreen = () => {
 		await leaveRoom();
 		setView("entry");
 		setError(null);
+	};
+
+	const handleShare = async () => {
+		if (!roomId) return;
+		const outcome = await shareRoom({
+			title: t("lobby.shareTitle"),
+			message: t("lobby.shareMessage", {
+				code: roomId,
+				url: buildJoinUrl(roomId),
+			}),
+		});
+		if (outcome === "copied") {
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		}
 	};
 
 	const handleStart = async () => {
@@ -243,8 +270,33 @@ export const LobbyScreen = () => {
 						<Text style={styles.title}>{t("lobby.waitingTitle")}</Text>
 
 						<View style={styles.section}>
-							<Text style={styles.roomCode}>{roomId}</Text>
-							<Text style={styles.roomCodeLabel}>{t("lobby.shareCode")}</Text>
+							<TouchableOpacity
+								onPress={handleShare}
+								activeOpacity={0.7}
+								accessibilityRole="button"
+								accessibilityLabel={t("lobby.shareBtn")}
+							>
+								<Text style={styles.roomCode}>{roomId}</Text>
+							</TouchableOpacity>
+
+							<TouchableOpacity
+								style={styles.shareButton}
+								onPress={handleShare}
+								activeOpacity={0.8}
+							>
+								<Ionicons
+									name="share-social-outline"
+									size={18}
+									color="#E8D5A3"
+								/>
+								<Text style={styles.shareButtonText}>
+									{t("lobby.shareBtn")}
+								</Text>
+							</TouchableOpacity>
+
+							<Text style={styles.roomCodeLabel}>
+								{copied ? t("lobby.codeCopied") : t("lobby.shareCode")}
+							</Text>
 
 							<Text style={styles.sectionTitle}>
 								{t("lobby.players", { count: roomPlayers.length })}
