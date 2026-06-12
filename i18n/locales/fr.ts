@@ -70,7 +70,8 @@ const fr: Translations = {
 		},
 		confirmYield: {
 			title: "Passer votre tour ?",
-			body: "Vous passez votre tour sans jouer de cartes.",
+			body: "Passer le tour sans attaquer ?",
+			bodyDamage: "Passer le tour sans attaquer. Vous subissez {{damage}} dégâts.",
 			confirm: "Confirmer",
 			cancel: "Annuler",
 		},

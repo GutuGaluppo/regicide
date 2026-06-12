@@ -69,7 +69,8 @@ const en: Translations = {
 		},
 		confirmYield: {
 			title: "Yield your turn?",
-			body: "You'll pass your turn without playing any cards.",
+			body: "Pass your turn without attacking?",
+			bodyDamage: "Pass your turn without attacking. You take {{damage}} damage.",
 			confirm: "Confirm",
 			cancel: "Cancel",
 		},

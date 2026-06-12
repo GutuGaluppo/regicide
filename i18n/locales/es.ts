@@ -69,7 +69,8 @@ const es: Translations = {
 		},
 		confirmYield: {
 			title: "¿Ceder el turno?",
-			body: "Pasarás tu turno sin jugar cartas.",
+			body: "¿Pasar el turno sin atacar?",
+			bodyDamage: "Pasar el turno sin atacar. Recibes {{damage}} de daño.",
 			confirm: "Confirmar",
 			cancel: "Cancelar",
 		},

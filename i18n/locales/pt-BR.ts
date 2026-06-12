@@ -67,7 +67,8 @@ const ptBR = {
 		},
 		confirmYield: {
 			title: "Ceder a vez?",
-			body: "Você passa o turno sem jogar cartas.",
+			body: "Passar a vez sem atacar?",
+			bodyDamage: "Passar a vez sem atacar. Recebe {{damage}} de dano.",
 			confirm: "Confirmar",
 			cancel: "Cancelar",
 		},

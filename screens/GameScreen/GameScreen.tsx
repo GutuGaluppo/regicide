@@ -305,7 +305,11 @@ export const GameScreen = () => {
 			<ConfirmModal
 				visible={confirmYieldVisible}
 				title={t("game.confirmYield.title")}
-				message={t("game.confirmYield.body")}
+				message={
+					effectiveAttack > 0
+						? t("game.confirmYield.bodyDamage", { damage: effectiveAttack })
+						: t("game.confirmYield.body")
+				}
 				confirmLabel={t("game.confirmYield.confirm")}
 				cancelLabel={t("game.confirmYield.cancel")}
 				onConfirm={() => {
