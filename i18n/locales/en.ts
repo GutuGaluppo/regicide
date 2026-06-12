@@ -348,6 +348,8 @@ const en: Translations = {
 		title: "MULTIPLAYER",
 		nameSection: "YOUR NAME",
 		namePlaceholder: "What should we call you?",
+		confirmName: "Confirm",
+		wantsTo: "{{name}} wants to...",
 		createSection: "CREATE ROOM",
 		joinSection: "JOIN ROOM",
 		joinPlaceholder: "Code (e.g. ABC123)",

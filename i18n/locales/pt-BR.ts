@@ -345,6 +345,8 @@ const ptBR = {
 		title: "MULTIPLAYER",
 		nameSection: "SEU NOME",
 		namePlaceholder: "Como quer ser chamado?",
+		confirmName: "Confirmar",
+		wantsTo: "{{name}} quer...",
 		createSection: "CRIAR SALA",
 		joinSection: "ENTRAR EM SALA",
 		joinPlaceholder: "Código (ex: ABC123)",

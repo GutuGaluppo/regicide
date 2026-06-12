@@ -348,6 +348,8 @@ const es: Translations = {
 		title: "MULTIJUGADOR",
 		nameSection: "TU NOMBRE",
 		namePlaceholder: "¿Cómo quieres que te llamen?",
+		confirmName: "Confirmar",
+		wantsTo: "{{name}} quiere...",
 		createSection: "CREAR SALA",
 		joinSection: "UNIRSE A SALA",
 		joinPlaceholder: "Código (ej: ABC123)",

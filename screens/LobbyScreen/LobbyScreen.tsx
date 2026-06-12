@@ -27,6 +27,7 @@ if (
 }
 
 type LobbyView = "entry" | "waiting";
+type EntryStep = "name" | "action";
 
 export const LobbyScreen = () => {
 	const { t } = useTranslation();
@@ -47,11 +48,11 @@ export const LobbyScreen = () => {
 	const params = useLocalSearchParams<{ code?: string }>();
 
 	const [view, setView] = useState<LobbyView>("entry");
+	const [entryStep, setEntryStep] = useState<EntryStep>("name");
 	const [displayName, setDisplayName] = useState("");
 	const [joinCode, setJoinCode] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [joinFocused, setJoinFocused] = useState(false);
 	const [copied, setCopied] = useState(false);
 
 	// Pre-fill the join code when arriving from a shared link (?code=ABC123).
@@ -61,14 +62,20 @@ export const LobbyScreen = () => {
 		}
 	}, [params.code]);
 
-	const handleJoinFocus = () => {
+	const handleConfirmName = () => {
+		if (!displayName.trim()) {
+			setError(t("lobby.errors.nameRequired"));
+			return;
+		}
+		setError(null);
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-		setJoinFocused(true);
+		setEntryStep("action");
 	};
 
-	const handleJoinBlur = () => {
+	const handleEditName = () => {
+		setError(null);
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-		setJoinFocused(false);
+		setEntryStep("name");
 	};
 
 	useEffect(() => {
@@ -126,6 +133,7 @@ export const LobbyScreen = () => {
 	const handleLeave = async () => {
 		await leaveRoom();
 		setView("entry");
+		setEntryStep("action");
 		setError(null);
 	};
 
@@ -172,14 +180,20 @@ export const LobbyScreen = () => {
 					<>
 						<TouchableOpacity
 							style={styles.backButton}
-							onPress={() => router.back()}
+							onPress={
+								entryStep === "action" ? handleEditName : () => router.back()
+							}
 						>
 							<Image source={TavernSilver} style={styles.backIcon} contentFit="contain" />
 						</TouchableOpacity>
 
-						<Text style={styles.title}>{t("lobby.title")}</Text>
+						<Text style={styles.title}>
+							{entryStep === "action"
+								? t("lobby.wantsTo", { name: displayName.trim() })
+								: t("lobby.title")}
+						</Text>
 
-						{!joinFocused && (
+						{entryStep === "name" ? (
 							<View style={styles.section}>
 								<Text style={styles.sectionTitle}>
 									{t("lobby.nameSection")}
@@ -192,11 +206,24 @@ export const LobbyScreen = () => {
 									placeholderTextColor="#63748b"
 									maxLength={20}
 									autoCapitalize="words"
+									returnKeyType="done"
+									onSubmitEditing={handleConfirmName}
 								/>
+								<TouchableOpacity
+									style={[
+										styles.button,
+										styles.buttonPrimary,
+										!displayName.trim() && styles.buttonDisabled,
+									]}
+									onPress={handleConfirmName}
+									disabled={!displayName.trim()}
+								>
+									<Text style={styles.buttonText}>
+										{t("lobby.confirmName")}
+									</Text>
+								</TouchableOpacity>
 							</View>
-						)}
-
-						{displayName && !joinFocused && (
+						) : (
 							<>
 								<View style={styles.section}>
 									<Text style={styles.sectionTitle}>
@@ -222,41 +249,39 @@ export const LobbyScreen = () => {
 									<Text style={styles.dividerText}>{t("lobby.divider")}</Text>
 									<View style={styles.dividerLine} />
 								</View>
-							</>
-						)}
 
-						{displayName && (
-							<View style={styles.section}>
-								<Text style={styles.sectionTitle}>
-									{t("lobby.joinSection")}
-								</Text>
-								<View style={styles.row}>
-									<TextInput
-										style={[styles.input, styles.inputFlex]}
-										value={joinCode}
-										onChangeText={(v) => setJoinCode(v.toUpperCase())}
-										placeholder={t("lobby.joinPlaceholder")}
-										placeholderTextColor="#475569"
-										maxLength={6}
-										autoCapitalize="characters"
-										onFocus={handleJoinFocus}
-										onBlur={handleJoinBlur}
-									/>
-									<TouchableOpacity
-										style={[
-											styles.button,
-											styles.joinButton,
-											loading && styles.buttonDisabled,
-										]}
-										onPress={handleJoin}
-										disabled={loading}
-									>
-										<Text style={styles.buttonText}>
-											{loading ? "…" : t("lobby.joinBtn")}
-										</Text>
-									</TouchableOpacity>
+								<View style={styles.section}>
+									<Text style={styles.sectionTitle}>
+										{t("lobby.joinSection")}
+									</Text>
+									<View style={styles.row}>
+										<TextInput
+											style={[styles.input, styles.inputFlex]}
+											value={joinCode}
+											onChangeText={(v) => setJoinCode(v.toUpperCase())}
+											placeholder={t("lobby.joinPlaceholder")}
+											placeholderTextColor="#475569"
+											maxLength={6}
+											autoCapitalize="characters"
+											returnKeyType="go"
+											onSubmitEditing={handleJoin}
+										/>
+										<TouchableOpacity
+											style={[
+												styles.button,
+												styles.joinButton,
+												loading && styles.buttonDisabled,
+											]}
+											onPress={handleJoin}
+											disabled={loading}
+										>
+											<Text style={styles.buttonText}>
+												{loading ? "…" : t("lobby.joinBtn")}
+											</Text>
+										</TouchableOpacity>
+									</View>
 								</View>
-							</View>
+							</>
 						)}
 
 						{error && <Text style={styles.error}>{error}</Text>}

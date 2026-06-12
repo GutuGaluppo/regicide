@@ -349,6 +349,8 @@ const fr: Translations = {
 		title: "MULTIJOUEUR",
 		nameSection: "VOTRE NOM",
 		namePlaceholder: "Comment souhaitez-vous être appelé ?",
+		confirmName: "Confirmer",
+		wantsTo: "{{name}} veut...",
 		createSection: "CRÉER UNE SALLE",
 		joinSection: "REJOINDRE UNE SALLE",
 		joinPlaceholder: "Code (ex : ABC123)",
