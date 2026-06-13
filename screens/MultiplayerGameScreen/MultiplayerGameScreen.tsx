@@ -173,8 +173,9 @@ export const MultiplayerGameScreen = () => {
 		roomId,
 		tryReconnect,
 	} = store;
-	const { isTablet } = useResponsiveLayout();
+	const { isTablet, isDesktop } = useResponsiveLayout();
 	const { playTurnAlert } = useAudio();
+	const chatOpen = useChatStore((s) => s.isOpen);
 
 	// Alerta sonoro quando passa a ser a vez deste jogador.
 	useEffect(() => {
@@ -217,6 +218,9 @@ export const MultiplayerGameScreen = () => {
 	}, [roomStatus]);
 
 	const showAbandonModal = abandonRequest != null;
+	// No desktop, o chat aberto é docado à direita e desloca o GameScreen;
+	// no mobile/tablet permanece como overlay/drawer + botão flutuante.
+	const dockedChat = isDesktop && chatOpen;
 
 	return (
 		<MultiplayerStoreProvider
@@ -228,11 +232,18 @@ export const MultiplayerGameScreen = () => {
 			}}
 		>
 			<View style={styles.wrapper}>
-				<View style={styles.gameArea}>
-					<GameScreen />
+				<View style={styles.contentRow}>
+					<View style={styles.gameArea}>
+						<GameScreen />
+					</View>
+					{dockedChat && (
+						<View style={styles.chatDock}>
+							<RoomChat docked />
+						</View>
+					)}
 				</View>
 				{!isTablet && <BottomTurnHud />}
-				<RoomChat />
+				{!dockedChat && <RoomChat />}
 				<TurnToast
 					signal={turnToastSignal}
 					isMyTurn={isMyTurn}
@@ -257,8 +268,15 @@ const styles = StyleSheet.create({
 		flex: 1,
 		flexDirection: "column",
 	},
+	contentRow: {
+		flex: 1,
+		flexDirection: "row",
+	},
 	gameArea: {
 		flex: 1,
+	},
+	chatDock: {
+		width: 360,
 	},
 	hud: {
 		width: "100%",

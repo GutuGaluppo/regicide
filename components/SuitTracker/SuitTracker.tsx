@@ -7,6 +7,7 @@ import HeartsShadowIcon from "@/assets/classes/hearts_shadow.png";
 import SpadesIcon from "@/assets/classes/spades.png";
 import SpadesShadowIcon from "@/assets/classes/spades_shadow.png";
 import { Enemy, Suit } from "@/data/types";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import React from "react";
 import { Text, View } from "react-native";
 import { Image } from "expo-image";
@@ -34,6 +35,7 @@ interface SuitTrackerProps {
 }
 
 export const SuitTracker = React.memo(({ enemies, defeatedIds, currentSuit }: SuitTrackerProps) => {
+	const { isDesktop } = useResponsiveLayout();
 	const isDefeated = (suit: Suit): boolean => {
 		const enemy = enemies.find((e) => e.suit === suit);
 		return !!enemy && defeatedIds.includes(enemy.id);
@@ -49,8 +51,8 @@ export const SuitTracker = React.memo(({ enemies, defeatedIds, currentSuit }: Su
 						if (!icons) return null;
 						const icon = suit === currentSuit ? icons.shadow : icons.normal;
 						return (
-							<View key={suit} style={styles.cell}>
-								<Image source={icon} style={styles.icon} contentFit="contain" />
+							<View key={suit} style={[styles.cell, isDesktop && styles.cellDesktop]}>
+								<Image source={icon} style={[styles.icon, isDesktop && styles.iconDesktop]} contentFit="contain" />
 								{defeated && (
 									<View style={styles.overlay}>
 										<Text style={styles.x}>✕</Text>

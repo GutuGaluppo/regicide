@@ -26,16 +26,6 @@ export const styles = StyleSheet.create({
 		gap: 12,
 		zIndex: 10,
 	},
-	// Desktop: barra de status vira uma rail vertical à esquerda
-	statusBarDesktop: {
-		position: "absolute",
-		left: 24,
-		top: 150,
-		flexDirection: "column",
-		alignItems: "flex-start",
-		gap: 18,
-		zIndex: 10,
-	},
 	statusItem: { alignItems: "center", gap: 5 },
 	statusCard: {
 		width: 49,
@@ -44,19 +34,6 @@ export const styles = StyleSheet.create({
 		borderWidth: 3,
 		borderRadius: 8,
 		overflow: "hidden",
-	},
-	statusCardDesktop: {
-		width: 88,
-		height: 126,
-		borderWidth: 4,
-		borderRadius: 12,
-	},
-	deckLabelDesktop: {
-		fontSize: 13,
-		letterSpacing: 1.2,
-	},
-	centerDesktop: {
-		paddingTop: 24,
 	},
 	statusCardImg: { width: "100%", height: "100%" },
 	statusCardOverlay: {

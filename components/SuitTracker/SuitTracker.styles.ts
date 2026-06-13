@@ -20,6 +20,14 @@ export const styles = StyleSheet.create({
 		width: 32,
 		height: 32,
 	},
+	cellDesktop: {
+		width: 52,
+		height: 52,
+	},
+	iconDesktop: {
+		width: 52,
+		height: 52,
+	},
 	overlay: {
 		...StyleSheet.absoluteFillObject,
 		justifyContent: "center",

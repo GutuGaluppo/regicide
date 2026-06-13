@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { styles } from "./RoomChat.styles";
 
-export const RoomChat = () => {
+export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 	const { t } = useTranslation();
 	const { isTablet } = useResponsiveLayout();
 
@@ -60,7 +60,8 @@ export const RoomChat = () => {
 		void sendText(value);
 	};
 
-	if (!isOpen) {
+	// Modo overlay (mobile/tablet ou desktop fechado): mostra o FAB quando fechado.
+	if (!docked && !isOpen) {
 		return (
 			<TouchableOpacity
 				style={styles.fab}
@@ -81,7 +82,10 @@ export const RoomChat = () => {
 
 	return (
 		<KeyboardAvoidingView
-			style={[styles.panel, isTablet ? styles.panelTablet : styles.panelMobile]}
+			style={[
+				styles.panel,
+				docked ? styles.panelDocked : isTablet ? styles.panelTablet : styles.panelMobile,
+			]}
 			behavior={Platform.OS === "ios" ? "padding" : undefined}
 		>
 			<View style={styles.header}>

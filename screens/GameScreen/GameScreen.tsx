@@ -199,13 +199,7 @@ export const GameScreen = () => {
 						isDesktop && styles.frameDesktop,
 					]}
 				>
-					<View
-						style={
-							isDesktop
-								? styles.statusBarDesktop
-								: [styles.statusBar, { paddingHorizontal: screenPadding }]
-						}
-					>
+					<View style={[styles.statusBar, { paddingHorizontal: screenPadding }]}>
 						<StatusCard count={gameState.castle.length} label={t("game.status.castle")} />
 						<View ref={tavernRef} collapsable={false}>
 							<StatusCard count={tavernDeck.length} label={t("game.status.tavern")} />
@@ -215,13 +209,7 @@ export const GameScreen = () => {
 						</View>
 					</View>
 
-					<View
-						style={[
-							styles.center,
-							isDesktop && styles.centerDesktop,
-							{ paddingHorizontal: screenPadding },
-						]}
-					>
+					<View style={[styles.center, { paddingHorizontal: screenPadding }]}>
 						{(phase === "player_turn" || phase === "suffer_damage") && currentEnemy && (
 							<EnemyCard
 								enemy={currentEnemy}

@@ -56,6 +56,12 @@ export const styles = StyleSheet.create({
 		width: 340,
 		borderLeftWidth: 1,
 	},
+	// Docado (desktop): ocupa a coluna direita do layout, sem sobrepor o jogo.
+	panelDocked: {
+		position: "relative",
+		flex: 1,
+		borderLeftWidth: 1,
+	},
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
