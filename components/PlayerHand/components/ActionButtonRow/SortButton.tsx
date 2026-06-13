@@ -21,8 +21,9 @@ export const SortButton = ({
 			<Image
 				source={icon}
 				style={{
-					width: 25,
-					height: 35,
+					width: 20,
+					height: 20,
+					tintColor: "#F5E7BB",
 				}}
 				contentFit="contain"
 			/>

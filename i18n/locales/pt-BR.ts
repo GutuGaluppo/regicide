@@ -41,7 +41,7 @@ const ptBR = {
 		empty: "Mão vazia",
 		sufferDiscard: "Selecione cartas para descartar",
 		sort: "Ordenar",
-		sortByClass: "Por Classe",
+		sortByClass: "Por Naipe",
 	},
 	footer: {
 		jacks: "Valetes",

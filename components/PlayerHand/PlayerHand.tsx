@@ -3,6 +3,7 @@ import { CardView } from "@/components/CardView";
 import { useAudio } from "@/contexts/AudioContext";
 import { Card } from "@/data/types";
 import { useCardSize } from "@/hooks/useCardSize";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { getCompatibleCardIds } from "@/utils/gameLogic";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
@@ -10,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { LayoutAnimation, ScrollView, Text, View } from "react-native";
 import { styles } from "./PlayerHand.styles";
 import { ActionButtonRow } from "./components/ActionButtonRow";
+import { IconLabelButton } from "./components/ActionButtonRow/IconLabelButton";
 import { SortButton } from "./components/ActionButtonRow/SortButton";
 import { DiscardButton } from "./components/DiscardButton/DiscardButton";
 import ScaledCard from "./components/ScaledCard";
@@ -76,12 +78,55 @@ export const PlayerHand = ({
 	const current = selectedTotal ?? 0;
 	const damageSubtraction = Math.max(0, pending - current);
 	const enough = current >= pending;
+	const { isDesktop } = useResponsiveLayout();
+
+	const desktopSortButtons =
+		isDesktop && (onSort || onSortByClass) ? (
+			<View style={styles.desktopSortRow}>
+				{onSort && (
+					<IconLabelButton
+						icon={require("@/assets/icons/sort_icon.png")}
+						label={t("hand.sort")}
+						onPress={handleSort}
+						disabled={locked || isDealing}
+					/>
+				)}
+				{onSortByClass && (
+					<IconLabelButton
+						icon={require("@/assets/icons/suits-sort.png")}
+						label={t("hand.sortByClass")}
+						onPress={handleSortByClass}
+						disabled={locked || isDealing}
+					/>
+				)}
+			</View>
+		) : null;
+
+	const compactSortButtons =
+		!isDesktop && (onSort || onSortByClass) ? (
+			<View style={styles.waitingSortRow}>
+				{onSort && (
+					<SortButton
+						icon={require("@/assets/icons/sort_icon.png")}
+						handleSort={handleSort}
+						disabled={locked || isDealing}
+					/>
+				)}
+				{onSortByClass && (
+					<SortButton
+						icon={require("@/assets/icons/suits-sort.png")}
+						handleSort={handleSortByClass}
+						disabled={locked || isDealing}
+					/>
+				)}
+			</View>
+		) : null;
 
 	return (
 		<View style={styles.container}>
 			{waitingPlayedCards !== undefined ? (
 				// Modo espera: exibe cartas jogadas pelo jogador ativo + botões de sort
-				<View style={styles.waitingBar}>
+				<View style={[styles.waitingBar, isDesktop && styles.waitingBarDesktop]}>
 					<View style={styles.waitingArea}>
 						{waitingPlayedCards.length === 0 ? (
 							<Text style={styles.waitingLabel}>
@@ -99,30 +144,27 @@ export const PlayerHand = ({
 							</ScrollView>
 						)}
 					</View>
-					<View style={styles.waitingSortRow}>
-						{onSort && (
-							<SortButton
-								icon={require("@/assets/icons/sort_icon.png")}
-								handleSort={handleSort}
-								disabled={locked || isDealing}
-							/>
-						)}
-						{onSortByClass && (
-							<SortButton
-								icon={require("@/assets/icons/suits-sort.png")}
-								handleSort={handleSortByClass}
-								disabled={locked || isDealing}
-							/>
-						)}
-					</View>
+					{desktopSortButtons ?? compactSortButtons}
 				</View>
 			) : phase === "suffer_damage" && pending > 0 && onDiscard ? (
-				<DiscardButton
-					enough={enough}
-					damageSubtraction={damageSubtraction}
-					onDiscard={onDiscard}
-					locked={locked || isDealing}
-				/>
+				isDesktop ? (
+					<View style={styles.desktopToolbar}>
+						<DiscardButton
+							enough={enough}
+							damageSubtraction={damageSubtraction}
+							onDiscard={onDiscard}
+							locked={locked || isDealing}
+						/>
+						{desktopSortButtons}
+					</View>
+				) : (
+					<DiscardButton
+						enough={enough}
+						damageSubtraction={damageSubtraction}
+						onDiscard={onDiscard}
+						locked={locked || isDealing}
+					/>
+				)
 			) : (
 				<ActionButtonRow
 					phase={phase}

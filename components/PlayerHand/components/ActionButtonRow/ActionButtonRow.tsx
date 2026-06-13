@@ -2,9 +2,10 @@ import { useAudio } from "@/contexts/AudioContext";
 import { GamePhase } from "@/data/types";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { Image } from "expo-image";
-import { LayoutAnimation, Text, TouchableOpacity, View } from "react-native";
+import { LayoutAnimation, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { styles } from "./ActionButtonRow.styles";
+import { IconLabelButton } from "./IconLabelButton";
 import { SortButton } from "./SortButton";
 
 type PropsType = {
@@ -42,69 +43,57 @@ export const ActionButtonRow = ({
 		onSortByClass?.();
 	};
 
-	// ── Desktop: botões com legenda (sem ícone) ──────────────────────────────
+	// ── Desktop: ações com ícone + texto e botões de ordenação persistentes ──
 	if (isDesktop) {
 		const inTurn = phase === "player_turn";
 		return (
 			<View style={styles.desktopRow}>
-				{inTurn && onPlay && (
-					<TouchableOpacity
-						style={[
-							styles.textBtn,
-							styles.textBtnPrimary,
-							(playDisabled || locked) && styles.textBtnDisabled,
-						]}
-						onPress={() => {
-							playTap();
-							onPlay();
-						}}
-						disabled={playDisabled || locked}
-						activeOpacity={0.85}
-					>
-						<Text style={[styles.textBtnLabel, styles.textBtnLabelPrimary]}>
-							{t("action.play")}
-						</Text>
-					</TouchableOpacity>
-				)}
-				{inTurn && onYield && (
-					<TouchableOpacity
-						style={[
-							styles.textBtn,
-							styles.textBtnSecondary,
-							locked && styles.textBtnDisabled,
-						]}
-						onPress={() => {
-							playTap();
-							onYield();
-						}}
-						disabled={locked}
-						activeOpacity={0.85}
-					>
-						<Text style={styles.textBtnLabel}>{t("action.yield")}</Text>
-					</TouchableOpacity>
+				{inTurn && (
+					<View style={styles.desktopActionGroup}>
+						{onPlay && (
+							<IconLabelButton
+								icon={require("@/assets/icons/sword.png")}
+								label={t("action.play")}
+								onPress={() => {
+									playTap();
+									onPlay();
+								}}
+								disabled={playDisabled || locked}
+								variant="primary"
+							/>
+						)}
+						{onYield && (
+							<IconLabelButton
+								icon={require("@/assets/icons/skip_icon.png")}
+								label={t("action.yield")}
+								onPress={() => {
+									playTap();
+									onYield();
+								}}
+								disabled={locked}
+								variant="secondary"
+							/>
+						)}
+					</View>
 				)}
 
-				{inTurn && (onSort || onSortByClass) && (
+				{(onSort || onSortByClass) && (
 					<View style={styles.desktopSortGroup}>
 						{onSort && (
-							<TouchableOpacity
-								style={[styles.textBtn, styles.textBtnGhost, locked && styles.textBtnDisabled]}
+							<IconLabelButton
+								icon={require("@/assets/icons/sort_icon.png")}
+								label={t("hand.sort")}
 								onPress={handleSort}
 								disabled={locked}
-								activeOpacity={0.85}
-							>
-								<Text style={styles.textBtnLabelGhost}>{t("hand.sort")}</Text>
-							</TouchableOpacity>
+							/>
 						)}
 						{onSortByClass && (
-							<TouchableOpacity
-								style={[styles.textBtn, styles.textBtnGhost, locked && styles.textBtnDisabled]}
+							<IconLabelButton
+								icon={require("@/assets/icons/suits-sort.png")}
+								label={t("hand.sortByClass")}
 								onPress={handleSortByClass}
 								disabled={locked}
-								activeOpacity={0.85}
-							>
-								<Text style={styles.textBtnLabelGhost}>{t("hand.sortByClass")}</Text>
-							</TouchableOpacity>
+							/>
 						)}
 					</View>
 				)}
@@ -131,6 +120,7 @@ export const ActionButtonRow = ({
 							style={{
 								width: 35,
 								height: 35,
+								tintColor: "#F5F8F3",
 								transform: [{ rotate: "45deg" }],
 							}}
 							contentFit="contain"
@@ -148,7 +138,7 @@ export const ActionButtonRow = ({
 					disabled={locked}
 				/>
 			)}
-			<View style={{ flexDirection: "row", marginLeft: "auto", gap: 4 }}>
+			<View style={{ flexDirection: "row", gap: 4 }}>
 				{onSort && phase === "player_turn" && (
 					<SortButton
 						icon={require("@/assets/icons/sort_icon.png")}
