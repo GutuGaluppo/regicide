@@ -2,7 +2,8 @@ import { useAudio } from "@/contexts/AudioContext";
 import { GamePhase } from "@/data/types";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { Image } from "expo-image";
-import { LayoutAnimation, TouchableOpacity, View } from "react-native";
+import { LayoutAnimation, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { styles } from "./ActionButtonRow.styles";
 import { SortButton } from "./SortButton";
 
@@ -25,6 +26,7 @@ export const ActionButtonRow = ({
 	locked,
 }: PropsType) => {
 	const { playTap } = useAudio();
+	const { t } = useTranslation();
 	const { isDesktop } = useResponsiveLayout();
 
 	const handleSort = () => {
@@ -40,6 +42,77 @@ export const ActionButtonRow = ({
 		onSortByClass?.();
 	};
 
+	// ── Desktop: botões com legenda (sem ícone) ──────────────────────────────
+	if (isDesktop) {
+		const inTurn = phase === "player_turn";
+		return (
+			<View style={styles.desktopRow}>
+				{inTurn && onPlay && (
+					<TouchableOpacity
+						style={[
+							styles.textBtn,
+							styles.textBtnPrimary,
+							(playDisabled || locked) && styles.textBtnDisabled,
+						]}
+						onPress={() => {
+							playTap();
+							onPlay();
+						}}
+						disabled={playDisabled || locked}
+						activeOpacity={0.85}
+					>
+						<Text style={[styles.textBtnLabel, styles.textBtnLabelPrimary]}>
+							{t("action.play")}
+						</Text>
+					</TouchableOpacity>
+				)}
+				{inTurn && onYield && (
+					<TouchableOpacity
+						style={[
+							styles.textBtn,
+							styles.textBtnSecondary,
+							locked && styles.textBtnDisabled,
+						]}
+						onPress={() => {
+							playTap();
+							onYield();
+						}}
+						disabled={locked}
+						activeOpacity={0.85}
+					>
+						<Text style={styles.textBtnLabel}>{t("action.yield")}</Text>
+					</TouchableOpacity>
+				)}
+
+				{inTurn && (onSort || onSortByClass) && (
+					<View style={styles.desktopSortGroup}>
+						{onSort && (
+							<TouchableOpacity
+								style={[styles.textBtn, styles.textBtnGhost, locked && styles.textBtnDisabled]}
+								onPress={handleSort}
+								disabled={locked}
+								activeOpacity={0.85}
+							>
+								<Text style={styles.textBtnLabelGhost}>{t("hand.sort")}</Text>
+							</TouchableOpacity>
+						)}
+						{onSortByClass && (
+							<TouchableOpacity
+								style={[styles.textBtn, styles.textBtnGhost, locked && styles.textBtnDisabled]}
+								onPress={handleSortByClass}
+								disabled={locked}
+								activeOpacity={0.85}
+							>
+								<Text style={styles.textBtnLabelGhost}>{t("hand.sortByClass")}</Text>
+							</TouchableOpacity>
+						)}
+					</View>
+				)}
+			</View>
+		);
+	}
+
+	// ── Mobile/tablet: botões com ícone (layout original) ────────────────────
 	return (
 		<View style={styles.container}>
 			{phase === "player_turn" && onPlay && (
@@ -75,13 +148,7 @@ export const ActionButtonRow = ({
 					disabled={locked}
 				/>
 			)}
-			<View
-				style={{
-					flexDirection: "row",
-					marginLeft: isDesktop ? 0 : "auto",
-					gap: 4,
-				}}
-			>
+			<View style={{ flexDirection: "row", marginLeft: "auto", gap: 4 }}>
 				{onSort && phase === "player_turn" && (
 					<SortButton
 						icon={require("@/assets/icons/sort_icon.png")}
