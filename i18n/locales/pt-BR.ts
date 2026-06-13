@@ -400,6 +400,17 @@ const ptBR = {
 	notifications: {
 		turnBody: "É sua vez de jogar! 🎴",
 	},
+	chat: {
+		title: "Chat",
+		placeholder: "Mensagem...",
+		send: "Enviar",
+		empty: "Nenhuma mensagem ainda.",
+		tooLong: "Máximo de 180 caracteres.",
+		system: {
+			join: "{{name}} entrou na sala",
+			leave: "{{name}} saiu da sala",
+		},
+	},
 	tutorial: {
 		skip: "Pular",
 		welcome: {

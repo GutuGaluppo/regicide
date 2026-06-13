@@ -403,6 +403,17 @@ const en: Translations = {
 	notifications: {
 		turnBody: "It's your turn to play! 🎴",
 	},
+	chat: {
+		title: "Chat",
+		placeholder: "Message...",
+		send: "Send",
+		empty: "No messages yet.",
+		tooLong: "180 characters max.",
+		system: {
+			join: "{{name}} joined the room",
+			leave: "{{name}} left the room",
+		},
+	},
 	tutorial: {
 		skip: "Skip",
 		welcome: {

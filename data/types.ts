@@ -102,3 +102,20 @@ export interface Room {
 	shared?: SharedState;
 	abandonRequest?: AbandonRequest;
 }
+
+// ─── Chat ───────────────────────────────────────────────────────────────────
+
+export type ChatMessageKind = "text" | "system";
+export type ChatSystemType = "join" | "leave";
+
+export const CHAT_MAX_LENGTH = 180;
+
+export interface ChatMessage {
+	id: string; // = chave do push()
+	playerId: string; // autor (playerId local)
+	playerName: string; // snapshot para render histórico
+	text?: string; // presente quando kind === "text"
+	systemType?: ChatSystemType; // presente quando kind === "system"
+	createdAt: number; // ServerValue.TIMESTAMP
+	kind: ChatMessageKind;
+}

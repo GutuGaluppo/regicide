@@ -1,9 +1,11 @@
 import { AbandonVoteModal } from "@/components/AbandonVoteModal/AbandonVoteModal";
+import { RoomChat } from "@/components/RoomChat";
 import { TurnToast } from "@/components/TurnToast/TurnToast";
 import { MultiplayerStoreProvider } from "@/contexts/GameStoreContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { GameScreen } from "@/screens/GameScreen";
 import { requestTurnNotificationPermission } from "@/services/notifications";
+import { useChatStore } from "@/store/chatStore";
 import { useMultiplayerStore } from "@/store/multiplayerStore";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -172,9 +174,26 @@ export const MultiplayerGameScreen = () => {
 	} = store;
 	const { isTablet } = useResponsiveLayout();
 
+	const chatConnect = useChatStore((s) => s.connect);
+	const chatDisconnect = useChatStore((s) => s.disconnect);
+	const chatClear = useChatStore((s) => s.clearHistory);
+
 	useEffect(() => {
 		requestTurnNotificationPermission();
 	}, []);
+
+	// Conecta o chat ao ciclo da sala; desconecta no unmount / troca de sala.
+	useEffect(() => {
+		if (!roomId || !myPlayerId) return;
+		void chatConnect(roomId, myPlayerId, myDisplayName);
+		return () => chatDisconnect();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [roomId, myPlayerId]);
+
+	// Limpa o histórico do chat quando a sala encerra.
+	useEffect(() => {
+		if (roomStatus === "finished") chatClear();
+	}, [roomStatus, chatClear]);
 
 	useEffect(() => {
 		if (roomId) return;
@@ -205,6 +224,7 @@ export const MultiplayerGameScreen = () => {
 					<GameScreen />
 				</View>
 				{!isTablet && <BottomTurnHud />}
+				<RoomChat />
 				<TurnToast
 					signal={turnToastSignal}
 					isMyTurn={isMyTurn}

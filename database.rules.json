@@ -1,0 +1,26 @@
+{
+  "rules": {
+    "games": {
+      "$roomId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "roomChats": {
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        "$messageId": {
+          ".validate": "newData.hasChildren(['playerId','playerName','kind','createdAt'])",
+          "playerId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64" },
+          "playerName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+          "createdAt": { ".validate": "newData.isNumber()" },
+          "kind": { ".validate": "newData.val() === 'text' || newData.val() === 'system'" },
+          "text": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 180" },
+          "systemType": { ".validate": "newData.val() === 'join' || newData.val() === 'leave'" },
+          "$other": { ".validate": false }
+        }
+      }
+    }
+  }
+}

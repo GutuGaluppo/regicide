@@ -403,6 +403,17 @@ const es: Translations = {
 	notifications: {
 		turnBody: "¡Es tu turno de jugar! 🎴",
 	},
+	chat: {
+		title: "Chat",
+		placeholder: "Mensaje...",
+		send: "Enviar",
+		empty: "Aún no hay mensajes.",
+		tooLong: "Máximo 180 caracteres.",
+		system: {
+			join: "{{name}} entró a la sala",
+			leave: "{{name}} salió de la sala",
+		},
+	},
 	tutorial: {
 		skip: "Omitir",
 		welcome: {

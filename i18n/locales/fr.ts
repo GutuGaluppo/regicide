@@ -404,6 +404,17 @@ const fr: Translations = {
 	notifications: {
 		turnBody: "C'est votre tour de jouer ! 🎴",
 	},
+	chat: {
+		title: "Chat",
+		placeholder: "Message...",
+		send: "Envoyer",
+		empty: "Aucun message pour l'instant.",
+		tooLong: "180 caractères maximum.",
+		system: {
+			join: "{{name}} a rejoint la salle",
+			leave: "{{name}} a quitté la salle",
+		},
+	},
 	tutorial: {
 		skip: "Passer",
 		welcome: {
