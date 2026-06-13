@@ -79,6 +79,10 @@ Cada inimigo é imune ao naipe correspondente ao seu próprio naipe — exceto q
 - **AsyncStorage** — persistência local do estado de jogo
 - **TypeScript**
 
+## Documentacao Tecnica
+
+- [Plano de implementacao do chat em tempo real](docs/real-time-chat-implementation-plan.md)
+
 ## Como rodar
 
 ```bash

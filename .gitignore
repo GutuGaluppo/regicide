@@ -69,4 +69,5 @@ pt-rulebook.pdf
 # markdown
 *.md
 !/README.md
+!/docs/*.md
 en-regiciderules.pdf
