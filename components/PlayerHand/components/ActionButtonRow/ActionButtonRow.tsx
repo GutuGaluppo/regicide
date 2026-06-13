@@ -1,5 +1,6 @@
 import { useAudio } from "@/contexts/AudioContext";
 import { GamePhase } from "@/data/types";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { Image } from "expo-image";
 import { LayoutAnimation, TouchableOpacity, View } from "react-native";
 import { styles } from "./ActionButtonRow.styles";
@@ -24,6 +25,7 @@ export const ActionButtonRow = ({
 	locked,
 }: PropsType) => {
 	const { playTap } = useAudio();
+	const { isDesktop } = useResponsiveLayout();
 
 	const handleSort = () => {
 		if (locked) return;
@@ -73,7 +75,13 @@ export const ActionButtonRow = ({
 					disabled={locked}
 				/>
 			)}
-			<View style={{ flexDirection: "row", marginLeft: "auto", gap: 4 }}>
+			<View
+				style={{
+					flexDirection: "row",
+					marginLeft: isDesktop ? 0 : "auto",
+					gap: 4,
+				}}
+			>
 				{onSort && phase === "player_turn" && (
 					<SortButton
 						icon={require("@/assets/icons/sort_icon.png")}
