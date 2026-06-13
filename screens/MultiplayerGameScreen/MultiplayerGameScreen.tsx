@@ -1,6 +1,7 @@
 import { AbandonVoteModal } from "@/components/AbandonVoteModal/AbandonVoteModal";
 import { RoomChat } from "@/components/RoomChat";
 import { TurnToast } from "@/components/TurnToast/TurnToast";
+import { useAudio } from "@/contexts/AudioContext";
 import { MultiplayerStoreProvider } from "@/contexts/GameStoreContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { GameScreen } from "@/screens/GameScreen";
@@ -173,6 +174,13 @@ export const MultiplayerGameScreen = () => {
 		tryReconnect,
 	} = store;
 	const { isTablet } = useResponsiveLayout();
+	const { playTurnAlert } = useAudio();
+
+	// Alerta sonoro quando passa a ser a vez deste jogador.
+	useEffect(() => {
+		if (turnToastSignal > 0 && isMyTurn) playTurnAlert();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [turnToastSignal]);
 
 	const chatConnect = useChatStore((s) => s.connect);
 	const chatDisconnect = useChatStore((s) => s.disconnect);

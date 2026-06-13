@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { useAudio } from "@/contexts/AudioContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
+import { useSoundtrack } from "@/hooks/useSoundtrack";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -47,6 +48,10 @@ export const HomeScreen = () => {
 	const { playTap } = useAudio();
 	const { isDesktop, contentMaxWidth, screenPadding } = useResponsiveLayout();
 	useBackgroundCaching("home_bg", require("@/assets/backgrounds/bg_cave.webp"));
+	useSoundtrack(
+		require("@/assets/soundtrack/intro.mp3") as import("expo-av").AVPlaybackSource,
+		"intro",
+	);
 	const [langVisible, setLangVisible] = useState(false);
 	const currentLang = i18nHook.language;
 

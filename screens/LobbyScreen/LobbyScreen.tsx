@@ -1,3 +1,4 @@
+import { useSoundtrack } from "@/hooks/useSoundtrack";
 import { useMultiplayerStore } from "@/store/multiplayerStore";
 import { buildJoinUrl, shareRoom } from "@/utils/shareRoom";
 import { Ionicons } from "@expo/vector-icons";
@@ -31,6 +32,10 @@ type EntryStep = "name" | "action";
 
 export const LobbyScreen = () => {
 	const { t } = useTranslation();
+	useSoundtrack(
+		require("@/assets/soundtrack/intro.mp3") as import("expo-av").AVPlaybackSource,
+		"intro",
+	);
 	const {
 		myPlayerId,
 		roomId,

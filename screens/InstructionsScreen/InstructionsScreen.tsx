@@ -5,6 +5,7 @@ import { styles } from "./InstructionsScreen.styles";
 import BG from "@/assets/backgrounds/blue_mountains.webp";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import { useSoundtrack } from "@/hooks/useSoundtrack";
 
 import Combos from "./Sections/components/Combos";
 import Communication from "./Sections/components/Communication";
@@ -26,6 +27,10 @@ import StepTwo from "./Sections/components/StepTwo";
 
 export const InstructionsScreen = () => {
 	const { readingMaxWidth, screenPadding, isDesktop } = useResponsiveLayout();
+	useSoundtrack(
+		require("@/assets/soundtrack/intro.mp3") as import("expo-av").AVPlaybackSource,
+		"intro",
+	);
 
 	return (
 		<ImageBackground

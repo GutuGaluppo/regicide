@@ -18,7 +18,6 @@ import { useAudio } from "@/contexts/AudioContext";
 import { useGameScreenStore } from "@/contexts/GameStoreContext";
 import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-import { useSoundtrack } from "@/hooks/useSoundtrack";
 import { useTutorialFlow } from "@/hooks/useTutorialFlow";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,11 +29,8 @@ import { useGameAnimations } from "./hooks/useGameAnimations";
 
 export const GameScreen = () => {
 	const { t } = useTranslation();
-	const { playShuffleCards } = useAudio();
+	const { playShuffleCards, playSoundtrack } = useAudio();
 	const { contentMaxWidth, screenPadding, isDesktop, isTablet } = useResponsiveLayout();
-	useSoundtrack(
-		require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource,
-	);
 	useBackgroundCaching("game_bg", require("@/assets/backgrounds/bg_cave.webp"));
 
 	const {
@@ -84,6 +80,22 @@ export const GameScreen = () => {
 
 	const { phase, spadesShield, tavernDeck, discardPile, pendingDamage, jesterActive } = gameState;
 	const shieldCards = gameState.playedThisFight.filter((c) => c.suit === "spades");
+
+	// Trilha do jogo dirigida por fase: derrota troca para a faixa "defeat".
+	useEffect(() => {
+		if (phase === "defeat") {
+			playSoundtrack(
+				require("@/assets/soundtrack/defeat.mp3") as import("expo-av").AVPlaybackSource,
+				"defeat",
+			);
+		} else {
+			playSoundtrack(
+				require("@/assets/soundtrack/battle.mp3") as import("expo-av").AVPlaybackSource,
+				"battle",
+			);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [phase]);
 
 	const tavernRef = useRef<View>(null);
 	const discardRef = useRef<View>(null);
@@ -187,7 +199,13 @@ export const GameScreen = () => {
 						isDesktop && styles.frameDesktop,
 					]}
 				>
-					<View style={[styles.statusBar, { paddingHorizontal: screenPadding }]}>
+					<View
+						style={
+							isDesktop
+								? styles.statusBarDesktop
+								: [styles.statusBar, { paddingHorizontal: screenPadding }]
+						}
+					>
 						<StatusCard count={gameState.castle.length} label={t("game.status.castle")} />
 						<View ref={tavernRef} collapsable={false}>
 							<StatusCard count={tavernDeck.length} label={t("game.status.tavern")} />
@@ -197,7 +215,13 @@ export const GameScreen = () => {
 						</View>
 					</View>
 
-					<View style={[styles.center, { paddingHorizontal: screenPadding }]}>
+					<View
+						style={[
+							styles.center,
+							isDesktop && styles.centerDesktop,
+							{ paddingHorizontal: screenPadding },
+						]}
+					>
 						{(phase === "player_turn" || phase === "suffer_damage") && currentEnemy && (
 							<EnemyCard
 								enemy={currentEnemy}

@@ -41,7 +41,8 @@ export const TrackerScreen = () => {
 	const { playTap } = useAudio();
 	const { contentMaxWidth, screenPadding, isDesktop } = useResponsiveLayout();
 	useSoundtrack(
-		require("@/assets/soundtrack/502_Sentient_Eye.mp3") as import("expo-av").AVPlaybackSource,
+		require("@/assets/soundtrack/battle.mp3") as import("expo-av").AVPlaybackSource,
+		"battle",
 	);
 	useBackgroundCaching("tracker_bg", BG);
 

@@ -1,8 +1,9 @@
+import { useAudio } from "@/contexts/AudioContext";
 import { CHAT_MAX_LENGTH } from "@/data/types";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useChatStore } from "@/store/chatStore";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	KeyboardAvoidingView,
@@ -26,9 +27,32 @@ export const RoomChat = () => {
 	const openChat = useChatStore((s) => s.openChat);
 	const closeChat = useChatStore((s) => s.closeChat);
 	const sendText = useChatStore((s) => s.sendText);
+	const { playChatMessage } = useAudio();
 
 	const [draft, setDraft] = useState("");
 	const scrollRef = useRef<ScrollView>(null);
+
+	// Toca um som ao chegar nova mensagem de texto de outro jogador.
+	// Ignora o lote inicial do histórico e mensagens próprias/de sistema.
+	const lastMsgIdRef = useRef<string | null>(null);
+	const chatInitRef = useRef(false);
+	useEffect(() => {
+		if (messages.length === 0) {
+			chatInitRef.current = false;
+			lastMsgIdRef.current = null;
+			return;
+		}
+		const last = messages[messages.length - 1];
+		const prevId = lastMsgIdRef.current;
+		lastMsgIdRef.current = last.id;
+		if (!chatInitRef.current) {
+			chatInitRef.current = true; // pula o histórico carregado ao conectar
+			return;
+		}
+		if (last.id !== prevId && last.kind === "text" && last.playerId !== myPlayerId) {
+			playChatMessage();
+		}
+	}, [messages, myPlayerId, playChatMessage]);
 
 	const handleSend = () => {
 		const value = draft;
