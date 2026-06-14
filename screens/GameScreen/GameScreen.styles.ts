@@ -57,6 +57,9 @@ export const styles = StyleSheet.create({
 	handSection: {
 		width: "100%",
 		alignSelf: "center",
+		// Camada interativa (cartas + botões) acima do inimigo/decoração — em telas
+		// baixas (tablet horizontal) o EnemyCard pode transbordar e capturar o toque.
+		zIndex: 20,
 	},
 	error: {
 		color: "#FCA5A5",

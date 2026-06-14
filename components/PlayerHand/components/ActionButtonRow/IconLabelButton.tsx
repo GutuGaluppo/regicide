@@ -53,6 +53,7 @@ export const IconLabelButton = ({
 				source={icon}
 				style={[variantStyles.icon, { tintColor: variantStyles.iconTint }]}
 				contentFit="contain"
+				pointerEvents="none"
 			/>
 			<Text style={[styles.textBtnLabel, variantStyles.label]}>{label}</Text>
 		</TouchableOpacity>
