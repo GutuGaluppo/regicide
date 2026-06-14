@@ -34,7 +34,7 @@ export const styles = StyleSheet.create({
 		fontFamily: "Cinzel",
 		fontSize: 14,
 		color: "#dce9f8",
-		marginBottom: 12,
+		marginTop: 12,
 		letterSpacing: 1,
 	},
 	input: {
@@ -48,6 +48,41 @@ export const styles = StyleSheet.create({
 		paddingHorizontal: 14,
 		paddingVertical: 10,
 		marginBottom: 12,
+	},
+	// Widget nome + avatar (passo "name")
+	// Desktop: avatar no canto superior esquerdo; abaixo, input + botão na mesma linha.
+	// Mobile: coluna — avatar centralizado no topo, input no meio, botão embaixo.
+	identityContainer: {
+		gap: 12,
+	},
+	identityAvatarDesktop: {
+		alignSelf: "flex-start",
+	},
+	identityAvatarMobile: {
+		alignSelf: "center",
+	},
+	identityInputRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 12,
+	},
+	identityInputColumn: {
+		flexDirection: "column",
+		gap: 12,
+	},
+	identityInput: {
+		marginBottom: 0,
+	},
+	identityInputDesktop: {
+		flex: 1,
+	},
+	identityInputMobile: {
+		width: "100%",
+	},
+	identityConfirmMobile: {
+		width: "100%",
+		flex: 1,
+		padding: 4,
 	},
 	button: {
 		backgroundColor: "rgba(232,213,163,0.18)",

@@ -1,4 +1,4 @@
-import { ChatMessage } from "@/data/types";
+import { AvatarId, ChatMessage } from "@/data/types";
 import {
 	clearRoomChat,
 	registerPresence,
@@ -12,6 +12,7 @@ interface ChatStore {
 	roomId: string | null;
 	myPlayerId: string;
 	myDisplayName: string;
+	myAvatarId: AvatarId | undefined;
 	messages: ChatMessage[];
 	unreadCount: number;
 	isOpen: boolean;
@@ -21,7 +22,12 @@ interface ChatStore {
 	_unsub: (() => void) | null;
 	_presenceCleanup: (() => void) | null;
 
-	connect: (roomId: string, playerId: string, playerName: string) => Promise<void>;
+	connect: (
+		roomId: string,
+		playerId: string,
+		playerName: string,
+		avatarId?: AvatarId,
+	) => Promise<void>;
 	disconnect: () => void;
 	openChat: () => void;
 	closeChat: () => void;
@@ -34,6 +40,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	roomId: null,
 	myPlayerId: "",
 	myDisplayName: "",
+	myAvatarId: undefined,
 	messages: [],
 	unreadCount: 0,
 	isOpen: false,
@@ -43,12 +50,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	_unsub: null,
 	_presenceCleanup: null,
 
-	connect: async (roomId, playerId, playerName) => {
+	connect: async (roomId, playerId, playerName, avatarId) => {
 		// Já conectado nesta sala? não reassina.
 		if (get().roomId === roomId && get()._unsub) return;
 		get().disconnect();
 
-		set({ roomId, myPlayerId: playerId, myDisplayName: playerName });
+		set({ roomId, myPlayerId: playerId, myDisplayName: playerName, myAvatarId: avatarId });
 
 		const unsub = subscribeToRoomChat(roomId, (messages) => {
 			const { isOpen, lastSeenMessageId, myPlayerId } = get();
@@ -62,7 +69,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		set({ _unsub: unsub });
 
 		try {
-			const cleanup = await registerPresence(roomId, { playerId, playerName });
+			const cleanup = await registerPresence(roomId, { playerId, playerName, avatarId });
 			set({ _presenceCleanup: cleanup });
 		} catch {
 			// presença é best-effort; não bloqueia o chat
@@ -99,7 +106,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	},
 
 	sendText: async (text) => {
-		const { roomId, myPlayerId, myDisplayName } = get();
+		const { roomId, myPlayerId, myDisplayName, myAvatarId } = get();
 		if (!roomId) return;
 		const result = validateOutgoingText(text);
 		if (!result.ok) {
@@ -108,7 +115,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		}
 		set({ error: null });
 		try {
-			await sendChatMessage(roomId, { playerId: myPlayerId, playerName: myDisplayName }, result.value);
+			await sendChatMessage(
+				roomId,
+				{ playerId: myPlayerId, playerName: myDisplayName, avatarId: myAvatarId },
+				result.value,
+			);
 		} catch {
 			// falha de rede: silenciosa no MVP (a mensagem não aparece)
 		}

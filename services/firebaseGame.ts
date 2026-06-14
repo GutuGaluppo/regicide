@@ -1,4 +1,5 @@
-import { AbandonRequest, Room, RoomPlayer, SharedState } from "@/data/types";
+import { AbandonRequest, AvatarId, Room, RoomPlayer, SharedState } from "@/data/types";
+import { DEFAULT_AVATAR_ID } from "@/data/avatars";
 import { get, onValue, ref, remove, set, update } from "firebase/database";
 import { db } from "./firebase";
 
@@ -18,8 +19,9 @@ export const createRoom = async (
 	roomId: string,
 	hostId: string,
 	displayName: string,
+	avatarId: AvatarId = DEFAULT_AVATAR_ID,
 ): Promise<void> => {
-	const player: RoomPlayer = { id: hostId, displayName, hand: "[]" };
+	const player: RoomPlayer = { id: hostId, displayName, avatarId, hand: "[]" };
 	const room: Room = {
 		hostId,
 		status: "lobby",
@@ -33,13 +35,28 @@ export const joinRoom = async (
 	roomId: string,
 	playerId: string,
 	displayName: string,
+	avatarId: AvatarId = DEFAULT_AVATAR_ID,
 ): Promise<void> => {
-	const player: RoomPlayer = { id: playerId, displayName, hand: "[]" };
+	const player: RoomPlayer = { id: playerId, displayName, avatarId, hand: "[]" };
 	await set(ref(db, `games/${roomId}/players/${playerId}`), player);
 };
 
 export const leaveRoom = async (roomId: string, playerId: string): Promise<void> => {
 	await remove(ref(db, `games/${roomId}/players/${playerId}`));
+};
+
+/** Atualiza apenas nome/avatar do jogador no lobby (sem reescrever a sala). */
+export const updatePlayerProfile = async (
+	roomId: string,
+	playerId: string,
+	profile: { displayName?: string; avatarId?: AvatarId },
+): Promise<void> => {
+	const updates: Record<string, unknown> = {};
+	if (profile.displayName !== undefined)
+		updates[`games/${roomId}/players/${playerId}/displayName`] = profile.displayName;
+	if (profile.avatarId !== undefined)
+		updates[`games/${roomId}/players/${playerId}/avatarId`] = profile.avatarId;
+	if (Object.keys(updates).length > 0) await update(ref(db), updates);
 };
 
 export const fetchRoom = async (roomId: string): Promise<Room | null> => {

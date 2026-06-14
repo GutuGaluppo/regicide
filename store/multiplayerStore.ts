@@ -2,6 +2,7 @@ import { buildCastle } from "@/data/buildCastle";
 import { createTavernDeck, HAND_SIZE, JESTER_COUNT } from "@/data/deck";
 import {
 	AbandonRequest,
+	AvatarId,
 	Card,
 	Enemy,
 	GamePhase,
@@ -13,6 +14,7 @@ import {
 	SharedState,
 	Suit,
 } from "@/data/types";
+import { DEFAULT_AVATAR_ID } from "@/data/avatars";
 import {
 	clearAbandonRequest,
 	createRoom,
@@ -25,6 +27,7 @@ import {
 	requestAbandon,
 	startGame,
 	subscribeToRoom,
+	updatePlayerProfile,
 	updateSharedAndHands,
 	voteAbandon,
 } from "@/services/firebaseGame";
@@ -56,12 +59,25 @@ const getOrCreatePlayerId = (): string => {
 
 const SESSION_PLAYER_ID = getOrCreatePlayerId();
 
-type SessionData = { roomId: string; displayName: string; isHost: boolean };
+type SessionData = {
+	roomId: string;
+	displayName: string;
+	avatarId?: AvatarId;
+	isHost: boolean;
+};
 
-const saveSession = (roomId: string, displayName: string, isHost: boolean): void => {
+const saveSession = (
+	roomId: string,
+	displayName: string,
+	avatarId: AvatarId,
+	isHost: boolean,
+): void => {
 	try {
 		if (typeof sessionStorage !== "undefined")
-			sessionStorage.setItem("regicide_room", JSON.stringify({ roomId, displayName, isHost }));
+			sessionStorage.setItem(
+				"regicide_room",
+				JSON.stringify({ roomId, displayName, avatarId, isHost }),
+			);
 	} catch {}
 };
 
@@ -163,6 +179,7 @@ const decodeShared = (s: SharedState): Omit<GameState, "playerHand"> & {
 export interface MultiplayerRoomPlayer {
 	id: string;
 	displayName: string;
+	avatarId: AvatarId;
 	cardCount: number;
 }
 
@@ -170,6 +187,7 @@ export interface MultiplayerStore {
 	// Identidade local
 	myPlayerId: string;
 	myDisplayName: string;
+	myAvatarId: AvatarId;
 
 	// Estado da sala
 	roomId: string | null;
@@ -207,11 +225,15 @@ export interface MultiplayerStore {
 
 	// Ações de sala
 	initPlayerId: () => Promise<void>;
-	createRoom: (displayName: string) => Promise<string>;
-	joinRoom: (roomId: string, displayName: string) => Promise<void>;
+	createRoom: (displayName: string, avatarId?: AvatarId) => Promise<string>;
+	joinRoom: (roomId: string, displayName: string, avatarId?: AvatarId) => Promise<void>;
 	startGame: () => Promise<void>;
 	leaveRoom: () => Promise<void>;
 	tryReconnect: () => Promise<boolean>;
+
+	// Perfil (avatar) no lobby
+	setMyAvatar: (avatarId: AvatarId) => void;
+	updateMyLobbyProfile: (displayName: string, avatarId: AvatarId) => Promise<void>;
 
 	// Ações de jogo (interface compatível com GameScreen)
 	initialize: () => Promise<void>;
@@ -334,6 +356,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 		const players: MultiplayerRoomPlayer[] = Object.values(room.players ?? {}).map((p) => ({
 			id: p.id,
 			displayName: p.displayName,
+			avatarId: p.avatarId ?? DEFAULT_AVATAR_ID, // normaliza salas antigas
 			cardCount: (safeParseArray(p.hand) as Card[]).length,
 		}));
 
@@ -445,6 +468,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 	return {
 		myPlayerId: SESSION_PLAYER_ID,
 		myDisplayName: "",
+		myAvatarId: DEFAULT_AVATAR_ID,
 		roomId: null,
 		isHost: false,
 		roomStatus: "idle",
@@ -487,31 +511,43 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 		// ID já definido em SESSION_PLAYER_ID (gerado na carga do módulo)
 		initPlayerId: async () => {},
 
+		// ── Avatar / perfil no lobby ──────────────────────────────────────────
+		setMyAvatar: (avatarId: AvatarId) => set({ myAvatarId: avatarId }),
+
+		updateMyLobbyProfile: async (displayName: string, avatarId: AvatarId) => {
+			const { roomId, myPlayerId } = get();
+			set({ myDisplayName: displayName, myAvatarId: avatarId });
+			if (roomId) {
+				saveSession(roomId, displayName, avatarId, get().isHost);
+				await updatePlayerProfile(roomId, myPlayerId, { displayName, avatarId }).catch(() => {});
+			}
+		},
+
 		// ── Criar sala ────────────────────────────────────────────────────────
-		createRoom: async (displayName: string) => {
+		createRoom: async (displayName: string, avatarId: AvatarId = get().myAvatarId) => {
 			const { myPlayerId, _unsubscribeFn } = get();
 			const roomId = generateRoomCode();
-			await createRoom(roomId, myPlayerId, displayName);
+			await createRoom(roomId, myPlayerId, displayName, avatarId);
 			_unsubscribeFn?.();
 			const unsub = subscribeToRoom(roomId, onRoomUpdate);
-			saveSession(roomId, displayName, true);
-			set({ roomId, myDisplayName: displayName, isHost: true, roomStatus: "lobby", _unsubscribeFn: unsub });
+			saveSession(roomId, displayName, avatarId, true);
+			set({ roomId, myDisplayName: displayName, myAvatarId: avatarId, isHost: true, roomStatus: "lobby", _unsubscribeFn: unsub });
 			return roomId;
 		},
 
 		// ── Entrar na sala ────────────────────────────────────────────────────
-		joinRoom: async (roomId: string, displayName: string) => {
+		joinRoom: async (roomId: string, displayName: string, avatarId: AvatarId = get().myAvatarId) => {
 			const { myPlayerId, _unsubscribeFn } = get();
 			const room = await fetchRoom(roomId);
 			if (!room) throw new Error("Sala não encontrada");
 			if (room.status !== "lobby") throw new Error("Partida já em andamento");
 			const playerCount = Object.keys(room.players ?? {}).length;
 			if (playerCount >= 4) throw new Error("Sala cheia (máx. 4 jogadores)");
-			await joinRoom(roomId, myPlayerId, displayName);
+			await joinRoom(roomId, myPlayerId, displayName, avatarId);
 			_unsubscribeFn?.();
 			const unsub = subscribeToRoom(roomId, onRoomUpdate);
-			saveSession(roomId, displayName, false);
-			set({ roomId, myDisplayName: displayName, isHost: false, roomStatus: "lobby", _unsubscribeFn: unsub });
+			saveSession(roomId, displayName, avatarId, false);
+			set({ roomId, myDisplayName: displayName, myAvatarId: avatarId, isHost: false, roomStatus: "lobby", _unsubscribeFn: unsub });
 		},
 
 		// ── Iniciar partida (host) ────────────────────────────────────────────
@@ -1079,6 +1115,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			set({
 				roomId: session.roomId,
 				myDisplayName: session.displayName,
+				myAvatarId: session.avatarId ?? get().myAvatarId,
 				isHost: session.isHost,
 				roomStatus: room.status,
 				_unsubscribeFn: unsub,

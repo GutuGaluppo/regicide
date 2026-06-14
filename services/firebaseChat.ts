@@ -1,4 +1,4 @@
-import { ChatMessage, ChatSystemType } from "@/data/types";
+import { AvatarId, ChatMessage, ChatSystemType } from "@/data/types";
 import { parseIncomingMessage } from "@/utils/chat";
 import {
 	limitToLast,
@@ -21,7 +21,15 @@ const chatRef = (roomId: string) => ref(db, `roomChats/${roomId}`);
 interface Author {
 	playerId: string;
 	playerName: string;
+	avatarId?: AvatarId;
 }
+
+// RTDB rejeita `undefined` — só inclui o avatar quando definido.
+const authorFields = (author: Author) => ({
+	playerId: author.playerId,
+	playerName: author.playerName,
+	...(author.avatarId ? { playerAvatarId: author.avatarId } : {}),
+});
 
 /** Sends a free-text message authored by the local player. */
 export const sendChatMessage = async (
@@ -30,8 +38,7 @@ export const sendChatMessage = async (
 	text: string,
 ): Promise<void> => {
 	await push(chatRef(roomId), {
-		playerId: author.playerId,
-		playerName: author.playerName,
+		...authorFields(author),
 		text,
 		kind: "text",
 		createdAt: serverTimestamp(),
@@ -45,8 +52,7 @@ export const sendSystemMessage = async (
 	systemType: ChatSystemType,
 ): Promise<void> => {
 	await push(chatRef(roomId), {
-		playerId: author.playerId,
-		playerName: author.playerName,
+		...authorFields(author),
 		systemType,
 		kind: "system",
 		createdAt: serverTimestamp(),
@@ -85,8 +91,7 @@ export const registerPresence = async (
 	author: Author,
 ): Promise<() => void> => {
 	const leavePayload = {
-		playerId: author.playerId,
-		playerName: author.playerName,
+		...authorFields(author),
 		systemType: "leave" as const,
 		kind: "system" as const,
 		createdAt: serverTimestamp(),

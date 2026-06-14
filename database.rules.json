@@ -18,6 +18,7 @@
           "kind": { ".validate": "newData.val() === 'text' || newData.val() === 'system'" },
           "text": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 180" },
           "systemType": { ".validate": "newData.val() === 'join' || newData.val() === 'leave'" },
+          "playerAvatarId": { ".validate": "newData.isString() && newData.val().length <= 32" },
           "$other": { ".validate": false }
         }
       }

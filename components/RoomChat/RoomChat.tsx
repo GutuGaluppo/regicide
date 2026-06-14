@@ -1,3 +1,4 @@
+import { AvatarBadge } from "@/components/AvatarBadge";
 import { useAudio } from "@/contexts/AudioContext";
 import { CHAT_MAX_LENGTH } from "@/data/types";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
@@ -31,6 +32,7 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 
 	const [draft, setDraft] = useState("");
 	const scrollRef = useRef<ScrollView>(null);
+	const inputRef = useRef<TextInput>(null);
 
 	// Toca um som ao chegar nova mensagem de texto de outro jogador.
 	// Ignora o lote inicial do histórico e mensagens próprias/de sistema.
@@ -54,10 +56,19 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 		}
 	}, [messages, myPlayerId, playChatMessage]);
 
+	const refocusInput = () => {
+		setTimeout(() => inputRef.current?.focus(), 0);
+	};
+
 	const handleSend = () => {
 		const value = draft;
 		setDraft("");
 		void sendText(value);
+	};
+
+	const handleSubmitEditing = () => {
+		handleSend();
+		refocusInput();
 	};
 
 	// Modo overlay (mobile/tablet ou desktop fechado): mostra o FAB quando fechado.
@@ -117,13 +128,20 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 							);
 						}
 						const isOwn = m.playerId === myPlayerId;
+						if (isOwn) {
+							return (
+								<View key={m.id} style={[styles.bubble, styles.bubbleOwn]}>
+									<Text style={styles.bubbleText}>{m.text}</Text>
+								</View>
+							);
+						}
 						return (
-							<View
-								key={m.id}
-								style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther]}
-							>
-								{!isOwn && <Text style={styles.author}>{m.playerName}</Text>}
-								<Text style={styles.bubbleText}>{m.text}</Text>
+							<View key={m.id} style={styles.msgRow}>
+								<AvatarBadge avatarId={m.playerAvatarId} size={28} />
+								<View style={[styles.bubble, styles.bubbleOther, styles.bubbleInRow]}>
+									<Text style={styles.author}>{m.playerName}</Text>
+									<Text style={styles.bubbleText}>{m.text}</Text>
+								</View>
 							</View>
 						);
 					})}
@@ -132,6 +150,7 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 
 			<View style={styles.inputRow}>
 				<TextInput
+					ref={inputRef}
 					style={styles.input}
 					value={draft}
 					onChangeText={setDraft}
@@ -140,7 +159,7 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 					maxLength={CHAT_MAX_LENGTH}
 					multiline
 					returnKeyType="send"
-					onSubmitEditing={handleSend}
+					onSubmitEditing={handleSubmitEditing}
 					blurOnSubmit
 				/>
 				<TouchableOpacity

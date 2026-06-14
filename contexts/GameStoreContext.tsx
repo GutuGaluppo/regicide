@@ -1,4 +1,4 @@
-import { Card, Enemy, GameState } from "@/data/types";
+import { AvatarId, Card, Enemy, GameState } from "@/data/types";
 import { useGameStore } from "@/store/gameStore";
 import React, { createContext, useContext } from "react";
 
@@ -33,7 +33,7 @@ export interface GameScreenStore {
 	sortHandByClass: () => void;
 	resetGame: () => void;
 	onAbandon?: () => void; // apenas multiplayer
-	roomPlayers?: { id: string; displayName: string; cardCount: number }[];
+	roomPlayers?: { id: string; displayName: string; avatarId: AvatarId; cardCount: number }[];
 	myPlayerId?: string;
 	playerOrder?: string[];
 	currentPlayerIndex?: number;

@@ -27,12 +27,17 @@ export const parseIncomingMessage = (id: string, raw: unknown): ChatMessage | nu
 	if (typeof playerName !== "string" || playerName.length === 0) return null;
 	if (typeof createdAt !== "number") return null;
 
+	// Avatar é opcional (mensagens antigas não têm). Nunca descarta por isso;
+	// a UI resolve via resolveAvatar (id desconhecido → default).
+	const playerAvatarId =
+		typeof r.playerAvatarId === "string" ? r.playerAvatarId : undefined;
+
 	if (kind === "text") {
 		const text = r.text;
 		if (typeof text !== "string") return null;
 		const trimmed = text.trim();
 		if (trimmed.length === 0 || trimmed.length > CHAT_MAX_LENGTH) return null;
-		return { id, playerId, playerName, createdAt, kind: "text", text: trimmed };
+		return { id, playerId, playerName, playerAvatarId, createdAt, kind: "text", text: trimmed };
 	}
 
 	if (kind === "system") {
@@ -43,6 +48,7 @@ export const parseIncomingMessage = (id: string, raw: unknown): ChatMessage | nu
 			id,
 			playerId,
 			playerName,
+			playerAvatarId,
 			createdAt,
 			kind: "system",
 			systemType: systemType as ChatSystemType,

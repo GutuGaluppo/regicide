@@ -1,3 +1,6 @@
+import { AvatarBadge } from "@/components/AvatarBadge";
+import { CardCountBadge } from "@/components/CardCountBadge";
+import { AvatarId } from "@/data/types";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -8,6 +11,7 @@ const PLAYER_COLORS = ["#4ADE80", "#60A5FA", "#FBBF24", "#F87171"] as const;
 interface PlayerInfo {
 	id: string;
 	displayName: string;
+	avatarId?: AvatarId;
 	cardCount: number;
 }
 
@@ -99,18 +103,14 @@ export const ParticipantsSidebar = ({
 							]}
 						>
 							<View style={styles.participantIdentity}>
-								<View
-									style={[
-										styles.participantDot,
-										{ backgroundColor: playerColor },
-									]}
-								/>
+								<AvatarBadge avatarId={player.avatarId} size={26} ringColor={playerColor} />
 								<Text style={styles.participantName} numberOfLines={1}>
 									{player.displayName}
 								</Text>
 							</View>
-							<View
-								style={[
+							<CardCountBadge
+								count={player.cardCount}
+								pillStyle={[
 									styles.participantCountPill,
 									{
 										backgroundColor: isActive
@@ -118,11 +118,9 @@ export const ParticipantsSidebar = ({
 											: `${playerColor}12`,
 									},
 								]}
-							>
-								<Text style={styles.participantCount}>
-									{player.cardCount} {t("multiplayer.status.cards")}
-								</Text>
-							</View>
+								textStyle={styles.participantCount}
+								label={t("multiplayer.status.cards")}
+							/>
 						</View>
 					);
 				})}

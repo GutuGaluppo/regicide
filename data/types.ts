@@ -60,9 +60,14 @@ export interface GameState {
 
 // ─── Tipos Multiplayer ────────────────────────────────────────────────────────
 
+// Identificador estável do avatar escolhido. O mapeamento id → asset/label é
+// local (ver data/avatars.ts); só o id trafega/persiste.
+export type AvatarId = string;
+
 export interface RoomPlayer {
 	id: string;
 	displayName: string;
+	avatarId?: AvatarId; // opcional no fio; normalizado ao ler (salas antigas)
 	hand: string; // JSON.stringify(Card[])
 }
 
@@ -114,6 +119,7 @@ export interface ChatMessage {
 	id: string; // = chave do push()
 	playerId: string; // autor (playerId local)
 	playerName: string; // snapshot para render histórico
+	playerAvatarId?: AvatarId; // snapshot do avatar; opcional no fio (msgs antigas)
 	text?: string; // presente quando kind === "text"
 	systemType?: ChatSystemType; // presente quando kind === "system"
 	createdAt: number; // ServerValue.TIMESTAMP

@@ -33,12 +33,13 @@ export const styles = StyleSheet.create({
 		fontSize: 11,
 		fontWeight: "700",
 	},
-	// Painel
+	// Painel — zIndex acima do ScreenHeader (1000) para o chat cobrir o botão de
+	// settings (ex.: o "fechar" do chat no tablet ficava atrás do settings).
 	panel: {
 		position: "absolute",
 		backgroundColor: "rgba(10,7,3,0.98)",
 		borderColor: "rgba(232,213,163,0.4)",
-		zIndex: 31,
+		zIndex: 1100,
 	},
 	panelMobile: {
 		left: 0,
@@ -106,12 +107,23 @@ export const styles = StyleSheet.create({
 		color: "#64748B",
 		fontStyle: "italic",
 	},
+	msgRow: {
+		flexDirection: "row",
+		alignItems: "flex-start",
+		gap: 8,
+		alignSelf: "flex-start",
+		maxWidth: "90%",
+	},
 	bubble: {
 		maxWidth: "85%",
 		borderRadius: 12,
 		paddingHorizontal: 12,
 		paddingVertical: 8,
 		backgroundColor: "rgba(255,255,255,0.06)",
+	},
+	bubbleInRow: {
+		flexShrink: 1,
+		maxWidth: "100%",
 	},
 	bubbleOwn: {
 		alignSelf: "flex-end",

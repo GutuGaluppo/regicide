@@ -1,4 +1,6 @@
 import { AbandonVoteModal } from "@/components/AbandonVoteModal/AbandonVoteModal";
+import { AvatarBadge } from "@/components/AvatarBadge";
+import { CardCountBadge } from "@/components/CardCountBadge";
 import { RoomChat } from "@/components/RoomChat";
 import { TurnToast } from "@/components/TurnToast/TurnToast";
 import { useAudio } from "@/contexts/AudioContext";
@@ -7,7 +9,7 @@ import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { GameScreen } from "@/screens/GameScreen";
 import { requestTurnNotificationPermission } from "@/services/notifications";
 import { useChatStore } from "@/store/chatStore";
-import { useMultiplayerStore } from "@/store/multiplayerStore";
+import { MultiplayerRoomPlayer, useMultiplayerStore } from "@/store/multiplayerStore";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const PLAYER_COLORS = ["#4ADE80", "#60A5FA", "#FBBF24", "#F87171"] as const;
 
 const getOrderedPlayers = (
-	roomPlayers: { id: string; displayName: string; cardCount: number }[],
+	roomPlayers: MultiplayerRoomPlayer[],
 	playerOrder: string[],
 ) => {
 	const orderIndex = new Map(
@@ -123,7 +125,7 @@ const BottomTurnHud = () => {
 								isActive && styles.playerChipActive,
 							]}
 						>
-							<View style={[styles.dot, { backgroundColor: dotColor }]} />
+							<AvatarBadge avatarId={player.avatarId} size={22} ringColor={dotColor} />
 							<Text
 								style={[
 									styles.chipName,
@@ -134,22 +136,18 @@ const BottomTurnHud = () => {
 							>
 								{player.displayName}
 							</Text>
-							<View
-								style={[
+							<CardCountBadge
+								count={player.cardCount}
+								pillStyle={[
 									styles.chipCardsPill,
 									isActive && styles.chipCardsPillActive,
 								]}
-							>
-								<Text
-									style={[
-										styles.chipCards,
-										isSelf && styles.chipCardsSelf,
-										isActive && styles.chipCardsActive,
-									]}
-								>
-									{player.cardCount}
-								</Text>
-							</View>
+								textStyle={[
+									styles.chipCards,
+									isSelf && styles.chipCardsSelf,
+									isActive && styles.chipCardsActive,
+								]}
+							/>
 						</View>
 					);
 				})}
@@ -164,6 +162,7 @@ export const MultiplayerGameScreen = () => {
 		turnToastSignal,
 		isMyTurn,
 		myDisplayName,
+		myAvatarId,
 		abandonRequest,
 		myPlayerId,
 		roomPlayers,
@@ -194,7 +193,7 @@ export const MultiplayerGameScreen = () => {
 	// Conecta o chat ao ciclo da sala; desconecta no unmount / troca de sala.
 	useEffect(() => {
 		if (!roomId || !myPlayerId) return;
-		void chatConnect(roomId, myPlayerId, myDisplayName);
+		void chatConnect(roomId, myPlayerId, myDisplayName, myAvatarId);
 		return () => chatDisconnect();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [roomId, myPlayerId]);
