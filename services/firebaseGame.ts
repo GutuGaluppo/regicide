@@ -1,6 +1,6 @@
 import { AbandonRequest, AvatarId, Room, RoomPlayer, SharedState } from "@/data/types";
-import { DEFAULT_AVATAR_ID } from "@/data/avatars";
-import { get, onValue, ref, remove, set, update } from "firebase/database";
+import { AVATARS, DEFAULT_AVATAR_ID } from "@/data/avatars";
+import { get, onValue, ref, remove, runTransaction, set, update } from "firebase/database";
 import { db } from "./firebase";
 
 // ─── Geração de IDs ───────────────────────────────────────────────────────────
@@ -57,6 +57,43 @@ export const updatePlayerProfile = async (
 	if (profile.avatarId !== undefined)
 		updates[`games/${roomId}/players/${playerId}/avatarId`] = profile.avatarId;
 	if (Object.keys(updates).length > 0) await update(ref(db), updates);
+};
+
+/**
+ * Reivindica um avatar de forma atômica dentro da sala. Numa transação lê todos
+ * os jogadores e só confirma o avatar desejado se nenhum outro jogador já o usa;
+ * se estiver ocupado, atribui o primeiro avatar livre do catálogo. Fecha a janela
+ * de corrida em que dois clientes escolheriam o mesmo avatar simultaneamente.
+ * Retorna o avatar efetivamente atribuído (pode diferir do desejado).
+ */
+export const claimAvatar = async (
+	roomId: string,
+	playerId: string,
+	desiredAvatarId: AvatarId,
+): Promise<AvatarId> => {
+	const playersRef = ref(db, `games/${roomId}/players`);
+	const result = await runTransaction(
+		playersRef,
+		(players: Record<string, RoomPlayer> | null) => {
+			// Ainda não estou na sala (estado em cache/corrida) — não mexe.
+			if (!players || !players[playerId]) return players;
+			const takenByOthers = new Set(
+				Object.values(players)
+					.filter((p) => p.id !== playerId && p.avatarId)
+					.map((p) => p.avatarId),
+			);
+			let target = desiredAvatarId;
+			if (takenByOthers.has(target)) {
+				target =
+					AVATARS.map((a) => a.id).find((id) => !takenByOthers.has(id)) ??
+					desiredAvatarId;
+			}
+			players[playerId] = { ...players[playerId], avatarId: target };
+			return players;
+		},
+	);
+	const assigned = result.snapshot.child(`${playerId}/avatarId`).val();
+	return (assigned as AvatarId | null) ?? desiredAvatarId;
 };
 
 export const fetchRoom = async (roomId: string): Promise<Room | null> => {

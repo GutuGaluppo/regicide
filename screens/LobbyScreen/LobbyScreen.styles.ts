@@ -50,16 +50,37 @@ export const styles = StyleSheet.create({
 		marginBottom: 12,
 	},
 	// Widget nome + avatar (passo "name")
-	// Desktop: avatar no canto superior esquerdo; abaixo, input + botão na mesma linha.
-	// Mobile: coluna — avatar centralizado no topo, input no meio, botão embaixo.
-	identityContainer: {
+	// Avatar selecionado (preview) à esquerda + fileira horizontal rolável de
+	// avatares ao lado; o selecionado recebe a borda dourada.
+	avatarSelector: {
+		flexDirection: "row",
+		alignItems: "center",
 		gap: 12,
+		marginBottom: 12,
 	},
-	identityAvatarDesktop: {
-		alignSelf: "flex-start",
+	avatarScroll: {
+		flex: 1,
 	},
-	identityAvatarMobile: {
-		alignSelf: "center",
+	// Avatar já escolhido por outro jogador: escurece e exibe um cadeado.
+	avatarTakenOverlay: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "rgba(0,0,0,0.55)",
+		borderRadius: 999,
+	},
+	avatarStrip: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 10,
+		// Respiro para acomodar a magnificação no hover sem que o ScrollView
+		// recorte o topo/fundo (e as pontas) do avatar ampliado.
+		paddingVertical: 8,
+		paddingHorizontal: 8,
 	},
 	identityInputRow: {
 		flexDirection: "row",

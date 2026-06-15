@@ -380,6 +380,7 @@ const ptBR = {
 		createBtn: "Criar Nova Sala",
 		creating: "Criando…",
 		joinBtn: "Entrar",
+		continueBtn: "Continuar",
 		waitingTitle: "AGUARDANDO",
 		shareCode: "Compartilhe este código com seus amigos",
 		shareBtn: "Compartilhar código",

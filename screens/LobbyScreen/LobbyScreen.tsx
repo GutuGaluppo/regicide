@@ -1,5 +1,5 @@
 import { AvatarBadge } from "@/components/AvatarBadge";
-import { AvatarPickerModal } from "@/components/AvatarPickerModal";
+import { AVATARS } from "@/data/avatars";
 import { AvatarId } from "@/data/types";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useSoundtrack } from "@/hooks/useSoundtrack";
@@ -8,12 +8,15 @@ import { buildJoinUrl, shareRoom } from "@/utils/shareRoom";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+	Animated,
 	ImageBackground,
 	LayoutAnimation,
 	Platform,
+	Pressable,
+	ScrollView,
 	Text,
 	TextInput,
 	TouchableOpacity,
@@ -34,6 +37,57 @@ if (
 
 type LobbyView = "entry" | "waiting";
 type EntryStep = "name" | "action";
+
+/**
+ * Avatar selecionável da fileira. No hover do mouse (web) aplica um efeito de
+ * magnificação suave; no nativo o hover não dispara, então fica inerte.
+ */
+const AvatarOption = ({
+	avatar,
+	selected,
+	taken,
+	onPress,
+}: {
+	avatar: (typeof AVATARS)[number];
+	selected: boolean;
+	/** Já escolhido por outro jogador da sala — indisponível. */
+	taken?: boolean;
+	onPress: () => void;
+}) => {
+	const scale = useRef(new Animated.Value(1)).current;
+	const animateTo = (toValue: number) =>
+		Animated.spring(scale, {
+			toValue,
+			friction: 7,
+			tension: 120,
+			useNativeDriver: true,
+		}).start();
+
+	return (
+		<Pressable
+			onPress={taken ? undefined : onPress}
+			disabled={taken}
+			onHoverIn={taken ? undefined : () => animateTo(1.22)}
+			onHoverOut={taken ? undefined : () => animateTo(1)}
+			accessibilityRole="button"
+			accessibilityState={{ selected, disabled: !!taken }}
+			accessibilityLabel={avatar.label}
+		>
+			<Animated.View style={{ transform: [{ scale }] }}>
+				<AvatarBadge
+					avatarId={avatar.id}
+					size={48}
+					ringColor={selected ? "#E8D5A3" : "rgba(148,163,184,0.4)"}
+				/>
+				{taken && (
+					<View style={styles.avatarTakenOverlay}>
+						<Ionicons name="lock-closed" size={16} color="#E8D5A3" />
+					</View>
+				)}
+			</Animated.View>
+		</Pressable>
+	);
+};
 
 export const LobbyScreen = () => {
 	const { t } = useTranslation();
@@ -68,10 +122,8 @@ export const LobbyScreen = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
-	const [avatarModalVisible, setAvatarModalVisible] = useState(false);
 
-	const handleAvatarConfirm = (avatarId: AvatarId) => {
-		setAvatarModalVisible(false);
+	const handleSelectAvatar = (avatarId: AvatarId) => {
 		if (roomId) {
 			// Já na sala (lobby): propaga para os outros participantes.
 			void updateMyLobbyProfile(myDisplayName, avatarId);
@@ -79,6 +131,11 @@ export const LobbyScreen = () => {
 			setMyAvatar(avatarId);
 		}
 	};
+
+	// Avatares já em uso pelos OUTROS jogadores da sala — indisponíveis para mim.
+	const takenAvatarIds = new Set(
+		roomPlayers.filter((p) => p.id !== myPlayerId).map((p) => p.avatarId),
+	);
 
 	// Pre-fill the join code when arriving from a shared link (?code=ABC123).
 	useEffect(() => {
@@ -224,34 +281,39 @@ export const LobbyScreen = () => {
 
 							{entryStep === "name" ? (
 								<View style={styles.section}>
-									<View style={styles.identityContainer}>
-										<TouchableOpacity
-											style={
-												isDesktop
-													? styles.identityAvatarDesktop
-													: styles.identityAvatarMobile
-											}
-											onPress={() => setAvatarModalVisible(true)}
-											activeOpacity={0.8}
-											accessibilityRole="button"
-											accessibilityLabel={t("lobby.chooseAvatar")}
+									<View style={styles.avatarSelector}>
+										<AvatarBadge
+											avatarId={myAvatarId}
+											size={64}
+											ringColor="#E8D5A3"
+										/>
+										<ScrollView
+											horizontal
+											showsHorizontalScrollIndicator={false}
+											style={styles.avatarScroll}
+											contentContainerStyle={styles.avatarStrip}
 										>
-											<AvatarBadge
-												avatarId={myAvatarId}
-												size={isDesktop ? 56 : 72}
-												ringColor="#E8D5A3"
-											/>
-										</TouchableOpacity>
-										<Text style={styles.sectionTitle}>
-											{t("lobby.nameSection")}
-										</Text>
-										<View
-											style={
-												isDesktop
-													? styles.identityInputRow
-													: styles.identityInputColumn
-											}
-										>
+											{AVATARS.map((a) => (
+												<AvatarOption
+													key={a.id}
+													avatar={a}
+													selected={a.id === myAvatarId}
+													taken={takenAvatarIds.has(a.id)}
+													onPress={() => handleSelectAvatar(a.id)}
+												/>
+											))}
+										</ScrollView>
+									</View>
+									<Text style={styles.sectionTitle}>
+										{t("lobby.nameSection")}
+									</Text>
+									<View
+										style={
+											isDesktop
+												? styles.identityInputRow
+												: styles.identityInputColumn
+										}
+									>
 											<TextInput
 												style={[
 													styles.input,
@@ -286,7 +348,6 @@ export const LobbyScreen = () => {
 											</TouchableOpacity>
 										</View>
 									</View>
-								</View>
 							) : (
 								<>
 									<View style={styles.section}>
@@ -408,18 +469,7 @@ export const LobbyScreen = () => {
 										);
 										return (
 											<View key={p.id} style={styles.playerRow}>
-												{isSelf ? (
-													<TouchableOpacity
-														onPress={() => setAvatarModalVisible(true)}
-														activeOpacity={0.8}
-														accessibilityRole="button"
-														accessibilityLabel={t("lobby.changeAvatar")}
-													>
-														{avatar}
-													</TouchableOpacity>
-												) : (
-													avatar
-												)}
+												{avatar}
 												<Text
 													style={[
 														styles.playerName,
@@ -468,13 +518,6 @@ export const LobbyScreen = () => {
 					)}
 				</View>
 			</View>
-
-			<AvatarPickerModal
-				visible={avatarModalVisible}
-				initialAvatarId={myAvatarId}
-				onConfirm={handleAvatarConfirm}
-				onCancel={() => setAvatarModalVisible(false)}
-			/>
 		</ImageBackground>
 	);
 };

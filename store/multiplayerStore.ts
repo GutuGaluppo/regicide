@@ -16,6 +16,7 @@ import {
 } from "@/data/types";
 import { DEFAULT_AVATAR_ID } from "@/data/avatars";
 import {
+	claimAvatar,
 	clearAbandonRequest,
 	createRoom,
 	fetchRoom,
@@ -516,10 +517,15 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 
 		updateMyLobbyProfile: async (displayName: string, avatarId: AvatarId) => {
 			const { roomId, myPlayerId } = get();
-			set({ myDisplayName: displayName, myAvatarId: avatarId });
+			set({ myDisplayName: displayName, myAvatarId: avatarId }); // otimista
 			if (roomId) {
-				saveSession(roomId, displayName, avatarId, get().isHost);
-				await updatePlayerProfile(roomId, myPlayerId, { displayName, avatarId }).catch(() => {});
+				await updatePlayerProfile(roomId, myPlayerId, { displayName }).catch(() => {});
+				// Avatar via reivindicação atômica — pode reatribuir se houver corrida.
+				const assignedAvatar = await claimAvatar(roomId, myPlayerId, avatarId).catch(
+					() => avatarId,
+				);
+				set({ myAvatarId: assignedAvatar });
+				saveSession(roomId, displayName, assignedAvatar, get().isHost);
 			}
 		},
 
@@ -544,10 +550,15 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			const playerCount = Object.keys(room.players ?? {}).length;
 			if (playerCount >= 4) throw new Error("Sala cheia (máx. 4 jogadores)");
 			await joinRoom(roomId, myPlayerId, displayName, avatarId);
+			// Reivindica o avatar atomicamente — se já estiver em uso por outro
+			// jogador, recebe automaticamente o primeiro avatar livre.
+			const assignedAvatar = await claimAvatar(roomId, myPlayerId, avatarId).catch(
+				() => avatarId,
+			);
 			_unsubscribeFn?.();
 			const unsub = subscribeToRoom(roomId, onRoomUpdate);
-			saveSession(roomId, displayName, avatarId, false);
-			set({ roomId, myDisplayName: displayName, myAvatarId: avatarId, isHost: false, roomStatus: "lobby", _unsubscribeFn: unsub });
+			saveSession(roomId, displayName, assignedAvatar, false);
+			set({ roomId, myDisplayName: displayName, myAvatarId: assignedAvatar, isHost: false, roomStatus: "lobby", _unsubscribeFn: unsub });
 		},
 
 		// ── Iniciar partida (host) ────────────────────────────────────────────
