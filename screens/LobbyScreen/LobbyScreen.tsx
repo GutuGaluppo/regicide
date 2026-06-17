@@ -36,7 +36,7 @@ if (
 }
 
 type LobbyView = "entry" | "waiting";
-type EntryStep = "name" | "action";
+type EntryStep = "name" | "action" | "avatar";
 
 /**
  * Avatar selecionável da fileira. No hover do mouse (web) aplica um efeito de
@@ -102,12 +102,11 @@ export const LobbyScreen = () => {
 		isHost,
 		roomStatus,
 		roomPlayers,
-		myDisplayName,
 		myAvatarId,
 		setMyAvatar,
-		updateMyLobbyProfile,
 		initPlayerId,
 		createRoom,
+		prepareJoin,
 		joinRoom: storeJoinRoom,
 		startGame,
 		leaveRoom,
@@ -122,20 +121,22 @@ export const LobbyScreen = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
+	// Ação que o passo "avatar" vai finalizar, e os avatares já ocupados na sala
+	// alvo (vazio ao criar — sala nova; preenchido pelo peek ao entrar).
+	const [pendingAction, setPendingAction] = useState<"create" | "join" | null>(null);
+	const [takenAvatarIds, setTakenAvatarIds] = useState<Set<AvatarId>>(new Set());
 
 	const handleSelectAvatar = (avatarId: AvatarId) => {
-		if (roomId) {
-			// Já na sala (lobby): propaga para os outros participantes.
-			void updateMyLobbyProfile(myDisplayName, avatarId);
-		} else {
-			setMyAvatar(avatarId);
-		}
+		// No fluxo de entrada o avatar é sempre local (ainda não estamos na sala).
+		setMyAvatar(avatarId);
 	};
 
-	// Avatares já em uso pelos OUTROS jogadores da sala — indisponíveis para mim.
-	const takenAvatarIds = new Set(
-		roomPlayers.filter((p) => p.id !== myPlayerId).map((p) => p.avatarId),
-	);
+	// Move a seleção para o primeiro avatar livre caso o atual esteja ocupado.
+	const ensureFreeAvatar = (taken: Set<AvatarId>) => {
+		if (!taken.has(myAvatarId)) return;
+		const firstFree = AVATARS.find((a) => !taken.has(a.id));
+		if (firstFree) setMyAvatar(firstFree.id);
+	};
 
 	// Pre-fill the join code when arriving from a shared link (?code=ABC123).
 	useEffect(() => {
@@ -160,6 +161,47 @@ export const LobbyScreen = () => {
 		setEntryStep("name");
 	};
 
+	const handleBackToAction = () => {
+		setError(null);
+		setPendingAction(null);
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		setEntryStep("action");
+	};
+
+	// Criar: sala nova → todos os avatares livres.
+	const goToCreateAvatar = () => {
+		setError(null);
+		setPendingAction("create");
+		setTakenAvatarIds(new Set());
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		setEntryStep("avatar");
+	};
+
+	// Entrar: faz o peek da sala, lê os avatares ocupados e só então mostra o
+	// passo de avatar com os livres.
+	const handleContinueJoin = async () => {
+		const code = joinCode.trim().toUpperCase();
+		if (code.length !== 6) {
+			setError(t("lobby.errors.invalidCode"));
+			return;
+		}
+		setLoading(true);
+		setError(null);
+		try {
+			const { takenAvatarIds: taken } = await prepareJoin(code);
+			const takenSet = new Set(taken);
+			setTakenAvatarIds(takenSet);
+			ensureFreeAvatar(takenSet);
+			setPendingAction("join");
+			LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+			setEntryStep("avatar");
+		} catch (e: unknown) {
+			setError(e instanceof Error ? e.message : t("lobby.errors.joinFailed"));
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	useEffect(() => {
 		initPlayerId();
 	}, [initPlayerId]);
@@ -171,6 +213,7 @@ export const LobbyScreen = () => {
 		}
 	}, [roomStatus]);
 
+	// Finaliza no passo "avatar": cria a sala com o avatar escolhido.
 	const handleCreate = async () => {
 		const name = displayName.trim();
 		if (!name) {
@@ -180,7 +223,7 @@ export const LobbyScreen = () => {
 		setLoading(true);
 		setError(null);
 		try {
-			await createRoom(name);
+			await createRoom(name, myAvatarId);
 			setView("waiting");
 		} catch (e: unknown) {
 			setError(e instanceof Error ? e.message : t("lobby.errors.createFailed"));
@@ -189,27 +232,34 @@ export const LobbyScreen = () => {
 		}
 	};
 
+	// Finaliza no passo "avatar": entra com o avatar escolhido. Na corrida rara em
+	// que o avatar acabou de ser tomado, atualiza os ocupados e permanece no passo
+	// para o jogador escolher outro (sem reatribuição automática).
 	const handleJoin = async () => {
 		const name = displayName.trim();
 		const code = joinCode.trim().toUpperCase();
-		if (!name) {
-			setError(t("lobby.errors.nameRequired"));
-			return;
-		}
-		if (code.length !== 6) {
-			setError(t("lobby.errors.invalidCode"));
-			return;
-		}
 		setLoading(true);
 		setError(null);
 		try {
-			await storeJoinRoom(code, name);
+			const res = await storeJoinRoom(code, name, myAvatarId);
+			if (!res.ok) {
+				const takenSet = new Set(res.takenAvatarIds);
+				setTakenAvatarIds(takenSet);
+				ensureFreeAvatar(takenSet);
+				setError(t("lobby.errors.avatarTaken"));
+				return;
+			}
 			setView("waiting");
 		} catch (e: unknown) {
 			setError(e instanceof Error ? e.message : t("lobby.errors.joinFailed"));
 		} finally {
 			setLoading(false);
 		}
+	};
+
+	const handleFinalizeAvatar = () => {
+		if (pendingAction === "create") void handleCreate();
+		else if (pendingAction === "join") void handleJoin();
 	};
 
 	const handleLeave = async () => {
@@ -263,7 +313,11 @@ export const LobbyScreen = () => {
 							<TouchableOpacity
 								style={styles.backButton}
 								onPress={
-									entryStep === "action" ? handleEditName : () => router.back()
+									entryStep === "action"
+										? handleEditName
+										: entryStep === "avatar"
+											? handleBackToAction
+											: () => router.back()
 								}
 							>
 								<Image
@@ -276,34 +330,13 @@ export const LobbyScreen = () => {
 							<Text style={styles.title}>
 								{entryStep === "action"
 									? t("lobby.wantsTo", { name: displayName.trim() })
-									: t("lobby.title")}
+									: entryStep === "avatar"
+										? t("lobby.avatarTitle")
+										: t("lobby.title")}
 							</Text>
 
 							{entryStep === "name" ? (
 								<View style={styles.section}>
-									<View style={styles.avatarSelector}>
-										<AvatarBadge
-											avatarId={myAvatarId}
-											size={64}
-											ringColor="#E8D5A3"
-										/>
-										<ScrollView
-											horizontal
-											showsHorizontalScrollIndicator={false}
-											style={styles.avatarScroll}
-											contentContainerStyle={styles.avatarStrip}
-										>
-											{AVATARS.map((a) => (
-												<AvatarOption
-													key={a.id}
-													avatar={a}
-													selected={a.id === myAvatarId}
-													taken={takenAvatarIds.has(a.id)}
-													onPress={() => handleSelectAvatar(a.id)}
-												/>
-											))}
-										</ScrollView>
-									</View>
 									<Text style={styles.sectionTitle}>
 										{t("lobby.nameSection")}
 									</Text>
@@ -348,23 +381,18 @@ export const LobbyScreen = () => {
 											</TouchableOpacity>
 										</View>
 									</View>
-							) : (
+							) : entryStep === "action" ? (
 								<>
 									<View style={styles.section}>
 										<Text style={styles.sectionTitle}>
 											{t("lobby.createSection")}
 										</Text>
 										<TouchableOpacity
-											style={[
-												styles.button,
-												styles.buttonPrimary,
-												loading && styles.buttonDisabled,
-											]}
-											onPress={handleCreate}
-											disabled={loading}
+											style={[styles.button, styles.buttonPrimary]}
+											onPress={goToCreateAvatar}
 										>
 											<Text style={styles.buttonText}>
-												{loading ? t("lobby.creating") : t("lobby.createBtn")}
+												{t("lobby.createBtn")}
 											</Text>
 										</TouchableOpacity>
 									</View>
@@ -389,7 +417,7 @@ export const LobbyScreen = () => {
 												maxLength={6}
 												autoCapitalize="characters"
 												returnKeyType="go"
-												onSubmitEditing={handleJoin}
+												onSubmitEditing={handleContinueJoin}
 											/>
 											<TouchableOpacity
 												style={[
@@ -397,16 +425,66 @@ export const LobbyScreen = () => {
 													styles.joinButton,
 													loading && styles.buttonDisabled,
 												]}
-												onPress={handleJoin}
+												onPress={handleContinueJoin}
 												disabled={loading}
 											>
 												<Text style={styles.buttonText}>
-													{loading ? "…" : t("lobby.joinBtn")}
+													{loading ? "…" : t("lobby.continueBtn")}
 												</Text>
 											</TouchableOpacity>
 										</View>
 									</View>
 								</>
+							) : (
+								// Passo "avatar": escolha ciente da sala — só os livres são
+								// clicáveis (os ocupados aparecem com cadeado).
+								<View style={styles.section}>
+									<Text style={styles.sectionTitle}>
+										{t("lobby.avatarDescription")}
+									</Text>
+									<View style={styles.avatarSelector}>
+										<AvatarBadge
+											avatarId={myAvatarId}
+											size={64}
+											ringColor="#E8D5A3"
+										/>
+										<ScrollView
+											horizontal
+											showsHorizontalScrollIndicator={false}
+											style={styles.avatarScroll}
+											contentContainerStyle={styles.avatarStrip}
+										>
+											{AVATARS.map((a) => (
+												<AvatarOption
+													key={a.id}
+													avatar={a}
+													selected={a.id === myAvatarId}
+													taken={takenAvatarIds.has(a.id)}
+													onPress={() => handleSelectAvatar(a.id)}
+												/>
+											))}
+										</ScrollView>
+									</View>
+									<TouchableOpacity
+										style={[
+											styles.button,
+											styles.buttonPrimary,
+											loading && styles.buttonDisabled,
+										]}
+										onPress={handleFinalizeAvatar}
+										disabled={loading}
+									>
+										<Text style={styles.buttonText}>
+											{pendingAction === "create"
+												? loading
+													? t("lobby.creating")
+													: t("lobby.createBtn")
+												: loading
+													? "…"
+													: t("lobby.joinBtn")}
+										</Text>
+									</TouchableOpacity>
+								</View>
 							)}
 
 							{error && <Text style={styles.error}>{error}</Text>}
