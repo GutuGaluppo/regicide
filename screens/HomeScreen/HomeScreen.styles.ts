@@ -30,6 +30,13 @@ export const styles = StyleSheet.create({
 		alignItems: "center",
 		gap: 6,
 	},
+	settingsBtn: {
+		position: "absolute",
+		top: 52,
+		left: 24,
+		padding: 8,
+		zIndex: 5,
+	},
 	globeAbbr: {
 		color: "#94A3B8",
 		fontFamily: "Cinzel-VariableFont_wght",

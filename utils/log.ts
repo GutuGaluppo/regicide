@@ -62,6 +62,7 @@ export const parseLogEntry = (id: string, raw: unknown): GameLogEntry | null => 
 	if (typeof r.damage === "number") entry.damage = r.damage;
 	if (typeof r.shieldAdded === "number") entry.shieldAdded = r.shieldAdded;
 	if (typeof r.turnIndex === "number") entry.turnIndex = r.turnIndex;
+	if (typeof r.exactKill === "boolean") entry.exactKill = r.exactKill;
 
 	return entry;
 };
@@ -84,6 +85,7 @@ export const buildLogWire = (draft: GameLogDraft): Record<string, unknown> => {
 	if (typeof draft.damage === "number") wire.damage = draft.damage;
 	if (typeof draft.shieldAdded === "number") wire.shieldAdded = draft.shieldAdded;
 	if (typeof draft.turnIndex === "number") wire.turnIndex = draft.turnIndex;
+	if (typeof draft.exactKill === "boolean") wire.exactKill = draft.exactKill;
 	return wire;
 };
 
@@ -105,5 +107,6 @@ export const buildLocalLogEntry = (draft: GameLogDraft): GameLogEntry => {
 	if (typeof draft.damage === "number") entry.damage = draft.damage;
 	if (typeof draft.shieldAdded === "number") entry.shieldAdded = draft.shieldAdded;
 	if (typeof draft.turnIndex === "number") entry.turnIndex = draft.turnIndex;
+	if (typeof draft.exactKill === "boolean") entry.exactKill = draft.exactKill;
 	return entry;
 };

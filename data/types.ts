@@ -100,6 +100,7 @@ export interface GameLogEntry {
 	damage?: number; // dano aplicado (attack)
 	shieldAdded?: number; // escudo somado (attack com espadas)
 	turnIndex?: number; // stats.turnsPlayed no momento — agrupa por turno
+	exactKill?: boolean; // enemy_defeated com dano exato → carta vai ao topo da taverna
 	createdAt: number; // ServerValue.TIMESTAMP (MP) ou Date.now() (SP)
 }
 
@@ -115,6 +116,7 @@ export interface GameLogDraft {
 	damage?: number;
 	shieldAdded?: number;
 	turnIndex?: number;
+	exactKill?: boolean;
 }
 
 // ─── Tipos Multiplayer ────────────────────────────────────────────────────────

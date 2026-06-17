@@ -19,11 +19,13 @@ export const SettingsDrawer = ({
 	onClose,
 	onReset,
 	onAbandon,
+	showExit = true,
 }: {
 	visible: boolean;
 	onClose: () => void;
-	onReset: () => void;
+	onReset?: () => void;
 	onAbandon?: () => void;
+	showExit?: boolean;
 }) => {
 	const { t } = useTranslation();
 	const {
@@ -84,7 +86,7 @@ export const SettingsDrawer = ({
 	const handleReset = () => {
 		playTap();
 		onClose();
-		setTimeout(() => onReset(), 220);
+		setTimeout(() => onReset?.(), 220);
 	};
 
 	const handleExit = () => {
@@ -145,21 +147,23 @@ export const SettingsDrawer = ({
 					onToggleMute={toggleSfxMute}
 				/>
 
-				<View style={styles.divider} />
-
-				<TouchableOpacity
-					style={styles.row}
-					onPress={handleReset}
-					activeOpacity={0.7}
-				>
-					<Text style={styles.rowIcon}>↺</Text>
-					<Text style={styles.rowLabel}>{t("settings.restart")}</Text>
-				</TouchableOpacity>
-
-				<View style={styles.divider} />
+				{onReset && (
+					<>
+						<View style={styles.divider} />
+						<TouchableOpacity
+							style={styles.row}
+							onPress={handleReset}
+							activeOpacity={0.7}
+						>
+							<Text style={styles.rowIcon}>↺</Text>
+							<Text style={styles.rowLabel}>{t("settings.restart")}</Text>
+						</TouchableOpacity>
+					</>
+				)}
 
 				{onAbandon && (
 					<>
+						<View style={styles.divider} />
 						<TouchableOpacity
 							style={styles.row}
 							onPress={handleAbandon}
@@ -170,20 +174,24 @@ export const SettingsDrawer = ({
 								{t("settings.abandon")}
 							</Text>
 						</TouchableOpacity>
-						<View style={styles.divider} />
 					</>
 				)}
 
-				<TouchableOpacity
-					style={styles.row}
-					onPress={handleExit}
-					activeOpacity={0.7}
-				>
-					<Text style={styles.rowIcon}>←</Text>
-					<Text style={[styles.rowLabel, styles.rowLabelMuted]}>
-						{t("settings.exit")}
-					</Text>
-				</TouchableOpacity>
+				{showExit && (
+					<>
+						<View style={styles.divider} />
+						<TouchableOpacity
+							style={styles.row}
+							onPress={handleExit}
+							activeOpacity={0.7}
+						>
+							<Text style={styles.rowIcon}>←</Text>
+							<Text style={[styles.rowLabel, styles.rowLabelMuted]}>
+								{t("settings.exit")}
+							</Text>
+						</TouchableOpacity>
+					</>
+				)}
 			</Animated.View>
 		</Modal>
 	);

@@ -1,24 +1,30 @@
-import ScaledCard from "@/components/PlayerHand/components/ScaledCard";
-import { RevealState } from "@/data/types";
+import { getHandCardImage } from "@/data/images";
+import { Card, RevealState } from "@/data/types";
+import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 interface Props {
 	reveal: RevealState;
-	onSkip: () => void;
-	// Pelas regras, "o próximo jogador inicia um novo turno": só ele pode pular.
-	canSkip: boolean;
 }
+
+// Carta em tamanho fixo (pequeno) para o painel — face para cima, sem corte.
+const RevealCard = ({ card }: { card: Card }) => {
+	const img = getHandCardImage(card.rank, card.suit, card.id);
+	if (!img) return null;
+	return <Image source={img} style={styles.card} contentFit="contain" />;
+};
 
 // Sobreposição da janela de revelação entre turnos (Estratégia B). Enquanto
 // ativa, o turno está congelado: mostra as cartas de ataque e descarte do
-// jogador que acabou de jogar, com um contador regressivo e um botão "pular".
-// Ver docs/turn-reveal-delay-strategy.md.
-export const TurnRevealOverlay = ({ reveal, onSkip, canSkip }: Props) => {
+// jogador que acabou de jogar, com um contador regressivo. O turno avança
+// automaticamente ao fim da contagem (ver docs/turn-reveal-delay-strategy.md).
+export const TurnRevealOverlay = ({ reveal }: Props) => {
 	const { t } = useTranslation();
 
-	const remainingMs = () => Math.max(0, reveal.startedAt + reveal.durationMs - Date.now());
+	const remainingMs = () =>
+		Math.max(0, reveal.startedAt + reveal.durationMs - Date.now());
 	const [remaining, setRemaining] = useState(remainingMs);
 
 	useEffect(() => {
@@ -49,14 +55,16 @@ export const TurnRevealOverlay = ({ reveal, onSkip, canSkip }: Props) => {
 
 				{hasAttack && (
 					<View style={styles.section}>
-						<Text style={styles.sectionLabel}>{t("multiplayer.reveal.attackedWith")}</Text>
+						<Text style={styles.sectionLabel}>
+							{t("multiplayer.reveal.attackedWith")}
+						</Text>
 						<ScrollView
 							horizontal
 							showsHorizontalScrollIndicator={false}
 							contentContainerStyle={styles.cardsRow}
 						>
 							{reveal.attackCards.map((card) => (
-								<ScaledCard key={card.id} card={card} />
+								<RevealCard key={card.id} card={card} />
 							))}
 						</ScrollView>
 					</View>
@@ -73,30 +81,22 @@ export const TurnRevealOverlay = ({ reveal, onSkip, canSkip }: Props) => {
 							contentContainerStyle={styles.cardsRow}
 						>
 							{reveal.discardCards.map((card) => (
-								<ScaledCard key={card.id} card={card} />
+								<RevealCard key={card.id} card={card} />
 							))}
 						</ScrollView>
 					</View>
 				)}
 
-				<View style={styles.footer}>
-					<Text style={styles.countdown}>
-						{t("multiplayer.reveal.nextIn", { seconds })}
-					</Text>
-					{canSkip && (
-						<Pressable
-							onPress={onSkip}
-							style={({ pressed }) => [styles.skipButton, pressed && styles.skipPressed]}
-							accessibilityRole="button"
-						>
-							<Text style={styles.skipText}>{t("multiplayer.reveal.skip")}</Text>
-						</Pressable>
-					)}
-				</View>
+				<Text style={styles.countdown}>
+					{t("multiplayer.reveal.nextIn", { seconds })}
+				</Text>
 			</View>
 		</View>
 	);
 };
+
+const CARD_W = 46;
+const CARD_H = 64;
 
 const styles = StyleSheet.create({
 	backdrop: {
@@ -152,35 +152,18 @@ const styles = StyleSheet.create({
 	cardsRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		gap: 2,
+		gap: 4,
 		paddingVertical: 2,
 	},
-	footer: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		marginTop: 4,
+	card: {
+		width: CARD_W,
+		height: CARD_H,
 	},
 	countdown: {
 		fontFamily: "IMFellEnglish",
 		fontSize: 13,
 		color: "#94A3B8",
-	},
-	skipButton: {
-		borderRadius: 12,
-		paddingHorizontal: 16,
-		paddingVertical: 7,
-		backgroundColor: "rgba(232,213,163,0.14)",
-		borderWidth: 1,
-		borderColor: "rgba(232,213,163,0.35)",
-	},
-	skipPressed: {
-		opacity: 0.6,
-	},
-	skipText: {
-		fontFamily: "Cinzel",
-		fontSize: 12,
-		color: "#F8E7BC",
-		letterSpacing: 0.5,
+		textAlign: "center",
+		marginTop: 4,
 	},
 });

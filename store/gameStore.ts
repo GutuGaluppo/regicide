@@ -430,6 +430,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 					enemyId: enemy.id,
 					enemyRank: enemy.rank,
 					turnIndex: newStats.turnsPlayed,
+					exactKill: newCurrentDamage === enemy.health,
 				});
 				const exactKill = newCurrentDamage === enemy.health;
 				const enemyCard = enemyToCard(enemy);

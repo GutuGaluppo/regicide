@@ -2,7 +2,7 @@ import { AvatarBadge } from "@/components/AvatarBadge";
 import { Card, EnemyRank, GameLogEntry } from "@/data/types";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { styles } from "./GameLog.styles";
 
 const SUIT_SYMBOL: Record<string, string> = {
@@ -52,43 +52,38 @@ export const LogEntryRow = ({ entry }: { entry: GameLogEntry }) => {
 						enemy: rankLabel(entry.enemyRank, t),
 					})}
 				</Text>
+				{entry.exactKill && (
+					<Text style={styles.exactDeathText}>{t("game.log.exactDeath")}</Text>
+				)}
 			</View>
 		);
 	}
 
-	const hasCards = !!entry.cards && entry.cards.length > 0;
-	const hasMeta = !!entry.damage || !!entry.shieldAdded;
+	const cards = entry.cards ?? [];
 
 	return (
 		<View style={styles.row}>
-			<AvatarBadge avatarId={entry.playerAvatarId} size={28} />
-			<View style={styles.body}>
-				<View style={styles.line}>
-					<Text style={styles.name}>{entry.playerName}</Text>
-					<Text style={styles.verb}>{` ${t(`game.log.${entry.kind}`)}`}</Text>
-				</View>
+			{/* Linha 1: avatar + nome */}
+			<View style={styles.headerLine}>
+				<AvatarBadge avatarId={entry.playerAvatarId} size={22} />
+				<Text style={styles.name}>{entry.playerName}</Text>
+			</View>
 
-				{hasCards && (
-					<ScrollView
-						horizontal
-						showsHorizontalScrollIndicator={false}
-						contentContainerStyle={styles.cards}
-					>
-						{entry.cards!.map((c) => (
-							<CardChip key={c.id} card={c} />
-						))}
-					</ScrollView>
+			{/* Linha 2: ataque/descarte inline (verbo + cartas + dano) */}
+			<View style={styles.actionLine}>
+				<Text style={styles.verb}>{t(`game.log.${entry.kind}`)}</Text>
+				{cards.map((c) => (
+					<CardChip key={c.id} card={c} />
+				))}
+				{!!entry.damage && (
+					<Text style={styles.damage}>
+						{t("game.log.damage", { value: entry.damage })}
+					</Text>
 				)}
-
-				{hasMeta && (
-					<View style={styles.meta}>
-						{!!entry.damage && (
-							<Text style={styles.damage}>{t("game.log.damage", { value: entry.damage })}</Text>
-						)}
-						{!!entry.shieldAdded && (
-							<Text style={styles.shield}>{t("game.log.shield", { value: entry.shieldAdded })}</Text>
-						)}
-					</View>
+				{!!entry.shieldAdded && (
+					<Text style={styles.shield}>
+						{t("game.log.shield", { value: entry.shieldAdded })}
+					</Text>
 				)}
 			</View>
 		</View>

@@ -34,12 +34,17 @@ const getOrderedPlayers = (
  * jogador como acento.
  */
 export const BottomTurnHud = () => {
-	const { roomPlayers, _currentPlayerIndex, _playerOrder } =
+	const { roomPlayers, myPlayerId, _currentPlayerIndex, _playerOrder } =
 		useMultiplayerStore();
 	const insets = useSafeAreaInsets();
 
 	const activePlayerId = _playerOrder[_currentPlayerIndex] ?? null;
-	const orderedPlayers = getOrderedPlayers(roomPlayers, _playerOrder);
+	// Ordem de turno, mas com o próprio jogador sempre à esquerda.
+	const byTurn = getOrderedPlayers(roomPlayers, _playerOrder);
+	const orderedPlayers = [
+		...byTurn.filter((p) => p.id === myPlayerId),
+		...byTurn.filter((p) => p.id !== myPlayerId),
+	];
 	const activeIndex = orderedPlayers.findIndex((p) => p.id === activePlayerId);
 	const activeColor =
 		PLAYER_COLORS[(activeIndex < 0 ? 0 : activeIndex) % PLAYER_COLORS.length];
@@ -69,6 +74,7 @@ export const BottomTurnHud = () => {
 							/>
 						))}
 					</View>
+					<View style={styles.divider} />
 					<ChatButton />
 				</View>
 			</View>

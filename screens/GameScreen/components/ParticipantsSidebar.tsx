@@ -18,18 +18,26 @@ interface PlayerInfo {
 interface ParticipantsSidebarProps {
 	players: PlayerInfo[];
 	activePlayerId: string | null;
+	myPlayerId?: string;
 }
 
 export const ParticipantsSidebar = ({
 	players,
 	activePlayerId,
+	myPlayerId,
 }: ParticipantsSidebarProps) => {
 	const { t } = useTranslation();
+
+	// O próprio jogador aparece no topo; os demais mantêm a ordem recebida.
+	const ordered = [
+		...players.filter((p) => p.id === myPlayerId),
+		...players.filter((p) => p.id !== myPlayerId),
+	];
 
 	return (
 		<View style={styles.participantsSidebar}>
 			<View style={styles.participantsList}>
-				{players.map((player, index) => {
+				{ordered.map((player, index) => {
 					const playerColor = PLAYER_COLORS[index % PLAYER_COLORS.length];
 					const isActive = player.id === activePlayerId;
 

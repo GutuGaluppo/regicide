@@ -39,6 +39,7 @@
           "damage": { ".validate": "newData.isNumber()" },
           "shieldAdded": { ".validate": "newData.isNumber()" },
           "turnIndex": { ".validate": "newData.isNumber()" },
+          "exactKill": { ".validate": "newData.isBoolean()" },
           "playerAvatarId": { ".validate": "newData.isString() && newData.val().length <= 32" },
           "$other": { ".validate": false }
         }

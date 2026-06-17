@@ -53,6 +53,7 @@ const fr: Translations = {
 	game: {
 		log: {
 			title: "Journal de la partie",
+			tooltip: "Voir l'historique de la partie",
 			empty: "Aucune action pour l'instant",
 			you: "Vous",
 			attack: "a attaqué avec",
@@ -60,6 +61,7 @@ const fr: Translations = {
 			jester: "a utilisé le Joker",
 			yield: "a passé son tour",
 			defeatedFull: "{{name}} a vaincu le {{enemy}}",
+			exactDeath: "Coup exact — carte de l'ennemi au sommet de la taverne",
 			rankJ: "Valet",
 			rankQ: "Dame",
 			rankK: "Roi",
@@ -351,6 +353,8 @@ const fr: Translations = {
 			title: "C'est votre tour, {{name}} !",
 			subtitle: "Choisissez vos cartes pour attaquer",
 			waiting: "En attente d'une action...",
+			yourTurn: "Votre tour",
+			othersTurn: "Tour du joueur",
 		},
 		reveal: {
 			attackedWith: "A attaqué avec",

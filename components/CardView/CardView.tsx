@@ -1,4 +1,3 @@
-import SpellIcon from "@/assets/icons/spellImmune_shadow.png";
 import { useAudio } from "@/contexts/AudioContext";
 import { getHandCardImage } from "@/data/images";
 import { Card, Suit } from "@/data/types";
@@ -69,7 +68,7 @@ export const CardView = ({
 	const { playTap } = useAudio();
 	const isImmune = !!card.suit && card.suit === immuneSuit;
 	const cardImage = getHandCardImage(card.rank, card.suit, card.id);
-	const { w, h, liftY, icon } = useCardSize();
+	const { w, h, liftY } = useCardSize();
 
 	const discardOpacity = useSharedValue(1);
 	const discardProgress = useSharedValue(0);
@@ -315,12 +314,6 @@ export const CardView = ({
 					/>
 				)}
 			</TouchableOpacity>
-			{isImmune && (
-				<Image
-					source={SpellIcon}
-					style={[styles.immuneIcon, { width: icon, height: icon }]}
-				/>
-			)}
 		</Animated.View>
 	);
 };

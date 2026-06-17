@@ -53,6 +53,7 @@ const en: Translations = {
 	game: {
 		log: {
 			title: "Game log",
+			tooltip: "View game history",
 			empty: "No actions yet",
 			you: "You",
 			attack: "attacked with",
@@ -60,6 +61,7 @@ const en: Translations = {
 			jester: "used the Jester",
 			yield: "passed the turn",
 			defeatedFull: "{{name}} defeated the {{enemy}}",
+			exactDeath: "Exact kill — enemy card to the top of the tavern deck",
 			rankJ: "Jack",
 			rankQ: "Queen",
 			rankK: "King",
@@ -350,6 +352,8 @@ const en: Translations = {
 			title: "It's your turn, {{name}}!",
 			subtitle: "Choose your cards to attack",
 			waiting: "Waiting for a move...",
+			yourTurn: "Your turn",
+			othersTurn: "Player's turn",
 		},
 		reveal: {
 			attackedWith: "Attacked with",

@@ -51,20 +51,24 @@ export const styles = StyleSheet.create({
 	},
 	// ── Linha padrão ──────────────────────────────────────────────────────────
 	row: {
-		flexDirection: "row",
-		alignItems: "flex-start",
-		gap: 10,
+		flexDirection: "column",
+		gap: 4,
 		paddingHorizontal: 16,
 		paddingVertical: 8,
 	},
-	body: {
-		flex: 1,
-		gap: 4,
+	// Linha 1: avatar + nome do autor.
+	headerLine: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
 	},
-	line: {
+	// Linha 2: verbo + cartas (ataque/descarte) + dano, inline (com wrap).
+	actionLine: {
 		flexDirection: "row",
 		alignItems: "center",
 		flexWrap: "wrap",
+		gap: 4,
+		paddingLeft: 30,
 	},
 	name: {
 		fontFamily: "Cinzel",
@@ -75,17 +79,7 @@ export const styles = StyleSheet.create({
 		fontFamily: "IMFellEnglish",
 		fontSize: 13,
 		color: "#CBD5E1",
-	},
-	cards: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 4,
-		paddingTop: 2,
-	},
-	meta: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 10,
+		marginRight: 2,
 	},
 	damage: {
 		fontFamily: "Cinzel",
@@ -137,5 +131,13 @@ export const styles = StyleSheet.create({
 		color: "#4ADE80",
 		textAlign: "center",
 		letterSpacing: 0.3,
+	},
+	// Aviso de "golpe exato": a carta do inimigo foi ao topo da taverna.
+	exactDeathText: {
+		fontFamily: "IMFellEnglish",
+		fontSize: 11,
+		color: "#E8D5A3",
+		textAlign: "center",
+		marginTop: 3,
 	},
 });

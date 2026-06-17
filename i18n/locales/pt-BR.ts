@@ -51,6 +51,7 @@ const ptBR = {
 	game: {
 		log: {
 			title: "Histórico da partida",
+			tooltip: "Ver o histórico da partida",
 			empty: "Nenhuma ação ainda",
 			you: "Você",
 			attack: "atacou com",
@@ -58,6 +59,7 @@ const ptBR = {
 			jester: "usou o Coringa",
 			yield: "passou a vez",
 			defeatedFull: "{{name}} derrotou o {{enemy}}",
+			exactDeath: "Golpe exato — carta do inimigo no topo da taverna",
 			rankJ: "Valete",
 			rankQ: "Dama",
 			rankK: "Rei",
@@ -347,6 +349,8 @@ const ptBR = {
 			title: "É sua vez, {{name}}!",
 			subtitle: "Escolha suas cartas para atacar",
 			waiting: "Aguardando jogada...",
+			yourTurn: "Sua vez",
+			othersTurn: "Vez do jogador",
 		},
 		reveal: {
 			attackedWith: "Atacou com",

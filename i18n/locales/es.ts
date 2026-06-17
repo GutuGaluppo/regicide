@@ -53,6 +53,7 @@ const es: Translations = {
 	game: {
 		log: {
 			title: "Registro de la partida",
+			tooltip: "Ver el historial de la partida",
 			empty: "Aún no hay acciones",
 			you: "Tú",
 			attack: "atacó con",
@@ -60,6 +61,7 @@ const es: Translations = {
 			jester: "usó el Comodín",
 			yield: "pasó el turno",
 			defeatedFull: "{{name}} derrotó al {{enemy}}",
+			exactDeath: "Golpe exacto — carta del enemigo en la cima de la taberna",
 			rankJ: "Jota",
 			rankQ: "Reina",
 			rankK: "Rey",
@@ -350,6 +352,8 @@ const es: Translations = {
 			title: "¡Es tu turno, {{name}}!",
 			subtitle: "Elige tus cartas para atacar",
 			waiting: "Esperando jugada...",
+			yourTurn: "Tu turno",
+			othersTurn: "Turno del jugador",
 		},
 		reveal: {
 			attackedWith: "Atacó con",

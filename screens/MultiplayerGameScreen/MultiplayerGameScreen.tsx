@@ -47,6 +47,10 @@ export const MultiplayerGameScreen = () => {
 	// no mobile/tablet permanece como overlay/drawer + botão flutuante.
 	const dockedChat = isDesktop && chatOpen;
 
+	// Jogador da vez (para o toast de turno): avatar + nome + se é o próprio.
+	const activePlayerId = store._playerOrder[store._currentPlayerIndex] ?? null;
+	const activePlayer = roomPlayers.find((p) => p.id === activePlayerId);
+
 	return (
 		<MultiplayerStoreProvider
 			value={{
@@ -74,9 +78,10 @@ export const MultiplayerGameScreen = () => {
 				    tablet (onde não há HUD inferior). */}
 				{!dockedChat && <RoomChat showFab={isTablet} />}
 				<TurnToast
-					signal={turnToastSignal}
+					activePlayerId={activePlayerId}
 					isMyTurn={isMyTurn}
-					playerName={myDisplayName}
+					playerName={activePlayer?.displayName ?? ""}
+					avatarId={activePlayer?.avatarId}
 				/>
 				{showAbandonModal && (
 					<AbandonVoteModal

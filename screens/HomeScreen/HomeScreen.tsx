@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
+import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { useAudio } from "@/contexts/AudioContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
@@ -53,6 +54,7 @@ export const HomeScreen = () => {
 		"intro",
 	);
 	const [langVisible, setLangVisible] = useState(false);
+	const [settingsVisible, setSettingsVisible] = useState(false);
 	const currentLang = i18nHook.language;
 
 	const navButtons = (
@@ -96,6 +98,19 @@ export const HomeScreen = () => {
 					isDesktop && { paddingHorizontal: screenPadding },
 				]}
 			>
+				<TouchableOpacity
+					style={styles.settingsBtn}
+					onPress={() => {
+						playTap();
+						setSettingsVisible(true);
+					}}
+					activeOpacity={0.7}
+					accessibilityRole="button"
+					accessibilityLabel={t("settings.title")}
+				>
+					<Ionicons name="settings-outline" size={26} color="#94A3B8" />
+				</TouchableOpacity>
+
 				<TouchableOpacity
 					style={styles.globeBtn}
 					onPress={() => {
@@ -178,6 +193,12 @@ export const HomeScreen = () => {
 						</View>
 					</TouchableOpacity>
 				</Modal>
+
+				<SettingsDrawer
+					visible={settingsVisible}
+					onClose={() => setSettingsVisible(false)}
+					showExit={false}
+				/>
 			</View>
 		</ImageBackground>
 	);

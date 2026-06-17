@@ -43,6 +43,13 @@ export const styles = StyleSheet.create({
 		position: "relative",
 		overflow: "visible",
 	},
+	// Divisor vertical entre os jogadores e o botão de chat.
+	divider: {
+		width: 1,
+		height: AVATAR_SIZE - 6,
+		alignSelf: "center",
+		backgroundColor: "rgba(232,213,163,0.22)",
+	},
 
 	// ── Blob/halo deslizante (destaque do jogador ativo) ──────────────────────
 	// Ancorado pela base e com a altura do avatar ativo, sobe junto com ele.

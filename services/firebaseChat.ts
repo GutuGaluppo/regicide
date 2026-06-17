@@ -1,8 +1,7 @@
-import { AvatarId, ChatMessage, ChatSystemType } from "@/data/types";
+import { AvatarId, ChatMessage } from "@/data/types";
 import { parseIncomingMessage } from "@/utils/chat";
 import {
 	limitToLast,
-	onDisconnect,
 	onValue,
 	orderByKey,
 	push,
@@ -10,7 +9,6 @@ import {
 	ref,
 	remove,
 	serverTimestamp,
-	set,
 } from "firebase/database";
 import { db } from "./firebase";
 
@@ -45,20 +43,6 @@ export const sendChatMessage = async (
 	});
 };
 
-/** Sends a structured system event (join/leave). Text is localized on render. */
-export const sendSystemMessage = async (
-	roomId: string,
-	author: Author,
-	systemType: ChatSystemType,
-): Promise<void> => {
-	await push(chatRef(roomId), {
-		...authorFields(author),
-		systemType,
-		kind: "system",
-		createdAt: serverTimestamp(),
-	});
-};
-
 /**
  * Subscribes to the last 50 messages of a room, ordered by push key (which is
  * chronological). Defensively parses each entry; malformed ones are dropped.
@@ -82,32 +66,14 @@ export const subscribeToRoomChat = (
 };
 
 /**
- * Announces the player's presence: writes a "join" system message and arms an
- * onDisconnect that writes "leave" if the connection drops. Returns a cleanup
- * that cancels the onDisconnect and writes "leave" on a graceful exit.
+ * Presença no chat: as mensagens de sistema (join/leave) foram removidas do
+ * chat. Mantido como no-op para preservar o ciclo de conexão do chatStore.
  */
 export const registerPresence = async (
-	roomId: string,
-	author: Author,
+	_roomId: string,
+	_author: Author,
 ): Promise<() => void> => {
-	const leavePayload = {
-		...authorFields(author),
-		systemType: "leave" as const,
-		kind: "system" as const,
-		createdAt: serverTimestamp(),
-	};
-
-	// New child slot reserved for the eventual "leave" message.
-	const leaveRef = push(chatRef(roomId));
-	const disconnect = onDisconnect(leaveRef);
-	await disconnect.set(leavePayload);
-
-	await sendSystemMessage(roomId, author, "join");
-
-	return () => {
-		disconnect.cancel().catch(() => {});
-		set(leaveRef, leavePayload).catch(() => {});
-	};
+	return () => {};
 };
 
 /** Removes the entire chat history for a room (called on room finish). */

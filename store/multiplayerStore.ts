@@ -956,6 +956,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 					enemyId: enemy.id,
 					enemyRank: enemy.rank,
 					turnIndex: newStats.turnsPlayed,
+					exactKill: newCurrentDamage === enemy.health,
 				});
 				const exactKill = newCurrentDamage === enemy.health;
 				const enemyCard = enemyToCard(enemy);
@@ -1218,7 +1219,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 
 		// ── Confirmar descarte ────────────────────────────────────────────────
 		confirmDiscard: () => {
-			const { isMyTurn, gameState, selectedIds, myPlayerId, _currentPlayerIndex, _playerOrder, _playerCount } = get();
+			const { isMyTurn, gameState, selectedIds, myPlayerId, _currentPlayerIndex, _playerCount } = get();
 			if (!isMyTurn || gameState.phase !== "suffer_damage") return;
 
 			const playerCount = _playerCount as 1 | 2 | 3 | 4;

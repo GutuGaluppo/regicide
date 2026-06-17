@@ -1,7 +1,6 @@
 import { CardFlightOverlay } from "@/components/CardFlightOverlay/CardFlightOverlay";
 // LAYOUT_TEST: import mantido — não deletar
 // import { CastleFooter } from "@/components/CastleFooter";
-import Hourglass from "@/assets/icons/hourglass.png";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { DefeatScreen } from "@/components/DefeatScreen";
 import { EnemyCaptureOverlay } from "@/components/EnemyCaptureOverlay/EnemyCaptureOverlay";
@@ -24,17 +23,11 @@ import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import { useEnemyCardScale } from "@/hooks/useEnemyCardScale";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useTutorialFlow } from "@/hooks/useTutorialFlow";
-import { Image } from "expo-image";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	ImageBackground,
-	LayoutChangeEvent,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { ImageBackground, LayoutChangeEvent, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { GameLogButton } from "./components/GameLogButton";
 import { ParticipantsSidebar } from "./components/ParticipantsSidebar";
 import { StatusCard } from "./components/StatusCard";
 import { styles } from "./GameScreen.styles";
@@ -81,7 +74,6 @@ export const GameScreen = () => {
 		playerOrder,
 		currentPlayerIndex,
 		reveal,
-		closeReveal,
 		gameLog,
 	} = useGameScreenStore();
 
@@ -291,6 +283,7 @@ export const GameScreen = () => {
 							<StatusCard
 								count={discardPile.length}
 								label={t("game.status.discard")}
+								faceCard={discardPile[discardPile.length - 1] ?? null}
 							/>
 						</View>
 					</View>
@@ -393,6 +386,7 @@ export const GameScreen = () => {
 						<ParticipantsSidebar
 							players={orderedPlayers}
 							activePlayerId={activePlayerId}
+							myPlayerId={myPlayerId}
 						/>
 					)}
 
@@ -407,21 +401,7 @@ export const GameScreen = () => {
 
 				<ScreenHeader
 					onSettingsPress={() => setSettingsVisible(true)}
-					rightExtra={
-						<TouchableOpacity
-							onPress={() => setLogVisible(true)}
-							style={styles.logButton}
-							activeOpacity={0.7}
-							accessibilityRole="button"
-							accessibilityLabel={t("game.log.title")}
-						>
-							<Image
-								source={Hourglass}
-								style={styles.logIcon}
-								contentFit="contain"
-							/>
-						</TouchableOpacity>
-					}
+					rightExtra={<GameLogButton onPress={() => setLogVisible(true)} />}
 				/>
 			</View>
 
@@ -480,13 +460,7 @@ export const GameScreen = () => {
 				/>
 			)}
 
-			{reveal && (
-				<TurnRevealOverlay
-					reveal={reveal}
-					onSkip={closeReveal}
-					canSkip={playerOrder?.[reveal.toIndex] === myPlayerId}
-				/>
-			)}
+			{reveal && <TurnRevealOverlay reveal={reveal} />}
 
 			<GameLogModal
 				visible={logVisible}

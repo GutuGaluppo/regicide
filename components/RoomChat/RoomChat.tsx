@@ -147,15 +147,8 @@ export const RoomChat = ({
 					}
 				>
 					{messages.map((m) => {
-						if (m.kind === "system") {
-							return (
-								<View key={m.id} style={styles.systemRow}>
-									<Text style={styles.systemText}>
-										{t(`chat.system.${m.systemType}`, { name: m.playerName })}
-									</Text>
-								</View>
-							);
-						}
+						// Mensagens de sistema (join/leave) foram removidas do chat.
+						if (m.kind === "system") return null;
 						const isOwn = m.playerId === myPlayerId;
 						if (isOwn) {
 							return (

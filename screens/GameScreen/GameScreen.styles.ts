@@ -40,6 +40,25 @@ export const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 	},
+	// Contagem em badge no canto quando a carta aparece com a face para cima.
+	statusCountBadge: {
+		position: "absolute",
+		bottom: 2,
+		right: 2,
+		minWidth: 18,
+		paddingHorizontal: 4,
+		paddingVertical: 1,
+		borderRadius: 6,
+		backgroundColor: "rgba(5,17,24,0.85)",
+		borderWidth: 1,
+		borderColor: "rgba(232,213,163,0.4)",
+		alignItems: "center",
+	},
+	statusCountBadgeText: {
+		fontFamily: "Cinzel",
+		fontSize: 11,
+		color: "#F8E7BC",
+	},
 	deckLabel: {
 		color: "rgba(148,163,184,0.8)",
 		fontSize: 9,
