@@ -48,4 +48,15 @@ export const styles = StyleSheet.create({
 		textAlign: "center",
 	},
 	ghostBottom: { paddingHorizontal: 12, paddingBottom: 8, gap: 8 },
+	logBtn: {
+		marginTop: 12,
+		alignItems: "center",
+		paddingVertical: 6,
+	},
+	logText: {
+		color: "#E8D5A3",
+		fontSize: 13,
+		textDecorationLine: "underline",
+		opacity: 0.85,
+	},
 });

@@ -32,13 +32,15 @@ export const styles = StyleSheet.create({
 		...StyleSheet.absoluteFillObject,
 		justifyContent: "center",
 		alignItems: "center",
-		backgroundColor: "rgba(0,0,0,0.55)",
 		borderRadius: 4,
 	},
-	x: {
-		color: "#EF4444",
-		fontSize: 16,
-		fontWeight: "800",
-		lineHeight: 18,
+	// Moeda/token (caveira com cores invertidas) que marca o inimigo derrotado.
+	token: {
+		width: 26,
+		height: 26,
+	},
+	tokenDesktop: {
+		width: 42,
+		height: 42,
 	},
 });

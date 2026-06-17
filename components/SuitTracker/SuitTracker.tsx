@@ -6,10 +6,11 @@ import HeartsIcon from "@/assets/classes/hearts.png";
 import HeartsShadowIcon from "@/assets/classes/hearts_shadow.png";
 import SpadesIcon from "@/assets/classes/spades.png";
 import SpadesShadowIcon from "@/assets/classes/spades_shadow.png";
+import SkullToken from "@/assets/icons/skull_token.png";
 import { Enemy, Suit } from "@/data/types";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import React from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { Image } from "expo-image";
 import { styles } from "./SuitTracker.styles";
 
@@ -55,7 +56,11 @@ export const SuitTracker = React.memo(({ enemies, defeatedIds, currentSuit }: Su
 								<Image source={icon} style={[styles.icon, isDesktop && styles.iconDesktop]} contentFit="contain" />
 								{defeated && (
 									<View style={styles.overlay}>
-										<Text style={styles.x}>✕</Text>
+										<Image
+											source={SkullToken}
+											style={[styles.token, isDesktop && styles.tokenDesktop]}
+											contentFit="contain"
+										/>
 									</View>
 								)}
 							</View>

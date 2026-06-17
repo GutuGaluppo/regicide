@@ -1,4 +1,4 @@
-import { AvatarId, Card, Enemy, GameState } from "@/data/types";
+import { AvatarId, Card, Enemy, GameLogEntry, GameState, RevealState } from "@/data/types";
 import { useGameStore } from "@/store/gameStore";
 import React, { createContext, useContext } from "react";
 
@@ -22,6 +22,11 @@ export interface GameScreenStore {
 	isMyTurn: boolean;
 	// Cartas jogadas pelo jogador ativo neste turno (vazio em single-player)
 	lastPlayedCards: Card[];
+	// Janela de revelação entre turnos (null em single-player)
+	reveal: RevealState | null;
+	closeReveal: () => void;
+	// Action log (tracker de ações) — single e multiplayer
+	gameLog: GameLogEntry[];
 	initialize: () => Promise<void>;
 	toggleCard: (card: Card) => void;
 	playSelected: () => void;
@@ -49,8 +54,8 @@ export const useGameScreenStore = (): GameScreenStore => {
 
 export const SinglePlayerStoreProvider = ({ children }: { children: React.ReactNode }) => {
 	const store = useGameStore();
-	// Single-player: é sempre a vez do jogador
-	return <GameStoreContext.Provider value={{ ...store, isMyTurn: true, lastPlayedCards: [] }}>{children}</GameStoreContext.Provider>;
+	// Single-player: é sempre a vez do jogador; sem revelação entre turnos
+	return <GameStoreContext.Provider value={{ ...store, isMyTurn: true, lastPlayedCards: [], reveal: null, closeReveal: () => {} }}>{children}</GameStoreContext.Provider>;
 };
 
 export const MultiplayerStoreProvider = ({

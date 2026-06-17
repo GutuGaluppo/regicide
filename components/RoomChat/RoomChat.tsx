@@ -17,7 +17,15 @@ import {
 } from "react-native";
 import { styles } from "./RoomChat.styles";
 
-export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
+export const RoomChat = ({
+	docked = false,
+	showFab = true,
+}: {
+	docked?: boolean;
+	/** Mostra o botão flutuante quando fechado. Desligue quando outro UI
+	 * (ex.: o HUD inferior) já oferece o gatilho de chat. */
+	showFab?: boolean;
+}) => {
 	const { t } = useTranslation();
 	const { isTablet } = useResponsiveLayout();
 
@@ -51,7 +59,11 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 			chatInitRef.current = true; // pula o histórico carregado ao conectar
 			return;
 		}
-		if (last.id !== prevId && last.kind === "text" && last.playerId !== myPlayerId) {
+		if (
+			last.id !== prevId &&
+			last.kind === "text" &&
+			last.playerId !== myPlayerId
+		) {
 			playChatMessage();
 		}
 	}, [messages, myPlayerId, playChatMessage]);
@@ -73,6 +85,7 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 
 	// Modo overlay (mobile/tablet ou desktop fechado): mostra o FAB quando fechado.
 	if (!docked && !isOpen) {
+		if (!showFab) return null;
 		return (
 			<TouchableOpacity
 				style={styles.fab}
@@ -81,10 +94,16 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 				accessibilityRole="button"
 				accessibilityLabel={t("chat.title")}
 			>
-				<Ionicons name="chatbubble-ellipses-outline" size={24} color="#E8D5A3" />
+				<Ionicons
+					name="chatbubble-ellipses-outline"
+					size={24}
+					color="#E8D5A3"
+				/>
 				{unreadCount > 0 && (
 					<View style={styles.badge}>
-						<Text style={styles.badgeText}>{unreadCount > 99 ? "99+" : unreadCount}</Text>
+						<Text style={styles.badgeText}>
+							{unreadCount > 99 ? "99+" : unreadCount}
+						</Text>
 					</View>
 				)}
 			</TouchableOpacity>
@@ -95,13 +114,21 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 		<KeyboardAvoidingView
 			style={[
 				styles.panel,
-				docked ? styles.panelDocked : isTablet ? styles.panelTablet : styles.panelMobile,
+				docked
+					? styles.panelDocked
+					: isTablet
+						? styles.panelTablet
+						: styles.panelMobile,
 			]}
 			behavior={Platform.OS === "ios" ? "padding" : undefined}
 		>
 			<View style={styles.header}>
 				<Text style={styles.headerTitle}>{t("chat.title")}</Text>
-				<TouchableOpacity onPress={closeChat} hitSlop={10} accessibilityLabel="Fechar">
+				<TouchableOpacity
+					onPress={closeChat}
+					hitSlop={10}
+					accessibilityLabel="Fechar"
+				>
 					<Ionicons name="close" size={22} color="#94A3B8" />
 				</TouchableOpacity>
 			</View>
@@ -115,7 +142,9 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 					ref={scrollRef}
 					style={styles.list}
 					contentContainerStyle={styles.listContent}
-					onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+					onContentSizeChange={() =>
+						scrollRef.current?.scrollToEnd({ animated: true })
+					}
 				>
 					{messages.map((m) => {
 						if (m.kind === "system") {
@@ -138,7 +167,13 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 						return (
 							<View key={m.id} style={styles.msgRow}>
 								<AvatarBadge avatarId={m.playerAvatarId} size={28} />
-								<View style={[styles.bubble, styles.bubbleOther, styles.bubbleInRow]}>
+								<View
+									style={[
+										styles.bubble,
+										styles.bubbleOther,
+										styles.bubbleInRow,
+									]}
+								>
 									<Text style={styles.author}>{m.playerName}</Text>
 									<Text style={styles.bubbleText}>{m.text}</Text>
 								</View>
@@ -163,7 +198,10 @@ export const RoomChat = ({ docked = false }: { docked?: boolean }) => {
 					blurOnSubmit
 				/>
 				<TouchableOpacity
-					style={[styles.sendBtn, draft.trim().length === 0 && styles.sendBtnDisabled]}
+					style={[
+						styles.sendBtn,
+						draft.trim().length === 0 && styles.sendBtnDisabled,
+					]}
 					onPress={handleSend}
 					disabled={draft.trim().length === 0}
 					activeOpacity={0.8}

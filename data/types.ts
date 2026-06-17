@@ -32,6 +32,23 @@ export interface Card {
 [];
 export type GamePhase = "player_turn" | "suffer_damage" | "victory" | "defeat";
 
+// Janela de revelação entre turnos (multiplayer): durante a revelação o turno
+// está "congelado" — ninguém age — enquanto todos veem as cartas usadas no
+// ataque e descartadas pelo jogador que acabou de jogar. Ver
+// docs/turn-reveal-delay-strategy.md.
+export interface RevealState {
+	byPlayerId: string; // quem acabou de jogar
+	byPlayerName: string; // snapshot para render
+	fromIndex: number; // currentPlayerIndex que estava agindo
+	toIndex: number; // próximo jogador (ainda NÃO efetivado)
+	startedAt: number; // Date.now() do ator no início da revelação
+	durationMs: number; // duração da janela
+	attackCards: Card[]; // cartas jogadas contra o inimigo neste turno
+	discardCards: Card[]; // cartas descartadas para pagar dano neste turno
+	defeatedEnemy: boolean; // o golpe derrotou o inimigo atual
+	yielded: boolean; // o jogador passou a vez sem jogar cartas
+}
+
 export interface GameStats {
 	startTime: number;
 	turnsPlayed: number;
@@ -56,6 +73,48 @@ export interface GameState {
 	jestersAvailable: number;
 	jestersUsed: number;
 	stats: GameStats;
+	reveal?: RevealState | null; // janela de revelação ativa (multiplayer)
+}
+
+// ─── Action Log (tracker de ações) ────────────────────────────────────────────
+// Registro append-only e atribuído das ações dos jogadores. Ver
+// docs/action-tracker-implementation-plan.md.
+
+export type GameLogKind =
+	| "attack" // cartas jogadas contra o inimigo
+	| "discard" // cartas descartadas para pagar dano
+	| "jester" // jester usado (cancela imunidade)
+	| "yield" // turno passado sem jogar
+	| "enemy_defeated"; // inimigo derrotado (evento marco)
+
+// Entrada já parseada, consumida pela UI.
+export interface GameLogEntry {
+	id: string; // = chave do push() (RTDB) ou id local
+	playerId: string; // autor da ação
+	playerName: string; // snapshot para render histórico
+	playerAvatarId?: AvatarId; // snapshot (opcional no fio; fallback ao ler)
+	kind: GameLogKind;
+	cards?: Card[]; // presente em attack/discard/jester
+	enemyId?: string; // inimigo-alvo no momento da ação
+	enemyRank?: EnemyRank; // snapshot p/ render sem cruzar com o castle
+	damage?: number; // dano aplicado (attack)
+	shieldAdded?: number; // escudo somado (attack com espadas)
+	turnIndex?: number; // stats.turnsPlayed no momento — agrupa por turno
+	createdAt: number; // ServerValue.TIMESTAMP (MP) ou Date.now() (SP)
+}
+
+// Rascunho emitido pela store (sem id/createdAt; cards ainda como Card[]).
+export interface GameLogDraft {
+	playerId: string;
+	playerName: string;
+	playerAvatarId?: AvatarId;
+	kind: GameLogKind;
+	cards?: Card[];
+	enemyId?: string;
+	enemyRank?: EnemyRank;
+	damage?: number;
+	shieldAdded?: number;
+	turnIndex?: number;
 }
 
 // ─── Tipos Multiplayer ────────────────────────────────────────────────────────
@@ -89,6 +148,7 @@ export interface SharedState {
 	currentPlayerIndex: number;
 	playerOrder: string; // JSON.stringify(string[])
 	playerCount: number;
+	reveal?: string | null; // JSON.stringify(RevealState) | null
 }
 
 export type RoomStatus = "lobby" | "playing" | "finished";

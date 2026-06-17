@@ -22,6 +22,27 @@
           "$other": { ".validate": false }
         }
       }
+    },
+    "roomLogs": {
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        "$entryId": {
+          ".validate": "newData.hasChildren(['playerId','kind','createdAt'])",
+          "playerId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64" },
+          "playerName": { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "kind": { ".validate": "newData.isString() && newData.val().length <= 20" },
+          "createdAt": { ".validate": "newData.isNumber()" },
+          "cards": { ".validate": "newData.isString() && newData.val().length <= 4096" },
+          "enemyId": { ".validate": "newData.isString() && newData.val().length <= 64" },
+          "enemyRank": { ".validate": "newData.isString() && newData.val().length <= 2" },
+          "damage": { ".validate": "newData.isNumber()" },
+          "shieldAdded": { ".validate": "newData.isNumber()" },
+          "turnIndex": { ".validate": "newData.isNumber()" },
+          "playerAvatarId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+          "$other": { ".validate": false }
+        }
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
+import { GameLogModal } from "@/components/GameLog";
 import { useAudio } from "@/contexts/AudioContext";
 import { getCardImage } from "@/data/images";
-import { Card, Enemy, GameStats } from "@/data/types";
+import { Card, Enemy, GameLogEntry, GameStats } from "@/data/types";
 import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -33,6 +34,7 @@ type DefeatScreenPropsType = {
 	defeatedEnemies?: Enemy[];
 	playerHand?: Card[];
 	onReset: () => void;
+	gameLog?: GameLogEntry[];
 };
 
 export const DefeatScreen = ({
@@ -41,12 +43,14 @@ export const DefeatScreen = ({
 	defeatedEnemies,
 	playerHand,
 	onReset,
+	gameLog = [],
 }: DefeatScreenPropsType) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
 	useBackgroundCaching("defeat_bg", BG);
 
 	const [ghostsVisible, setGhostsVisible] = useState(true);
+	const [logVisible, setLogVisible] = useState(false);
 	const othersScale = useRef(new Animated.Value(1)).current;
 	const othersOpacity = useRef(new Animated.Value(1)).current;
 	const cardScale = useRef(new Animated.Value(0.6)).current;
@@ -165,6 +169,18 @@ export const DefeatScreen = ({
 						>
 							<Text style={styles.newGameText}>{t("defeat.newGame")}</Text>
 						</TouchableOpacity>
+							{gameLog.length > 0 && (
+								<TouchableOpacity
+									style={styles.logBtn}
+									onPress={() => {
+										playTap();
+										setLogVisible(true);
+									}}
+									activeOpacity={0.7}
+								>
+									<Text style={styles.logText}>{t("game.log.title")}</Text>
+								</TouchableOpacity>
+							)}
 					</Animated.View>
 				</ScrollView>
 
@@ -180,6 +196,11 @@ export const DefeatScreen = ({
 						<GhostFooter />
 					</Animated.View>
 				)}
+				<GameLogModal
+					visible={logVisible}
+					entries={gameLog}
+					onClose={() => setLogVisible(false)}
+				/>
 			</View>
 		</ImageBackground>
 	);

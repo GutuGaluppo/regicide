@@ -5,9 +5,12 @@ import {
 	AvatarId,
 	Card,
 	Enemy,
+	GameLogDraft,
+	GameLogEntry,
 	GamePhase,
 	GameState,
 	GameStats,
+	RevealState,
 	Room,
 	RoomPlayer,
 	RoomStatus,
@@ -15,9 +18,12 @@ import {
 	Suit,
 } from "@/data/types";
 import { DEFAULT_AVATAR_ID } from "@/data/avatars";
+import { appendLogEntry, clearRoomLog, subscribeToRoomLog } from "@/services/firebaseLog";
 import {
+	ClaimResult,
 	claimAvatar,
 	clearAbandonRequest,
+	closeRevealTx,
 	createRoom,
 	fetchRoom,
 	finishRoom,
@@ -140,12 +146,18 @@ const encodeShared = (
 	currentPlayerIndex,
 	playerOrder: JSON.stringify(playerOrder),
 	playerCount,
+	reveal: gs.reveal ? JSON.stringify(gs.reveal) : null,
 });
 
 // Firebase pode retornar null para arrays vazios — garante array ao parsear
 const safeParseArray = (raw: string | null | undefined): unknown[] => {
 	if (!raw) return [];
 	try { return JSON.parse(raw) as unknown[]; } catch { return []; }
+};
+
+const safeParseReveal = (raw: string | null | undefined): RevealState | null => {
+	if (!raw) return null;
+	try { return JSON.parse(raw) as RevealState; } catch { return null; }
 };
 
 const decodeShared = (s: SharedState): Omit<GameState, "playerHand"> & {
@@ -170,6 +182,7 @@ const decodeShared = (s: SharedState): Omit<GameState, "playerHand"> & {
 	currentPlayerIndex: s.currentPlayerIndex ?? 0,
 	playerOrder: safeParseArray(s.playerOrder) as string[],
 	playerCount: s.playerCount ?? 2,
+	reveal: safeParseReveal(s.reveal),
 });
 
 // As resoluções síncronas de mão vazia / pagamento vivem em @/utils/gameEngine
@@ -219,6 +232,13 @@ export interface MultiplayerStore {
 	// Cartas jogadas no turno atual (exibidas para jogadores em espera)
 	lastPlayedCards: Card[];
 
+	// Janela de revelação entre turnos — o estado vive em gameState.reveal;
+	// closeReveal efetiva o avanço do turno após a janela (timeout ou "pular").
+	closeReveal: (expectedStartedAt?: number) => void;
+
+	// Action log (tracker de ações) — alimentado pela assinatura de roomLogs.
+	gameLog: GameLogEntry[];
+
 	// Abandono de partida
 	abandonRequest: AbandonRequest | null;
 	requestAbandon: () => Promise<void>;
@@ -227,7 +247,8 @@ export interface MultiplayerStore {
 	// Ações de sala
 	initPlayerId: () => Promise<void>;
 	createRoom: (displayName: string, avatarId?: AvatarId) => Promise<string>;
-	joinRoom: (roomId: string, displayName: string, avatarId?: AvatarId) => Promise<void>;
+	prepareJoin: (code: string) => Promise<{ takenAvatarIds: AvatarId[] }>;
+	joinRoom: (roomId: string, displayName: string, avatarId?: AvatarId) => Promise<ClaimResult>;
 	startGame: () => Promise<void>;
 	leaveRoom: () => Promise<void>;
 	tryReconnect: () => Promise<boolean>;
@@ -256,6 +277,13 @@ export interface MultiplayerStore {
 	_prevRoomStatus: RoomStatus | "idle";
 	_unsubscribeFn: (() => void) | null;
 	_onRoomUpdate: (room: Room) => void;
+	// Cartas de ataque jogadas no turno atual, retidas localmente para compor a
+	// revelação junto com o descarte (mesmo cliente entre play e confirmDiscard).
+	_pendingAttackCards: Card[];
+	// Timer local que fecha a revelação (ator) ou faz o fallback (próximo jogador).
+	_revealTimer: ReturnType<typeof setTimeout> | null;
+	// Unsubscribe da assinatura de roomLogs (action log).
+	_logUnsubscribeFn: (() => void) | null;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -276,7 +304,12 @@ const placeholderGameState = (): GameState => ({
 	jestersAvailable: 0,
 	jestersUsed: 0,
 	stats: emptyStats(),
+	reveal: null,
 });
+
+// ── Constantes da janela de revelação ────────────────────────────────────────
+const REVEAL_DURATION_MS = 3500;
+const REVEAL_GRACE_MS = 2000; // folga antes do fallback do próximo jogador
 
 export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 	// ── Helpers ──────────────────────────────────────────────────────────────
@@ -307,6 +340,81 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			encoded[pid] = JSON.stringify(hand);
 		}
 		await updateSharedAndHands(roomId, shared, encoded);
+	};
+
+	// ── Action log: emite a ação do jogador local (append-only) ───────────────
+	// Cada cliente escreve a PRÓPRIA ação — nunca derivamos do listener, para
+	// preservar a atribuição correta. Best-effort: falha de rede é silenciosa.
+	const appendLog = (
+		draft: Omit<GameLogDraft, "playerId" | "playerName" | "playerAvatarId">,
+	) => {
+		const { roomId, myPlayerId, myDisplayName, myAvatarId } = get();
+		if (!roomId) return;
+		appendLogEntry(roomId, {
+			playerId: myPlayerId,
+			playerName: myDisplayName,
+			playerAvatarId: myAvatarId,
+			...draft,
+		}).catch(() => {});
+	};
+
+	// Assina o action log da sala; substitui qualquer assinatura anterior.
+	const subscribeLog = (roomId: string) => {
+		get()._logUnsubscribeFn?.();
+		const unsub = subscribeToRoomLog(roomId, (entries) => set({ gameLog: entries }));
+		set({ _logUnsubscribeFn: unsub });
+	};
+
+	// ── Encerrar a ação: entrar em revelação ou avançar o turno direto ─────────
+	// Estratégia B: quando o turno muda para outro jogador e há cartas a revelar,
+	// NÃO avançamos currentPlayerIndex — gravamos um bloco `reveal` (com toIndex)
+	// e o turno só avança quando closeReveal efetiva o fechamento (timeout/pular).
+	// Sem cartas, endgame, jester encadeado ou single-player → avança direto.
+	const commitTurn = (
+		next: GameState,
+		nextIndex: number,
+		hands: Record<string, Card[]>,
+		reveal: { attack: Card[]; discard: Card[]; defeatedEnemy?: boolean; yielded?: boolean },
+	) => {
+		const { _currentPlayerIndex, _playerOrder, _playerCount, myPlayerId, myDisplayName } = get();
+		const turnChanged = nextIndex !== _currentPlayerIndex;
+		const hasCards = reveal.attack.length > 0 || reveal.discard.length > 0;
+		// Mesmo sem cartas, um "passe" (yield) revela a mensagem de que o jogador
+		// passou a vez — ajuda os demais a acompanhar o estado da mesa.
+		const shouldReveal = hasCards || (reveal.yielded ?? false);
+		const isEndgame = next.phase === "victory" || next.phase === "defeat";
+
+		if (turnChanged && shouldReveal && !isEndgame && _playerCount > 1) {
+			const revealState: RevealState = {
+				byPlayerId: myPlayerId,
+				byPlayerName: myDisplayName,
+				fromIndex: _currentPlayerIndex,
+				toIndex: nextIndex,
+				startedAt: Date.now(),
+				durationMs: REVEAL_DURATION_MS,
+				attackCards: reveal.attack,
+				discardCards: reveal.discard,
+				defeatedEnemy: reveal.defeatedEnemy ?? false,
+				yielded: reveal.yielded ?? false,
+			};
+			const withReveal: GameState = { ...next, reveal: revealState };
+			set({ gameState: withReveal, selectedIds: new Set(), ...computeDerived(withReveal, new Set()) });
+			// Mantém currentPlayerIndex = fromIndex; o avanço fica para closeReveal.
+			const shared = encodeShared(withReveal, _currentPlayerIndex, _playerOrder, _playerCount);
+			pushToFirebase(shared, hands);
+			// Arma o fechamento aqui (o ator): como já gravamos reveal localmente, o
+			// eco do onRoomUpdate verá prevReveal preenchido e não rearmaria o timer.
+			const existing = get()._revealTimer;
+			if (existing) clearTimeout(existing);
+			const startedAt = revealState.startedAt;
+			set({ _revealTimer: setTimeout(() => get().closeReveal(startedAt), revealState.durationMs) });
+			return;
+		}
+
+		const cleared: GameState = next.reveal ? { ...next, reveal: null } : next;
+		set({ gameState: cleared, selectedIds: new Set(), ...computeDerived(cleared, new Set()) });
+		const shared = encodeShared(cleared, nextIndex, _playerOrder, _playerCount);
+		pushToFirebase(shared, hands);
 	};
 
 	// ── Distribuição de Ouros (round-robin per rulebook) ─────────────────────
@@ -382,7 +490,11 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 		const derived = computeDerived(gameState, selectedIds);
 
 		const currentPlayerId = decoded.playerOrder[decoded.currentPlayerIndex];
-		const isMyTurn = currentPlayerId === myPlayerId;
+		// Durante a revelação o turno está congelado: ninguém age (nem o ator, cujo
+		// currentPlayerIndex ainda aponta para ele). O turno só "começa" de fato
+		// quando a revelação fecha e currentPlayerIndex passa para toIndex.
+		const reveal = decoded.reveal ?? null;
+		const isMyTurn = !reveal && currentPlayerId === myPlayerId;
 		const currentPlayerEntry = players.find((p) => p.id === currentPlayerId);
 		const currentPlayerName = currentPlayerEntry?.displayName ?? "";
 
@@ -414,6 +526,30 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 			if (AppState.currentState !== "active") {
 				scheduleLocalTurnNotification();
+			}
+		}
+
+		// ── Janela de revelação: arma o fechamento ────────────────────────────
+		// O ator agenda o fechamento em durationMs; o próximo jogador (toIndex)
+		// agenda um fallback em durationMs + grace, caso o ator desconecte. Ambos
+		// chamam closeReveal(startedAt), que é idempotente (transação no shared).
+		const prevReveal = s.gameState.reveal ?? null;
+		const revealStarted = reveal && (!prevReveal || prevReveal.startedAt !== reveal.startedAt);
+		const revealEnded = !reveal && prevReveal;
+		let revealTimer = s._revealTimer;
+		if (revealStarted || revealEnded) {
+			if (revealTimer) clearTimeout(revealTimer);
+			revealTimer = null;
+		}
+		if (revealStarted && reveal) {
+			const myIndex = decoded.playerOrder.indexOf(myPlayerId);
+			const isActor = reveal.byPlayerId === myPlayerId;
+			const isNext = reveal.toIndex === myIndex;
+			if (isActor || isNext) {
+				const delay = reveal.durationMs + (isActor ? 0 : REVEAL_GRACE_MS);
+				const remaining = Math.max(0, reveal.startedAt + delay - Date.now());
+				const startedAt = reveal.startedAt;
+				revealTimer = setTimeout(() => get().closeReveal(startedAt), remaining);
 			}
 		}
 
@@ -454,6 +590,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			_currentPlayerIndex: decoded.currentPlayerIndex,
 			_prevRoomStatus: room.status as RoomStatus | "idle",
 			_allPlayerHands: allPlayerHands,
+			_revealTimer: revealTimer,
 			...(handGrew ? { cardsDrawnSignal: prev.cardsDrawnSignal + 1 } : {}),
 			...(gameJustStarted ? { dealSignal: prev.dealSignal + 1 } : {}),
 			...(turnJustStarted ? { turnToastSignal: prev.turnToastSignal + 1 } : {}),
@@ -493,7 +630,23 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 		_currentPlayerIndex: 0,
 		_prevRoomStatus: "idle",
 		_unsubscribeFn: null,
+		_pendingAttackCards: [],
+		_revealTimer: null,
+		_logUnsubscribeFn: null,
+		gameLog: [],
 		...initialDerived,
+
+		// ── Revelação entre turnos ────────────────────────────────────────────
+		// Efetiva o avanço do turno após a janela (via timeout do ator, fallback
+		// do próximo jogador, ou botão "pular"). Idempotente: a transação no
+		// shared só age se a revelação ainda existir com o startedAt esperado.
+		closeReveal: (expectedStartedAt?: number) => {
+			const { roomId, gameState } = get();
+			const reveal = gameState.reveal;
+			if (!roomId || !reveal) return;
+			if (expectedStartedAt !== undefined && reveal.startedAt !== expectedStartedAt) return;
+			closeRevealTx(roomId, reveal.startedAt).catch(() => {});
+		},
 
 		// ── Abandono de partida ───────────────────────────────────────────────
 		requestAbandon: async () => {
@@ -516,17 +669,31 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 		setMyAvatar: (avatarId: AvatarId) => set({ myAvatarId: avatarId }),
 
 		updateMyLobbyProfile: async (displayName: string, avatarId: AvatarId) => {
-			const { roomId, myPlayerId } = get();
+			const { roomId, myPlayerId, myAvatarId: prevAvatar } = get();
 			set({ myDisplayName: displayName, myAvatarId: avatarId }); // otimista
 			if (roomId) {
 				await updatePlayerProfile(roomId, myPlayerId, { displayName }).catch(() => {});
-				// Avatar via reivindicação atômica — pode reatribuir se houver corrida.
-				const assignedAvatar = await claimAvatar(roomId, myPlayerId, avatarId).catch(
-					() => avatarId,
+				// Avatar via reivindicação atômica — em conflito mantém o anterior.
+				const res = await claimAvatar(roomId, myPlayerId, avatarId).catch(
+					() => ({ ok: true, avatarId }) as ClaimResult,
 				);
-				set({ myAvatarId: assignedAvatar });
-				saveSession(roomId, displayName, assignedAvatar, get().isHost);
+				const finalAvatar = res.ok ? res.avatarId : prevAvatar;
+				set({ myAvatarId: finalAvatar });
+				saveSession(roomId, displayName, finalAvatar, get().isHost);
 			}
+		},
+
+		// Valida a sala e devolve os avatares já ocupados, para o passo de escolha
+		// de avatar do convidado mostrar apenas os livres (antes do join).
+		prepareJoin: async (code: string) => {
+			const room = await fetchRoom(code);
+			if (!room) throw new Error("Sala não encontrada");
+			if (room.status !== "lobby") throw new Error("Partida já em andamento");
+			const players = Object.values(room.players ?? {});
+			if (players.length >= 4) throw new Error("Sala cheia (máx. 4 jogadores)");
+			return {
+				takenAvatarIds: players.map((p) => p.avatarId ?? DEFAULT_AVATAR_ID),
+			};
 		},
 
 		// ── Criar sala ────────────────────────────────────────────────────────
@@ -538,10 +705,13 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			const unsub = subscribeToRoom(roomId, onRoomUpdate);
 			saveSession(roomId, displayName, avatarId, true);
 			set({ roomId, myDisplayName: displayName, myAvatarId: avatarId, isHost: true, roomStatus: "lobby", _unsubscribeFn: unsub });
+			subscribeLog(roomId);
 			return roomId;
 		},
 
 		// ── Entrar na sala ────────────────────────────────────────────────────
+		// O avatar é reivindicado atomicamente no próprio join; em conflito
+		// devolve { ok: false, takenAvatarIds } para a UI repedir a escolha.
 		joinRoom: async (roomId: string, displayName: string, avatarId: AvatarId = get().myAvatarId) => {
 			const { myPlayerId, _unsubscribeFn } = get();
 			const room = await fetchRoom(roomId);
@@ -549,16 +719,14 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			if (room.status !== "lobby") throw new Error("Partida já em andamento");
 			const playerCount = Object.keys(room.players ?? {}).length;
 			if (playerCount >= 4) throw new Error("Sala cheia (máx. 4 jogadores)");
-			await joinRoom(roomId, myPlayerId, displayName, avatarId);
-			// Reivindica o avatar atomicamente — se já estiver em uso por outro
-			// jogador, recebe automaticamente o primeiro avatar livre.
-			const assignedAvatar = await claimAvatar(roomId, myPlayerId, avatarId).catch(
-				() => avatarId,
-			);
+			const res = await joinRoom(roomId, myPlayerId, displayName, avatarId);
+			if (!res.ok) return res; // avatar tomado na corrida — não entra
 			_unsubscribeFn?.();
 			const unsub = subscribeToRoom(roomId, onRoomUpdate);
-			saveSession(roomId, displayName, assignedAvatar, false);
-			set({ roomId, myDisplayName: displayName, myAvatarId: assignedAvatar, isHost: false, roomStatus: "lobby", _unsubscribeFn: unsub });
+			saveSession(roomId, displayName, res.avatarId, false);
+			set({ roomId, myDisplayName: displayName, myAvatarId: res.avatarId, isHost: false, roomStatus: "lobby", _unsubscribeFn: unsub });
+			subscribeLog(roomId);
+			return res;
 		},
 
 		// ── Iniciar partida (host) ────────────────────────────────────────────
@@ -567,6 +735,9 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			if (!roomId) return;
 			const room = await fetchRoom(roomId);
 			if (!room || room.hostId !== myPlayerId) return;
+
+			// Nova partida na mesma sala (ex.: "jogar de novo") começa com log limpo.
+			clearRoomLog(roomId).catch(() => {});
 
 			const players = Object.values(room.players ?? {}) as RoomPlayer[];
 			const playerCount = Math.max(1, Math.min(4, players.length)) as 1 | 2 | 3 | 4;
@@ -613,8 +784,10 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 
 		// ── Sair da sala ──────────────────────────────────────────────────────
 		leaveRoom: async () => {
-			const { roomId, myPlayerId, _unsubscribeFn } = get();
+			const { roomId, myPlayerId, _unsubscribeFn, _revealTimer, _logUnsubscribeFn } = get();
 			_unsubscribeFn?.();
+			_logUnsubscribeFn?.();
+			if (_revealTimer) clearTimeout(_revealTimer);
 			if (roomId) await leaveRoom(roomId, myPlayerId);
 			clearSession();
 			set({
@@ -624,6 +797,9 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 				isHost: false,
 				roomPlayers: [],
 				_unsubscribeFn: null,
+				_revealTimer: null,
+				_logUnsubscribeFn: null,
+				gameLog: [],
 			});
 		},
 
@@ -658,6 +834,13 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			if (!roomId) return;
 			const shared = encodeShared(next, _currentPlayerIndex, _playerOrder, _playerCount);
 			pushToFirebase(shared, { [myPlayerId]: gameState.playerHand });
+			const enemy = gameState.castle[0];
+			appendLog({
+				kind: "jester",
+				enemyId: enemy?.id,
+				enemyRank: enemy?.rank,
+				turnIndex: gameState.stats.turnsPlayed,
+			});
 		},
 
 		// ── Jogar cartas ──────────────────────────────────────────────────────
@@ -742,14 +925,38 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 				set({ gameState: next, selectedIds: new Set(), ...computeDerived(next, new Set()) });
 				const shared = encodeShared(next, _currentPlayerIndex, _playerOrder, playerCount);
 				pushToFirebase(shared, { [myPlayerId]: activeHand, ...extraHands });
+				appendLog({
+					kind: "jester",
+					cards: selected,
+					enemyId: enemy?.id,
+					enemyRank: enemy?.rank,
+					turnIndex: newStats.turnsPlayed,
+				});
 				return;
 			}
 
 			const newCurrentDamage = gameState.currentDamage + result.totalDamage;
 			const allPlayedCards = [...gameState.playedThisFight, ...selected];
 
+			// LOG: ataque (cartas normais jogadas contra o inimigo)
+			appendLog({
+				kind: "attack",
+				cards: selected,
+				damage: result.totalDamage,
+				shieldAdded: Math.max(0, result.newShield - gameState.spadesShield),
+				enemyId: enemy.id,
+				enemyRank: enemy.rank,
+				turnIndex: newStats.turnsPlayed,
+			});
+
 			// ── Inimigo derrotado ─────────────────────────────────────────────
 			if (newCurrentDamage >= enemy.health) {
+				appendLog({
+					kind: "enemy_defeated",
+					enemyId: enemy.id,
+					enemyRank: enemy.rank,
+					turnIndex: newStats.turnsPlayed,
+				});
 				const exactKill = newCurrentDamage === enemy.health;
 				const enemyCard = enemyToCard(enemy);
 				const newTavern = exactKill ? [enemyCard, ...activeTavern] : activeTavern;
@@ -832,9 +1039,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 					jestersUsed: finalJestersUsed,
 					stats: defeatedStats,
 				};
-				set({ gameState: next, selectedIds: new Set(), ...computeDerived(next, new Set()) });
-				const shared = encodeShared(next, nextIndex, _playerOrder, playerCount);
-				pushToFirebase(shared, { [myPlayerId]: finalHand, ...extraHands });
+				commitTurn(next, nextIndex, { [myPlayerId]: finalHand, ...extraHands }, { attack: selected, discard: [], defeatedEnemy: true });
 				return;
 			}
 
@@ -879,9 +1084,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 					jestersUsed: finalJestersUsed,
 					stats: newStats,
 				};
-				set({ gameState: next, selectedIds: new Set(), ...computeDerived(next, new Set()) });
-				const shared = encodeShared(next, nextIndex, _playerOrder, playerCount);
-				pushToFirebase(shared, { [myPlayerId]: finalHand, ...extraHands });
+				commitTurn(next, nextIndex, { [myPlayerId]: finalHand, ...extraHands }, { attack: selected, discard: [] });
 				return;
 			}
 
@@ -928,9 +1131,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 					jestersUsed: r.jestersUsed,
 					stats: newStats,
 				};
-				set({ gameState: next, selectedIds: new Set(), ...computeDerived(next, new Set()) });
-				const shared = encodeShared(next, nextIndex, _playerOrder, playerCount);
-				pushToFirebase(shared, { [myPlayerId]: r.playerHand, ...extraHands });
+				commitTurn(next, nextIndex, { [myPlayerId]: r.playerHand, ...extraHands }, { attack: selected, discard: [] });
 				return;
 			}
 
@@ -949,7 +1150,9 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 				jestersUsed: jestersUsedForDamage,
 				stats: newStats,
 			};
-			set({ gameState: next, selectedIds: new Set(), ...computeDerived(next, new Set()) });
+			// Retém as cartas de ataque deste turno para compor a revelação
+			// junto com o descarte que virá no confirmDiscard (mesmo cliente).
+			set({ gameState: next, selectedIds: new Set(), _pendingAttackCards: selected, ...computeDerived(next, new Set()) });
 			const shared = encodeShared(next, _currentPlayerIndex, _playerOrder, playerCount);
 			// extraHands: já distribuídos acima — escrevemos junto com shared
 			pushToFirebase(shared, { [myPlayerId]: handForDamage, ...extraHands });
@@ -962,6 +1165,13 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			const enemy = gameState.castle[0];
 			if (!enemy) return;
 
+			appendLog({
+				kind: "yield",
+				enemyId: enemy.id,
+				enemyRank: enemy.rank,
+				turnIndex: gameState.stats.turnsPlayed,
+			});
+
 			const playerCount = _playerCount as 1 | 2 | 3 | 4;
 			const maxH = HAND_SIZE[playerCount];
 			const effectiveAttack = Math.max(0, enemy.attack - gameState.spadesShield);
@@ -969,9 +1179,8 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			if (effectiveAttack === 0) {
 				const nextIndex = advanceTurn(_currentPlayerIndex, playerCount);
 				const next: GameState = { ...gameState };
-				set({ gameState: next, selectedIds: new Set(), ...computeDerived(next, new Set()) });
-				const shared = encodeShared(next, nextIndex, _playerOrder, playerCount);
-				pushToFirebase(shared, { [myPlayerId]: gameState.playerHand });
+				// Passe livre (escudo zerou o ataque): revela o "passou a vez".
+				commitTurn(next, nextIndex, { [myPlayerId]: gameState.playerHand }, { attack: [], discard: [], yielded: true });
 				return;
 			}
 
@@ -995,14 +1204,14 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 					jestersAvailable: r.jestersAvailable,
 					jestersUsed: r.jestersUsed,
 				};
-				set({ gameState: next, selectedIds: new Set(), ...computeDerived(next, new Set()) });
-				const shared = encodeShared(next, nextIndex, _playerOrder, playerCount);
-				pushToFirebase(shared, { [myPlayerId]: r.playerHand });
+				// Passou a vez mas não pôde pagar o dano; se o turno avança, revela o passe.
+				commitTurn(next, nextIndex, { [myPlayerId]: r.playerHand }, { attack: [], discard: [], yielded: true });
 				return;
 			}
 
 			const next: GameState = { ...gameState, pendingDamage: effectiveAttack, phase: "suffer_damage" };
-			set({ gameState: next, selectedIds: new Set(), ...computeDerived(next, new Set()) });
+			// Yield para sofrer dano: nenhuma carta de ataque a revelar.
+			set({ gameState: next, selectedIds: new Set(), _pendingAttackCards: [], ...computeDerived(next, new Set()) });
 			const shared = encodeShared(next, _currentPlayerIndex, _playerOrder, playerCount);
 			pushToFirebase(shared, { [myPlayerId]: gameState.playerHand });
 		},
@@ -1028,6 +1237,15 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 			}
 
 			set({ playError: null, selectedIds: new Set(), ...computeDerived(gameState, new Set()) });
+
+			const discardEnemy = gameState.castle[0];
+			appendLog({
+				kind: "discard",
+				cards: selected,
+				enemyId: discardEnemy?.id,
+				enemyRank: discardEnemy?.rank,
+				turnIndex: gameState.stats.turnsPlayed,
+			});
 
 			const newHand = gameState.playerHand.filter((c) => !selectedIds.has(c.id));
 			const newDiscard = [...gameState.discardPile, ...selected];
@@ -1073,9 +1291,9 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 				jestersUsed: finalJestersUsed,
 				stats: newStats,
 			};
-			set({ gameState: next, selectedIds: new Set(), ...computeDerived(next, new Set()) });
-			const shared = encodeShared(next, nextIndex, _playerOrder, playerCount);
-			pushToFirebase(shared, { [myPlayerId]: finalHand });
+			// Revela ataque (retido em _pendingAttackCards) + descarte deste turno.
+			commitTurn(next, nextIndex, { [myPlayerId]: finalHand }, { attack: get()._pendingAttackCards, discard: selected });
+			set({ _pendingAttackCards: [] });
 		},
 
 		// ── No-ops (animações apenas locais) ──────────────────────────────────
@@ -1131,6 +1349,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => {
 				roomStatus: room.status,
 				_unsubscribeFn: unsub,
 			});
+			subscribeLog(session.roomId);
 			return true;
 		},
 

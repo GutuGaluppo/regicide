@@ -51,6 +51,21 @@ const en: Translations = {
 		kings: "Kings",
 	},
 	game: {
+		log: {
+			title: "Game log",
+			empty: "No actions yet",
+			you: "You",
+			attack: "attacked with",
+			discard: "discarded",
+			jester: "used the Jester",
+			yield: "passed the turn",
+			defeatedFull: "{{name}} defeated the {{enemy}}",
+			rankJ: "Jack",
+			rankQ: "Queen",
+			rankK: "King",
+			damage: "{{value}} dmg",
+			shield: "+{{value}} shield",
+		},
 		status: {
 			castle: "Castle",
 			tavern: "Tavern",
@@ -336,6 +351,14 @@ const en: Translations = {
 			subtitle: "Choose your cards to attack",
 			waiting: "Waiting for a move...",
 		},
+		reveal: {
+			attackedWith: "Attacked with",
+			discarded: "Discarded for damage",
+			defeated: "defeated the enemy!",
+			yielded: "passed their turn",
+			nextIn: "Next turn in {{seconds}}s",
+			skip: "Skip",
+		},
 		status: {
 			turnLabel: "Current turn",
 			yourTurn: "Your turn",
@@ -383,6 +406,7 @@ const en: Translations = {
 		createBtn: "Create New Room",
 		creating: "Creating…",
 		joinBtn: "Join",
+		continueBtn: "Continue",
 		waitingTitle: "WAITING",
 		shareCode: "Share this code with your friends",
 		shareBtn: "Share code",
@@ -404,6 +428,7 @@ const en: Translations = {
 			startFailed: "Failed to start",
 			invalidCode: "Invalid room code (6 characters)",
 			minPlayers: "Need at least 2 players",
+			avatarTaken: "That avatar was just taken. Please choose another.",
 		},
 	},
 	notifications: {

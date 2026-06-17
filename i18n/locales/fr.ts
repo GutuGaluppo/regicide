@@ -51,6 +51,21 @@ const fr: Translations = {
 		kings: "Rois",
 	},
 	game: {
+		log: {
+			title: "Journal de la partie",
+			empty: "Aucune action pour l'instant",
+			you: "Vous",
+			attack: "a attaqué avec",
+			discard: "a défaussé",
+			jester: "a utilisé le Joker",
+			yield: "a passé son tour",
+			defeatedFull: "{{name}} a vaincu le {{enemy}}",
+			rankJ: "Valet",
+			rankQ: "Dame",
+			rankK: "Roi",
+			damage: "{{value}} dégâts",
+			shield: "+{{value}} bouclier",
+		},
 		status: {
 			castle: "Château",
 			tavern: "Taverne",
@@ -337,6 +352,14 @@ const fr: Translations = {
 			subtitle: "Choisissez vos cartes pour attaquer",
 			waiting: "En attente d'une action...",
 		},
+		reveal: {
+			attackedWith: "A attaqué avec",
+			discarded: "Défaussé pour les dégâts",
+			defeated: "a vaincu l'ennemi !",
+			yielded: "a passé son tour",
+			nextIn: "Prochain tour dans {{seconds}}s",
+			skip: "Passer",
+		},
 		status: {
 			turnLabel: "Tour actuel",
 			yourTurn: "Votre tour",
@@ -384,6 +407,7 @@ const fr: Translations = {
 		createBtn: "Créer une nouvelle salle",
 		creating: "Création…",
 		joinBtn: "Rejoindre",
+		continueBtn: "Continuer",
 		waitingTitle: "EN ATTENTE",
 		shareCode: "Partagez ce code avec vos amis",
 		shareBtn: "Partager le code",
@@ -405,6 +429,7 @@ const fr: Translations = {
 			startFailed: "Erreur au démarrage",
 			invalidCode: "Code de salle invalide (6 caractères)",
 			minPlayers: "Il faut au moins 2 joueurs",
+			avatarTaken: "Cet avatar vient d'être choisi. Choisissez-en un autre.",
 		},
 	},
 	notifications: {

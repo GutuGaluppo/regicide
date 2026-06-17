@@ -1,18 +1,22 @@
-import {
-	CardFlightOverlay,
-} from "@/components/CardFlightOverlay/CardFlightOverlay";
+import { CardFlightOverlay } from "@/components/CardFlightOverlay/CardFlightOverlay";
 // LAYOUT_TEST: import mantido — não deletar
 // import { CastleFooter } from "@/components/CastleFooter";
-import { SuitTracker } from "@/components/SuitTracker";
+import Hourglass from "@/assets/icons/hourglass.png";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { DefeatScreen } from "@/components/DefeatScreen";
 import { EnemyCaptureOverlay } from "@/components/EnemyCaptureOverlay/EnemyCaptureOverlay";
 import { EnemyCard } from "@/components/EnemyCard";
 import { EnemyModal } from "@/components/EnemyModal";
+import { GameLogModal } from "@/components/GameLog";
 import { PlayerHand } from "@/components/PlayerHand";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { ConfirmModal } from "@/components/ConfirmModal";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
-import { TutorialStepPanel, TutorialWelcomeModal } from "@/components/TutorialOverlay";
+import { SuitTracker } from "@/components/SuitTracker";
+import { TurnRevealOverlay } from "@/components/TurnRevealOverlay/TurnRevealOverlay";
+import {
+	TutorialStepPanel,
+	TutorialWelcomeModal,
+} from "@/components/TutorialOverlay";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
 import { useGameScreenStore } from "@/contexts/GameStoreContext";
@@ -20,9 +24,16 @@ import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import { useEnemyCardScale } from "@/hooks/useEnemyCardScale";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useTutorialFlow } from "@/hooks/useTutorialFlow";
+import { Image } from "expo-image";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ImageBackground, LayoutChangeEvent, Text, View } from "react-native";
+import {
+	ImageBackground,
+	LayoutChangeEvent,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ParticipantsSidebar } from "./components/ParticipantsSidebar";
 import { StatusCard } from "./components/StatusCard";
@@ -33,7 +44,8 @@ export const GameScreen = () => {
 	const { t } = useTranslation();
 	const { playShuffleCards, playSoundtrack } = useAudio();
 	const insets = useSafeAreaInsets();
-	const { contentMaxWidth, screenPadding, isDesktop, isTablet } = useResponsiveLayout();
+	const { contentMaxWidth, screenPadding, isDesktop, isTablet } =
+		useResponsiveLayout();
 	useBackgroundCaching("game_bg", require("@/assets/backgrounds/bg_cave.webp"));
 
 	const {
@@ -68,6 +80,9 @@ export const GameScreen = () => {
 		myPlayerId,
 		playerOrder,
 		currentPlayerIndex,
+		reveal,
+		closeReveal,
+		gameLog,
 	} = useGameScreenStore();
 
 	useEffect(() => {
@@ -81,8 +96,17 @@ export const GameScreen = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [cardsDrawnSignal]);
 
-	const { phase, spadesShield, tavernDeck, discardPile, pendingDamage, jesterActive } = gameState;
-	const shieldCards = gameState.playedThisFight.filter((c) => c.suit === "spades");
+	const {
+		phase,
+		spadesShield,
+		tavernDeck,
+		discardPile,
+		pendingDamage,
+		jesterActive,
+	} = gameState;
+	const shieldCards = gameState.playedThisFight.filter(
+		(c) => c.suit === "spades",
+	);
 
 	// Trilha do jogo dirigida por fase: derrota troca para a faixa "defeat".
 	useEffect(() => {
@@ -105,6 +129,7 @@ export const GameScreen = () => {
 
 	const [modalVisible, setModalVisible] = useState(false);
 	const [settingsVisible, setSettingsVisible] = useState(false);
+	const [logVisible, setLogVisible] = useState(false);
 	const [confirmYieldVisible, setConfirmYieldVisible] = useState(false);
 	const [statusBarHeight, setStatusBarHeight] = useState(0);
 	const [centerLayout, setCenterLayout] = useState({ width: 0, height: 0 });
@@ -115,7 +140,9 @@ export const GameScreen = () => {
 
 	const handleStatusBarLayout = ({ nativeEvent }: LayoutChangeEvent) => {
 		const nextHeight = Math.round(nativeEvent.layout.height);
-		setStatusBarHeight((current) => (current === nextHeight ? current : nextHeight));
+		setStatusBarHeight((current) =>
+			current === nextHeight ? current : nextHeight,
+		);
 	};
 
 	const handleCenterLayout = ({ nativeEvent }: LayoutChangeEvent) => {
@@ -124,7 +151,8 @@ export const GameScreen = () => {
 		setCenterLayout((current) =>
 			current.width === nextWidth && current.height === nextHeight
 				? current
-				: { width: nextWidth, height: nextHeight });
+				: { width: nextWidth, height: nextHeight },
+		);
 	};
 
 	const {
@@ -166,30 +194,41 @@ export const GameScreen = () => {
 		yieldTurn,
 	});
 
-	const { isTutorial, step, advanceStep, exitTutorial, effectiveOnPlay, yieldBlocked } =
-		useTutorialFlow({
-			phase,
-			selectedIdsSize: selectedIds.size,
-			handlePlay,
-		});
+	const {
+		isTutorial,
+		step,
+		advanceStep,
+		exitTutorial,
+		effectiveOnPlay,
+		yieldBlocked,
+	} = useTutorialFlow({
+		phase,
+		selectedIdsSize: selectedIds.size,
+		handlePlay,
+	});
 
 	// Cálculo de fase para o SuitTracker — mesmo critério do CastleFooter
 	const allEnemies = [...gameState.defeatedEnemies, ...gameState.castle];
 	const defeatedIds = gameState.defeatedEnemies.map((e) => e.id);
 	const jEnemies = allEnemies.filter((e) => e.rank === "J");
 	const qEnemies = allEnemies.filter((e) => e.rank === "Q");
-	const jAllDefeated = jEnemies.length > 0 && jEnemies.every((e) => defeatedIds.includes(e.id));
-	const qAllDefeated = qEnemies.length > 0 && qEnemies.every((e) => defeatedIds.includes(e.id));
+	const jAllDefeated =
+		jEnemies.length > 0 && jEnemies.every((e) => defeatedIds.includes(e.id));
+	const qAllDefeated =
+		qEnemies.length > 0 && qEnemies.every((e) => defeatedIds.includes(e.id));
 	const footerPhase = jAllDefeated ? (qAllDefeated ? "K" : "Q") : "J";
 	const phaseEnemies = allEnemies.filter((e) => e.rank === footerPhase);
-	const orderedPlayers = roomPlayers && playerOrder
-		? [...roomPlayers].sort((left, right) => {
-			const leftIndex = playerOrder.indexOf(left.id);
-			const rightIndex = playerOrder.indexOf(right.id);
-			return (leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex)
-				- (rightIndex === -1 ? Number.MAX_SAFE_INTEGER : rightIndex);
-		})
-		: [];
+	const orderedPlayers =
+		roomPlayers && playerOrder
+			? [...roomPlayers].sort((left, right) => {
+					const leftIndex = playerOrder.indexOf(left.id);
+					const rightIndex = playerOrder.indexOf(right.id);
+					return (
+						(leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex) -
+						(rightIndex === -1 ? Number.MAX_SAFE_INTEGER : rightIndex)
+					);
+				})
+			: [];
 	const activePlayerId = playerOrder?.[currentPlayerIndex ?? 0] ?? null;
 	const showParticipantsSidebar = isTablet && orderedPlayers.length > 0;
 	const { layout: enemyCardLayout, compactHand } = useEnemyCardScale({
@@ -200,7 +239,8 @@ export const GameScreen = () => {
 		widthReserve: showParticipantsSidebar ? 132 : 0,
 	});
 
-	if (phase === "victory") return <VictoryScreen onReset={resetGame} />;
+	if (phase === "victory")
+		return <VictoryScreen onReset={resetGame} gameLog={gameLog} />;
 
 	if (phase === "defeat" && currentEnemy) {
 		return (
@@ -210,6 +250,7 @@ export const GameScreen = () => {
 				defeatedEnemies={gameState.defeatedEnemies}
 				playerHand={gameState.playerHand}
 				onReset={resetGame}
+				gameLog={gameLog}
 			/>
 		);
 	}
@@ -236,12 +277,21 @@ export const GameScreen = () => {
 						]}
 						onLayout={handleStatusBarLayout}
 					>
-						<StatusCard count={gameState.castle.length} label={t("game.status.castle")} />
+						<StatusCard
+							count={gameState.castle.length}
+							label={t("game.status.castle")}
+						/>
 						<View ref={tavernRef} collapsable={false}>
-							<StatusCard count={tavernDeck.length} label={t("game.status.tavern")} />
+							<StatusCard
+								count={tavernDeck.length}
+								label={t("game.status.tavern")}
+							/>
 						</View>
 						<View ref={discardRef} collapsable={false}>
-							<StatusCard count={discardPile.length} label={t("game.status.discard")} />
+							<StatusCard
+								count={discardPile.length}
+								label={t("game.status.discard")}
+							/>
 						</View>
 					</View>
 
@@ -255,34 +305,39 @@ export const GameScreen = () => {
 						]}
 						onLayout={handleCenterLayout}
 					>
-						{(phase === "player_turn" || phase === "suffer_damage") && currentEnemy && (
-							<EnemyCard
-								enemy={currentEnemy}
-								currentHP={currentHP}
-								effectiveAttack={effectiveAttack}
-								jesterActive={jesterActive}
-								spadesShield={spadesShield}
-								shieldCards={shieldCards}
-								jestersAvailable={gameState.jestersAvailable}
-								jestersUsed={gameState.jestersUsed}
-								autoJesterSignal={autoJesterSignal}
-								hidden={activeEnemyCapture !== null}
-								hideShieldPile={hideShieldPile}
-								layout={enemyCardLayout}
-								onCardMeasure={handleEnemyCardMeasure}
-								onShieldPileMeasure={handleShieldPileMeasure}
-								onUseJester={
-									phase === "player_turn" && !actionLocked && isMyTurn
-										? useJester
-										: undefined
-								}
-								onAutoJesterComplete={completeAutoJesterAnimation}
-								onJesterAnimationStateChange={setJesterAnimating}
-								onPress={!actionLocked ? () => setModalVisible(true) : undefined}
-								previewDamage={phase === "player_turn" ? previewDamage : 0}
-								previewShieldGain={phase === "player_turn" ? previewShieldGain : 0}
-							/>
-						)}
+						{(phase === "player_turn" || phase === "suffer_damage") &&
+							currentEnemy && (
+								<EnemyCard
+									enemy={currentEnemy}
+									currentHP={currentHP}
+									effectiveAttack={effectiveAttack}
+									jesterActive={jesterActive}
+									spadesShield={spadesShield}
+									shieldCards={shieldCards}
+									jestersAvailable={gameState.jestersAvailable}
+									jestersUsed={gameState.jestersUsed}
+									autoJesterSignal={autoJesterSignal}
+									hidden={activeEnemyCapture !== null}
+									hideShieldPile={hideShieldPile}
+									layout={enemyCardLayout}
+									onCardMeasure={handleEnemyCardMeasure}
+									onShieldPileMeasure={handleShieldPileMeasure}
+									onUseJester={
+										phase === "player_turn" && !actionLocked && isMyTurn
+											? useJester
+											: undefined
+									}
+									onAutoJesterComplete={completeAutoJesterAnimation}
+									onJesterAnimationStateChange={setJesterAnimating}
+									onPress={
+										!actionLocked ? () => setModalVisible(true) : undefined
+									}
+									previewDamage={phase === "player_turn" ? previewDamage : 0}
+									previewShieldGain={
+										phase === "player_turn" ? previewShieldGain : 0
+									}
+								/>
+							)}
 					</View>
 
 					{isTutorial && (
@@ -296,7 +351,9 @@ export const GameScreen = () => {
 					{playError && <Text style={styles.error}>{playError}</Text>}
 
 					{(phase === "player_turn" || phase === "suffer_damage") && (
-						<View style={[styles.handSection, { paddingHorizontal: screenPadding }]}>
+						<View
+							style={[styles.handSection, { paddingHorizontal: screenPadding }]}
+						>
 							<PlayerHand
 								hand={gameState.playerHand}
 								compactVerticalSpacing={compactHand}
@@ -336,7 +393,6 @@ export const GameScreen = () => {
 						<ParticipantsSidebar
 							players={orderedPlayers}
 							activePlayerId={activePlayerId}
-							myPlayerId={myPlayerId}
 						/>
 					)}
 
@@ -349,7 +405,24 @@ export const GameScreen = () => {
 					*/}
 				</View>
 
-				<ScreenHeader onSettingsPress={() => setSettingsVisible(true)} />
+				<ScreenHeader
+					onSettingsPress={() => setSettingsVisible(true)}
+					rightExtra={
+						<TouchableOpacity
+							onPress={() => setLogVisible(true)}
+							style={styles.logButton}
+							activeOpacity={0.7}
+							accessibilityRole="button"
+							accessibilityLabel={t("game.log.title")}
+						>
+							<Image
+								source={Hourglass}
+								style={styles.logIcon}
+								contentFit="contain"
+							/>
+						</TouchableOpacity>
+					}
+				/>
 			</View>
 
 			{activeShieldExit && (
@@ -406,6 +479,20 @@ export const GameScreen = () => {
 					onSkip={exitTutorial}
 				/>
 			)}
+
+			{reveal && (
+				<TurnRevealOverlay
+					reveal={reveal}
+					onSkip={closeReveal}
+					canSkip={playerOrder?.[reveal.toIndex] === myPlayerId}
+				/>
+			)}
+
+			<GameLogModal
+				visible={logVisible}
+				entries={gameLog}
+				onClose={() => setLogVisible(false)}
+			/>
 		</ImageBackground>
 	);
 };

@@ -66,6 +66,17 @@ export const styles = StyleSheet.create({
 		marginBottom: 4,
 		paddingHorizontal: 16,
 	},
+	logButton: {
+		width: 40,
+		height: 40,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	logIcon: {
+		width: 24,
+		height: 24,
+		opacity: 0.85,
+	},
 	participantsSidebar: {
 		position: "absolute",
 		top: 130,
@@ -113,7 +124,7 @@ export const styles = StyleSheet.create({
 		color: "rgba(203,213,225,0.72)",
 	},
 	participantsList: {
-		gap: 6,
+		gap: 16,
 	},
 	participantCard: {
 		alignItems: "flex-start",
@@ -121,8 +132,7 @@ export const styles = StyleSheet.create({
 		paddingHorizontal: 8,
 		paddingVertical: 6,
 		borderRadius: 10,
-		borderWidth: 1,
-		backgroundColor: "rgba(2,6,23,0.8)",
+		minWidth: 80,
 		gap: 8,
 	},
 	participantCardWaiting: {

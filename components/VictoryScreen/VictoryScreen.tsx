@@ -1,6 +1,8 @@
+import { GameLogModal } from "@/components/GameLog";
 import { useAudio } from "@/contexts/AudioContext";
+import { GameLogEntry } from "@/data/types";
 import { router } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Animated,
@@ -43,9 +45,16 @@ const LAYERS: { source: number; amplitude: number; duration: number }[] = [
 
 const LAYER_W = SCREEN_W + SCREEN_W * 2;
 
-export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
+export const VictoryScreen = ({
+	onReset,
+	gameLog = [],
+}: {
+	onReset: () => void;
+	gameLog?: GameLogEntry[];
+}) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
+	const [logVisible, setLogVisible] = useState(false);
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 	const slideAnim = useRef(new Animated.Value(40)).current;
 	const scaleAnim = useRef(new Animated.Value(0.85)).current;
@@ -119,8 +128,27 @@ export const VictoryScreen = ({ onReset }: { onReset: () => void }) => {
 							<Text style={styles.btnHomeText}>{t("victory.home")}</Text>
 						</TouchableOpacity>
 					</View>
+
+					{gameLog.length > 0 && (
+						<TouchableOpacity
+							style={styles.btnLog}
+							onPress={() => {
+								playTap();
+								setLogVisible(true);
+							}}
+							activeOpacity={0.7}
+						>
+							<Text style={styles.btnLogText}>{t("game.log.title")}</Text>
+						</TouchableOpacity>
+					)}
 				</Animated.View>
 			</View>
+
+			<GameLogModal
+				visible={logVisible}
+				entries={gameLog}
+				onClose={() => setLogVisible(false)}
+			/>
 		</View>
 	);
 };

@@ -1,7 +1,8 @@
 import { buildCastle } from "@/data/buildCastle";
 import { createTavernDeck, HAND_SIZE } from "@/data/deck";
-import { Card, GameState, GameStats } from "@/data/types";
+import { Card, GameLogDraft, GameLogEntry, GameState, GameStats } from "@/data/types";
 import { loadGame, saveGame } from "@/services/storage";
+import { buildLocalLogEntry } from "@/utils/log";
 import { enemyToCard, resolvePlay, validatePlay } from "@/utils/gameLogic";
 import {
 	computeSuitPreview,
@@ -121,11 +122,17 @@ type PendingAutoJester = {
 	shouldBumpDraw: boolean;
 };
 
+// Single-player: autor único do log (a UI renderiza um nome localizado).
+const LOCAL_PLAYER_ID = "local";
+
 export interface GameStore {
 	// Estado do jogo
 	gameState: GameState;
 	selectedIds: Set<string>;
 	playError: string | null;
+
+	// Action log (tracker de ações) — em memória; ver utils/log.ts
+	gameLog: GameLogEntry[];
 
 	// Sinais de animação
 	cardsDrawnSignal: number;
@@ -172,6 +179,18 @@ export const useGameStore = create<GameStore>((set, get) => {
 		} catch {
 			// falha não-crítica
 		}
+	};
+
+	// Emite uma entrada no log em memória (single-player, autor único).
+	const logLocal = (
+		draft: Omit<GameLogDraft, "playerId" | "playerName" | "playerAvatarId">,
+	) => {
+		const entry = buildLocalLogEntry({
+			playerId: LOCAL_PLAYER_ID,
+			playerName: t("game.log.you"),
+			...draft,
+		});
+		set((s) => ({ gameLog: [...s.gameLog, entry] }));
 	};
 
 	const computeDerived = (gameState: GameState, selectedIds: Set<string>) => {
@@ -267,6 +286,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 		gameState: initialGameState,
 		selectedIds: initialSelectedIds,
 		playError: null,
+		gameLog: [],
 		cardsDrawnSignal: 0,
 		dealSignal: 0,
 		autoJesterSignal: 0,
@@ -331,6 +351,13 @@ export const useGameStore = create<GameStore>((set, get) => {
 			};
 			setWithDerived(next, get().selectedIds);
 			persist(next);
+			const jEnemy = gameState.castle[0];
+			logLocal({
+				kind: "jester",
+				enemyId: jEnemy?.id,
+				enemyRank: jEnemy?.rank,
+				turnIndex: gameState.stats.turnsPlayed,
+			});
 		},
 
 		// ── Jogar cartas ──────────────────────────────────────────────────────
@@ -369,6 +396,13 @@ export const useGameStore = create<GameStore>((set, get) => {
 				};
 				setWithDerived(next, new Set());
 				persist(next);
+				logLocal({
+					kind: "jester",
+					cards: selected,
+					enemyId: enemy?.id,
+					enemyRank: enemy?.rank,
+					turnIndex: newStats.turnsPlayed,
+				});
 				return;
 			}
 
@@ -378,8 +412,25 @@ export const useGameStore = create<GameStore>((set, get) => {
 			const newCurrentDamage = gameState.currentDamage + result.totalDamage;
 			const allPlayedCards = [...gameState.playedThisFight, ...selected];
 
+			// LOG: ataque (cartas normais jogadas contra o inimigo)
+			logLocal({
+				kind: "attack",
+				cards: selected,
+				damage: result.totalDamage,
+				shieldAdded: Math.max(0, result.newShield - gameState.spadesShield),
+				enemyId: enemy.id,
+				enemyRank: enemy.rank,
+				turnIndex: newStats.turnsPlayed,
+			});
+
 			// Inimigo derrotado
 			if (newCurrentDamage >= enemy.health) {
+				logLocal({
+					kind: "enemy_defeated",
+					enemyId: enemy.id,
+					enemyRank: enemy.rank,
+					turnIndex: newStats.turnsPlayed,
+				});
 				const exactKill = newCurrentDamage === enemy.health;
 				const enemyCard = enemyToCard(enemy);
 				const newTavern = exactKill ? [enemyCard, ...result.newTavernDeck] : result.newTavernDeck;
@@ -580,6 +631,13 @@ export const useGameStore = create<GameStore>((set, get) => {
 			const effectiveAttack = Math.max(0, enemy.attack - gameState.spadesShield);
 			if (effectiveAttack === 0) return;
 
+			logLocal({
+				kind: "yield",
+				enemyId: enemy.id,
+				enemyRank: enemy.rank,
+				turnIndex: gameState.stats.turnsPlayed,
+			});
+
 			const handValue = gameState.playerHand.reduce((sum, c) => sum + c.value, 0);
 
 			if (handValue < effectiveAttack) {
@@ -637,6 +695,15 @@ export const useGameStore = create<GameStore>((set, get) => {
 			}
 
 			set({ playError: null, selectedIds: new Set(), ...computeDerived(gameState, new Set()) });
+
+			const discardEnemy = gameState.castle[0];
+			logLocal({
+				kind: "discard",
+				cards: selected,
+				enemyId: discardEnemy?.id,
+				enemyRank: discardEnemy?.rank,
+				turnIndex: gameState.stats.turnsPlayed,
+			});
 
 			const newHand = gameState.playerHand.filter((c) => !selectedIds.has(c.id));
 			const newDiscard = [...gameState.discardPile, ...selected];
@@ -736,6 +803,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 			set((s) => ({
 				selectedIds: new Set(),
 				playError: null,
+				gameLog: [],
 				dealSignal: s.dealSignal + 1,
 				...computeDerived(next, new Set()),
 			}));

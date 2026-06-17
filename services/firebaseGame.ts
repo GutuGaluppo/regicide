@@ -1,5 +1,5 @@
 import { AbandonRequest, AvatarId, Room, RoomPlayer, SharedState } from "@/data/types";
-import { AVATARS, DEFAULT_AVATAR_ID } from "@/data/avatars";
+import { DEFAULT_AVATAR_ID } from "@/data/avatars";
 import { get, onValue, ref, remove, runTransaction, set, update } from "firebase/database";
 import { db } from "./firebase";
 
@@ -31,14 +31,48 @@ export const createRoom = async (
 	await set(ref(db, `games/${roomId}`), room);
 };
 
+/**
+ * Resultado de uma reivindicação de avatar. Em conflito não há escrita; o caller
+ * recebe os avatares ocupados para repedir a escolha (sem reatribuição automática).
+ */
+export type ClaimResult =
+	| { ok: true; avatarId: AvatarId }
+	| { ok: false; takenAvatarIds: AvatarId[] };
+
+const collectTaken = (
+	players: Record<string, RoomPlayer> | null,
+	exceptPlayerId: string,
+): AvatarId[] =>
+	Object.values(players ?? {})
+		.filter((p) => p.id !== exceptPlayerId)
+		.map((p) => p.avatarId)
+		.filter((id): id is AvatarId => Boolean(id));
+
+/**
+ * Entra na sala reivindicando o avatar de forma atômica: numa única transação
+ * sobre `players`, adiciona o jogador apenas se o avatar desejado estiver livre.
+ * Se outro jogador já o tiver, aborta sem escrever e devolve os ocupados.
+ */
 export const joinRoom = async (
 	roomId: string,
 	playerId: string,
 	displayName: string,
 	avatarId: AvatarId = DEFAULT_AVATAR_ID,
-): Promise<void> => {
-	const player: RoomPlayer = { id: playerId, displayName, avatarId, hand: "[]" };
-	await set(ref(db, `games/${roomId}/players/${playerId}`), player);
+): Promise<ClaimResult> => {
+	const playersRef = ref(db, `games/${roomId}/players`);
+	const result = await runTransaction(
+		playersRef,
+		(players: Record<string, RoomPlayer> | null) => {
+			const map = players ?? {};
+			if (new Set(collectTaken(map, playerId)).has(avatarId)) return undefined; // aborta
+			map[playerId] = { id: playerId, displayName, avatarId, hand: "[]" };
+			return map;
+		},
+	);
+	if (!result.committed) {
+		return { ok: false, takenAvatarIds: collectTaken(result.snapshot.val(), playerId) };
+	}
+	return { ok: true, avatarId };
 };
 
 export const leaveRoom = async (roomId: string, playerId: string): Promise<void> => {
@@ -60,40 +94,32 @@ export const updatePlayerProfile = async (
 };
 
 /**
- * Reivindica um avatar de forma atômica dentro da sala. Numa transação lê todos
- * os jogadores e só confirma o avatar desejado se nenhum outro jogador já o usa;
- * se estiver ocupado, atribui o primeiro avatar livre do catálogo. Fecha a janela
- * de corrida em que dois clientes escolheriam o mesmo avatar simultaneamente.
- * Retorna o avatar efetivamente atribuído (pode diferir do desejado).
+ * Reivindica um avatar para um jogador já presente na sala, de forma atômica.
+ * Numa transação sobre `players`, só confirma se nenhum outro jogador usa o
+ * avatar; em conflito aborta sem escrever e devolve os ocupados (sem
+ * reatribuição automática — o caller decide o que fazer).
  */
 export const claimAvatar = async (
 	roomId: string,
 	playerId: string,
 	desiredAvatarId: AvatarId,
-): Promise<AvatarId> => {
+): Promise<ClaimResult> => {
 	const playersRef = ref(db, `games/${roomId}/players`);
 	const result = await runTransaction(
 		playersRef,
 		(players: Record<string, RoomPlayer> | null) => {
 			// Ainda não estou na sala (estado em cache/corrida) — não mexe.
 			if (!players || !players[playerId]) return players;
-			const takenByOthers = new Set(
-				Object.values(players)
-					.filter((p) => p.id !== playerId && p.avatarId)
-					.map((p) => p.avatarId),
-			);
-			let target = desiredAvatarId;
-			if (takenByOthers.has(target)) {
-				target =
-					AVATARS.map((a) => a.id).find((id) => !takenByOthers.has(id)) ??
-					desiredAvatarId;
-			}
-			players[playerId] = { ...players[playerId], avatarId: target };
+			if (new Set(collectTaken(players, playerId)).has(desiredAvatarId))
+				return undefined; // aborta
+			players[playerId] = { ...players[playerId], avatarId: desiredAvatarId };
 			return players;
 		},
 	);
-	const assigned = result.snapshot.child(`${playerId}/avatarId`).val();
-	return (assigned as AvatarId | null) ?? desiredAvatarId;
+	if (!result.committed) {
+		return { ok: false, takenAvatarIds: collectTaken(result.snapshot.val(), playerId) };
+	}
+	return { ok: true, avatarId: desiredAvatarId };
 };
 
 export const fetchRoom = async (roomId: string): Promise<Room | null> => {
@@ -150,6 +176,32 @@ export const updateSharedAndHands = async (
 
 export const updateSharedState = async (roomId: string, shared: SharedState): Promise<void> => {
 	await set(ref(db, `games/${roomId}/shared`), shared);
+};
+
+/**
+ * Fecha a janela de revelação entre turnos de forma atômica e idempotente:
+ * numa transação sobre `shared`, efetiva o avanço do turno (`currentPlayerIndex`
+ * = `reveal.toIndex`) e remove `reveal` — mas só se a revelação ainda existir e
+ * seu `startedAt` bater com o esperado. Assim um fechamento atrasado (ator + o
+ * fallback do próximo jogador) nunca avança o turno duas vezes nem encerra uma
+ * revelação mais nova. Ver docs/turn-reveal-delay-strategy.md (B.3/B.4).
+ */
+export const closeRevealTx = async (
+	roomId: string,
+	expectedStartedAt: number,
+): Promise<void> => {
+	const sharedRef = ref(db, `games/${roomId}/shared`);
+	await runTransaction(sharedRef, (shared: SharedState | null) => {
+		if (!shared || !shared.reveal) return shared; // já fechada / inexistente
+		let reveal: { startedAt: number; toIndex: number };
+		try {
+			reveal = JSON.parse(shared.reveal) as { startedAt: number; toIndex: number };
+		} catch {
+			return shared;
+		}
+		if (reveal.startedAt !== expectedStartedAt) return shared; // revelação obsoleta
+		return { ...shared, currentPlayerIndex: reveal.toIndex, reveal: null };
+	});
 };
 
 export const finishRoom = async (roomId: string): Promise<void> => {

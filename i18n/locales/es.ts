@@ -51,6 +51,21 @@ const es: Translations = {
 		kings: "Reyes",
 	},
 	game: {
+		log: {
+			title: "Registro de la partida",
+			empty: "Aún no hay acciones",
+			you: "Tú",
+			attack: "atacó con",
+			discard: "descartó",
+			jester: "usó el Comodín",
+			yield: "pasó el turno",
+			defeatedFull: "{{name}} derrotó al {{enemy}}",
+			rankJ: "Jota",
+			rankQ: "Reina",
+			rankK: "Rey",
+			damage: "{{value}} de daño",
+			shield: "+{{value}} escudo",
+		},
 		status: {
 			castle: "Castillo",
 			tavern: "Taberna",
@@ -336,6 +351,14 @@ const es: Translations = {
 			subtitle: "Elige tus cartas para atacar",
 			waiting: "Esperando jugada...",
 		},
+		reveal: {
+			attackedWith: "Atacó con",
+			discarded: "Descartó por daño",
+			defeated: "¡derrotó al enemigo!",
+			yielded: "pasó su turno",
+			nextIn: "Próximo turno en {{seconds}}s",
+			skip: "Saltar",
+		},
 		status: {
 			turnLabel: "Turno actual",
 			yourTurn: "Tu turno",
@@ -383,6 +406,7 @@ const es: Translations = {
 		createBtn: "Crear Nueva Sala",
 		creating: "Creando…",
 		joinBtn: "Unirse",
+		continueBtn: "Continuar",
 		waitingTitle: "ESPERANDO",
 		shareCode: "Comparte este código con tus amigos",
 		shareBtn: "Compartir código",
@@ -404,6 +428,7 @@ const es: Translations = {
 			startFailed: "Error al iniciar",
 			invalidCode: "Código de sala inválido (6 caracteres)",
 			minPlayers: "Se necesitan al menos 2 jugadores",
+			avatarTaken: "Ese avatar acaba de ser elegido. Elige otro.",
 		},
 	},
 	notifications: {

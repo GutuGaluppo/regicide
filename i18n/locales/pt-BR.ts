@@ -49,6 +49,21 @@ const ptBR = {
 		kings: "Reis",
 	},
 	game: {
+		log: {
+			title: "Histórico da partida",
+			empty: "Nenhuma ação ainda",
+			you: "Você",
+			attack: "atacou com",
+			discard: "descartou",
+			jester: "usou o Coringa",
+			yield: "passou a vez",
+			defeatedFull: "{{name}} derrotou o {{enemy}}",
+			rankJ: "Valete",
+			rankQ: "Dama",
+			rankK: "Rei",
+			damage: "{{value}} de dano",
+			shield: "+{{value}} escudo",
+		},
 		status: {
 			castle: "Castelo",
 			tavern: "Taverna",
@@ -333,6 +348,14 @@ const ptBR = {
 			subtitle: "Escolha suas cartas para atacar",
 			waiting: "Aguardando jogada...",
 		},
+		reveal: {
+			attackedWith: "Atacou com",
+			discarded: "Descartou para sofrer dano",
+			defeated: "derrotou o inimigo!",
+			yielded: "passou a vez",
+			nextIn: "Próximo turno em {{seconds}}s",
+			skip: "Pular",
+		},
 		status: {
 			turnLabel: "Turno atual",
 			yourTurn: "Sua vez",
@@ -402,6 +425,7 @@ const ptBR = {
 			startFailed: "Erro ao iniciar",
 			invalidCode: "Código de sala inválido (6 caracteres)",
 			minPlayers: "Precisa de pelo menos 2 jogadores",
+			avatarTaken: "Esse avatar acabou de ser escolhido. Escolha outro.",
 		},
 	},
 	notifications: {

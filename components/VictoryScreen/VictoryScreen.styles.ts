@@ -72,4 +72,15 @@ export const styles = StyleSheet.create({
 		fontWeight: "600",
 		fontSize: 15,
 	},
+	btnLog: {
+		marginTop: 14,
+		alignItems: "center",
+		paddingVertical: 6,
+	},
+	btnLogText: {
+		color: "#E8D5A3",
+		fontSize: 13,
+		textDecorationLine: "underline",
+		opacity: 0.85,
+	},
 });
