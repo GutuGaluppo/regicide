@@ -102,8 +102,9 @@ export const styles = StyleSheet.create({
 	},
 	identityConfirmMobile: {
 		width: "100%",
-		flex: 1,
-		padding: 4,
+		alignSelf: "stretch",
+		flexShrink: 0,
+		minHeight: 44,
 	},
 	button: {
 		backgroundColor: "rgba(232,213,163,0.18)",

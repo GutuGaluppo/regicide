@@ -19,6 +19,7 @@ import { PropsType } from "./types";
 
 export const PlayerHand = ({
 	hand,
+	compactVerticalSpacing = false,
 	selectedIds,
 	phase,
 	immuneSuit,
@@ -123,7 +124,12 @@ export const PlayerHand = ({
 		) : null;
 
 	return (
-		<View style={styles.container}>
+		<View
+			style={[
+				styles.container,
+				compactVerticalSpacing && styles.containerCompact,
+			]}
+		>
 			{waitingPlayedCards !== undefined ? (
 				// Modo espera: exibe cartas jogadas pelo jogador ativo + botões de sort
 				<View style={[styles.waitingBar, isDesktop && styles.waitingBarDesktop]}>
@@ -176,7 +182,12 @@ export const PlayerHand = ({
 					locked={locked || isDealing}
 				/>
 			)}
-			<View style={[styles.handRow, { paddingTop: liftY + 4 }]}>
+			<View
+				style={[
+					styles.handRow,
+					{ paddingTop: liftY + (compactVerticalSpacing ? 0 : 4) },
+				]}
+			>
 				{hand.map((card) => {
 					const isDimmed =
 						phase === "player_turn" &&

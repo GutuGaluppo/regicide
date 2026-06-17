@@ -4,6 +4,7 @@ import { ProgressRing } from "@/components/ProgressRing";
 import { useAudio } from "@/contexts/AudioContext";
 import { getCardImage, getHandCardImage } from "@/data/images";
 import { Card, Enemy } from "@/data/types";
+import { EnemyCardLayout, getEnemyCardLayout } from "@/hooks/useEnemyCardScale";
 import { getHpColor } from "@/utils/hpColor";
 import { Image } from "expo-image";
 import React, { useEffect, useRef } from "react";
@@ -37,6 +38,7 @@ export const EnemyCard = ({
 	previewShieldGain = 0,
 	defeated = false,
 	hideShieldPile = false,
+	layout = getEnemyCardLayout(1),
 	onCardMeasure,
 	onShieldPileMeasure,
 	onJesterAnimationStateChange,
@@ -58,6 +60,7 @@ export const EnemyCard = ({
 	previewShieldGain?: number;
 	defeated?: boolean;
 	hideShieldPile?: boolean;
+	layout?: EnemyCardLayout;
 	onCardMeasure?: (rect: {
 		x: number;
 		y: number;
@@ -91,6 +94,13 @@ export const EnemyCard = ({
 	const showShieldArea =
 		shieldCardsCount > 0 || (spadesShield ?? 0) > 0 || previewShielded;
 	const shieldValue = Math.max(0, enemy.attack - displayAttack);
+	const visibleShieldCardsCount = Math.min(3, shieldCardsCount);
+	const shieldPileWidth =
+		layout.shieldPileCardWidth
+		+ Math.max(0, visibleShieldCardsCount - 1) * layout.shieldPileStep;
+	const shieldPileHeight =
+		layout.shieldPileCardHeight
+		+ Math.max(0, visibleShieldCardsCount - 1) * layout.shieldPileStep;
 
 	// ─── Shared values ────────────────────────────────────────────────────────
 	const entryOpacity = useSharedValue(0);
@@ -178,6 +188,7 @@ export const EnemyCard = ({
 		});
 	}, [
 		hideShieldPile,
+		layout.scale,
 		onShieldPileMeasure,
 		showShieldArea,
 		shieldCardsCount,
@@ -187,7 +198,7 @@ export const EnemyCard = ({
 
 	useEffect(() => {
 		measureCardBody();
-	}, [enemy.id, onCardMeasure]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [enemy.id, layout.scale, onCardMeasure]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// ─── Animated styles ──────────────────────────────────────────────────────
 	const cardAnimStyle = useAnimatedStyle(() => ({
@@ -225,72 +236,150 @@ export const EnemyCard = ({
 					ref={cardBodyRef}
 					collapsable={false}
 					onLayout={measureCardBody}
-					style={styles.imageWrapper}
+					style={[
+						styles.imageWrapper,
+						{
+							width: layout.cardWidth,
+							height: layout.cardHeight,
+						},
+					]}
 				>
 					<Image
 						source={getCardImage(enemy.rank, enemy.suit)}
-						style={styles.image}
+						style={[
+							styles.image,
+							{
+								width: layout.cardWidth,
+								height: layout.cardHeight,
+								borderRadius: layout.borderRadius,
+							},
+						]}
 						contentFit="contain"
 					/>
 
 					{/* Jesters — topo esquerdo */}
 					{(jestersAvailable !== undefined || jestersUsed !== undefined) && (
-						<View style={styles.jesterBadge}>
-							<JesterStack
-								jestersAvailable={jestersAvailable ?? 0}
-								jestersUsed={jestersUsed ?? 0}
-								jesterActive={!!jesterActive}
-								autoUseSignal={autoJesterSignal}
-								onUseJester={onUseJester}
-								onAutoUseComplete={onAutoJesterComplete}
-								onAnimationStateChange={onJesterAnimationStateChange}
-							/>
+						<View
+							style={[
+								styles.jesterBadge,
+								{
+									top: layout.badgeTop - 4,
+									left: -layout.jesterOffset,
+								},
+							]}
+						>
+							<View
+								style={{
+									width: layout.jesterStackWidth,
+									height: layout.jesterStackHeight,
+									alignItems: "center",
+									justifyContent: "center",
+								}}
+							>
+								<View style={{ transform: [{ scale: layout.scale }] }}>
+									<JesterStack
+										jestersAvailable={jestersAvailable ?? 0}
+										jestersUsed={jestersUsed ?? 0}
+										jesterActive={!!jesterActive}
+										autoUseSignal={autoJesterSignal}
+										onUseJester={onUseJester}
+										onAutoUseComplete={onAutoJesterComplete}
+										onAnimationStateChange={onJesterAnimationStateChange}
+									/>
+								</View>
+							</View>
 						</View>
 					)}
 
 					{/* Defeated overlay */}
 					{defeated && (
-						<View style={styles.defeatedOverlay} pointerEvents="none" />
+						<View
+							style={[
+								styles.defeatedOverlay,
+								{ borderRadius: layout.borderRadius },
+							]}
+							pointerEvents="none"
+						/>
 					)}
 
 					{/* Red damage flash */}
 					<Animated.View
-						style={[styles.damageFlash, flashStyle]}
+						style={[
+							styles.damageFlash,
+							flashStyle,
+							{ borderRadius: layout.borderRadius },
+						]}
 						pointerEvents="none"
 					/>
 
 					{/* Spades shield glow */}
 					<Animated.View
-						style={[styles.shieldGlowOverlay, glowStyle]}
+						style={[
+							styles.shieldGlowOverlay,
+							glowStyle,
+							{
+								borderRadius: layout.borderRadius,
+							},
+						]}
 						pointerEvents="none"
 					/>
 
 					{/* ATK — topo direito */}
-					<View style={styles.atkBadge}>
-						<Text style={styles.badgeLabel}>{t("enemy.attack")}</Text>
+					<View
+						style={[
+							styles.atkBadge,
+							{
+								top: layout.badgeTop,
+								right: -layout.badgeOffset,
+								gap: layout.badgeLabelGap,
+							},
+						]}
+					>
+						<Text
+							style={[
+								styles.badgeLabel,
+								{ fontSize: layout.badgeLabelFontSize },
+							]}
+						>
+							{t("enemy.attack")}
+						</Text>
 						<ProgressRing
 							percent={attackPercent}
-							size={80}
-							strokeWidth={6}
+							size={layout.ringSize}
+							strokeWidth={layout.ringStroke}
 							color="#b8860a"
 						>
 							<NumberSprite
 								value={displayAttack}
 								type="deckstatus"
-								height={32}
+								height={layout.numberHeight}
 							/>
 						</ProgressRing>
 						{(shielded || previewShielded) && (
-							<View style={styles.shieldedWrapper}>
+							<View
+								style={[
+									styles.shieldedWrapper,
+									{
+										width: layout.shieldValueSize,
+										height: layout.shieldValueSize,
+									},
+								]}
+							>
 								<Image
 									source={MagicShield}
-									style={styles.shieldIconBg}
+									style={[
+										styles.shieldIconBg,
+										{
+											width: layout.shieldValueSize,
+											height: layout.shieldValueSize,
+										},
+									]}
 									contentFit="contain"
 								/>
 								<NumberSprite
 									value={shieldValue}
 									type="attack"
-									height={20}
+									height={layout.shieldNumberHeight}
 									color="#FFFFFF"
 								/>
 							</View>
@@ -299,21 +388,26 @@ export const EnemyCard = ({
 							<View
 								ref={shieldPileRef}
 								collapsable={false}
-								style={styles.shieldPileAnchor}
+								style={[
+									styles.shieldPileAnchor,
+									{
+										width: layout.shieldPileAnchorWidth,
+										height: layout.shieldPileAnchorHeight,
+									},
+								]}
 							>
 								{!hideShieldPile &&
 									shieldCards &&
 									shieldCards.length > 0 &&
 									(() => {
 										const visible = shieldCards.slice(-3);
-										const n = visible.length;
 										return (
 											<View
 												style={[
 													styles.shieldPile,
 													{
-														width: 40 + (n - 1) * 6,
-														height: 56 + (n - 1) * 6,
+														width: shieldPileWidth,
+														height: shieldPileHeight,
 													},
 												]}
 											>
@@ -328,7 +422,17 @@ export const EnemyCard = ({
 															key={card.id}
 															style={[
 																styles.shieldPileCard,
-																{ left: i * 6, top: i * 6, zIndex: i },
+																{
+																	left: i * layout.shieldPileStep,
+																	top: i * layout.shieldPileStep,
+																	zIndex: i,
+																	width: layout.shieldPileCardWidth,
+																	height: layout.shieldPileCardHeight,
+																	borderRadius: Math.max(
+																		4,
+																		Math.round(layout.scale * 5),
+																	),
+																},
 															]}
 														>
 															{img ? (
@@ -338,7 +442,17 @@ export const EnemyCard = ({
 																	contentFit="cover"
 																/>
 															) : (
-																<Text style={styles.shieldPileFallback}>
+																<Text
+																	style={[
+																		styles.shieldPileFallback,
+																		{
+																			fontSize: Math.max(
+																				8,
+																				Math.round(layout.scale * 10),
+																			),
+																		},
+																	]}
+																>
 																	{card.rank}♠
 																</Text>
 															)}
@@ -351,12 +465,24 @@ export const EnemyCard = ({
 								{!hideShieldPile &&
 									shieldCardsCount === 0 &&
 									previewShielded && (
-										<View style={styles.shieldPilePlaceholder}>
+										<View
+											style={[
+												styles.shieldPilePlaceholder,
+												{
+													width: layout.shieldPileCardWidth,
+													height: layout.shieldPileCardHeight,
+													borderRadius: Math.max(
+														4,
+														Math.round(layout.scale * 5),
+													),
+												},
+											]}
+										>
 											<Image
 												source={require("@/assets/classes/Spades.avif")}
 												style={{
-													width: 35,
-													height: 35,
+													width: layout.shieldPlaceholderIcon,
+													height: layout.shieldPlaceholderIcon,
 													margin: "auto",
 													opacity: 0.4,
 												}}
@@ -369,16 +495,32 @@ export const EnemyCard = ({
 					</View>
 
 					{/* HP — base esquerda */}
-					<View style={styles.hpBadge}>
+					<View
+						style={[
+							styles.hpBadge,
+							{
+								bottom: layout.badgeBottom,
+								left: -layout.badgeOffset,
+								gap: layout.badgeLabelGap,
+							},
+						]}
+					>
 						<ProgressRing
 							percent={hpPercent}
-							size={80}
-							strokeWidth={6}
+							size={layout.ringSize}
+							strokeWidth={layout.ringStroke}
 							color={hpColor}
 						>
-							<NumberSprite value={displayHP} type="health" height={32} />
+							<NumberSprite value={displayHP} type="health" height={layout.numberHeight} />
 						</ProgressRing>
-						<Text style={styles.badgeLabel}>{t("enemy.health")}</Text>
+						<Text
+							style={[
+								styles.badgeLabel,
+								{ fontSize: layout.badgeLabelFontSize },
+							]}
+						>
+							{t("enemy.health")}
+						</Text>
 					</View>
 				</View>
 			</Animated.View>

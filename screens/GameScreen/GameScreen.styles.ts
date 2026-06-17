@@ -17,7 +17,6 @@ export const styles = StyleSheet.create({
 	},
 	statusBar: {
 		position: "absolute",
-		top: 50,
 		left: 0,
 		right: 0,
 		flexDirection: "row",
@@ -52,7 +51,6 @@ export const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
-		paddingTop: 90,
 	},
 	handSection: {
 		width: "100%",

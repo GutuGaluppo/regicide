@@ -17,11 +17,13 @@ import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
 import { useGameScreenStore } from "@/contexts/GameStoreContext";
 import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
+import { useEnemyCardScale } from "@/hooks/useEnemyCardScale";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useTutorialFlow } from "@/hooks/useTutorialFlow";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ImageBackground, Text, View } from "react-native";
+import { ImageBackground, LayoutChangeEvent, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ParticipantsSidebar } from "./components/ParticipantsSidebar";
 import { StatusCard } from "./components/StatusCard";
 import { styles } from "./GameScreen.styles";
@@ -30,6 +32,7 @@ import { useGameAnimations } from "./hooks/useGameAnimations";
 export const GameScreen = () => {
 	const { t } = useTranslation();
 	const { playShuffleCards, playSoundtrack } = useAudio();
+	const insets = useSafeAreaInsets();
 	const { contentMaxWidth, screenPadding, isDesktop, isTablet } = useResponsiveLayout();
 	useBackgroundCaching("game_bg", require("@/assets/backgrounds/bg_cave.webp"));
 
@@ -103,6 +106,26 @@ export const GameScreen = () => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [settingsVisible, setSettingsVisible] = useState(false);
 	const [confirmYieldVisible, setConfirmYieldVisible] = useState(false);
+	const [statusBarHeight, setStatusBarHeight] = useState(0);
+	const [centerLayout, setCenterLayout] = useState({ width: 0, height: 0 });
+
+	const statusBarTop = Math.max(insets.top + 12, 50);
+	const effectiveStatusBarHeight = statusBarHeight || 76;
+	const centerTopPadding = statusBarTop + effectiveStatusBarHeight + 12;
+
+	const handleStatusBarLayout = ({ nativeEvent }: LayoutChangeEvent) => {
+		const nextHeight = Math.round(nativeEvent.layout.height);
+		setStatusBarHeight((current) => (current === nextHeight ? current : nextHeight));
+	};
+
+	const handleCenterLayout = ({ nativeEvent }: LayoutChangeEvent) => {
+		const nextWidth = Math.round(nativeEvent.layout.width);
+		const nextHeight = Math.round(nativeEvent.layout.height);
+		setCenterLayout((current) =>
+			current.width === nextWidth && current.height === nextHeight
+				? current
+				: { width: nextWidth, height: nextHeight });
+	};
 
 	const {
 		dealingIds,
@@ -169,6 +192,13 @@ export const GameScreen = () => {
 		: [];
 	const activePlayerId = playerOrder?.[currentPlayerIndex ?? 0] ?? null;
 	const showParticipantsSidebar = isTablet && orderedPlayers.length > 0;
+	const { layout: enemyCardLayout, compactHand } = useEnemyCardScale({
+		containerWidth: centerLayout.width,
+		containerHeight: centerLayout.height,
+		topReserved: centerTopPadding,
+		horizontalPadding: screenPadding,
+		widthReserve: showParticipantsSidebar ? 132 : 0,
+	});
 
 	if (phase === "victory") return <VictoryScreen onReset={resetGame} />;
 
@@ -199,7 +229,13 @@ export const GameScreen = () => {
 						isDesktop && styles.frameDesktop,
 					]}
 				>
-					<View style={[styles.statusBar, { paddingHorizontal: screenPadding }]}>
+					<View
+						style={[
+							styles.statusBar,
+							{ paddingHorizontal: screenPadding, top: statusBarTop },
+						]}
+						onLayout={handleStatusBarLayout}
+					>
 						<StatusCard count={gameState.castle.length} label={t("game.status.castle")} />
 						<View ref={tavernRef} collapsable={false}>
 							<StatusCard count={tavernDeck.length} label={t("game.status.tavern")} />
@@ -209,7 +245,16 @@ export const GameScreen = () => {
 						</View>
 					</View>
 
-					<View style={[styles.center, { paddingHorizontal: screenPadding }]}>
+					<View
+						style={[
+							styles.center,
+							{
+								paddingHorizontal: screenPadding,
+								paddingTop: centerTopPadding,
+							},
+						]}
+						onLayout={handleCenterLayout}
+					>
 						{(phase === "player_turn" || phase === "suffer_damage") && currentEnemy && (
 							<EnemyCard
 								enemy={currentEnemy}
@@ -223,6 +268,7 @@ export const GameScreen = () => {
 								autoJesterSignal={autoJesterSignal}
 								hidden={activeEnemyCapture !== null}
 								hideShieldPile={hideShieldPile}
+								layout={enemyCardLayout}
 								onCardMeasure={handleEnemyCardMeasure}
 								onShieldPileMeasure={handleShieldPileMeasure}
 								onUseJester={
@@ -253,6 +299,7 @@ export const GameScreen = () => {
 						<View style={[styles.handSection, { paddingHorizontal: screenPadding }]}>
 							<PlayerHand
 								hand={gameState.playerHand}
+								compactVerticalSpacing={compactHand}
 								selectedIds={selectedIds}
 								phase={phase}
 								immuneSuit={jesterActive ? null : currentEnemy?.suit}

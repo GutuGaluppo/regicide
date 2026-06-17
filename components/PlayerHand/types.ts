@@ -9,6 +9,7 @@ export type ScreenRect = {
 
 export type PropsType = {
 	hand: Card[];
+	compactVerticalSpacing?: boolean;
 	selectedIds: Set<string>;
 	phase: GamePhase;
 	immuneSuit?: Suit | null;

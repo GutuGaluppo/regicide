@@ -8,6 +8,10 @@ export const styles = StyleSheet.create({
 		maxWidth: 1160,
 		alignSelf: "center",
 	},
+	containerCompact: {
+		paddingTop: 8,
+		paddingBottom: 24,
+	},
 	label: {
 		color: "#94A3B8",
 		fontSize: 14,
