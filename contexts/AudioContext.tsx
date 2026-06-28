@@ -59,24 +59,38 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 	const [sfxVolume, setSfxVolumeState] = useState(DEFAULT_SFX);
 	const [musicMuted, setMusicMuted] = useState(false);
 	const [sfxMuted, setSfxMuted] = useState(false);
+	const [hydrated, setHydrated] = useState(false);
 
 	const effectiveMusicVolume = musicMuted ? 0 : musicVolume;
 	const effectiveSfxVolume = sfxMuted ? 0 : sfxVolume;
 
-	// Load persisted volumes and mute states on mount
+	// Mirror the latest mute/volume into refs so async callbacks (createAsync in
+	// playSoundtrack) read current values instead of a stale closure captured at
+	// the time the call was scheduled.
+	const musicMutedRef = useRef(musicMuted);
+	const musicVolumeRef = useRef(musicVolume);
+	const sfxMutedRef = useRef(sfxMuted);
+	const hydratedRef = useRef(hydrated);
+	musicMutedRef.current = musicMuted;
+	musicVolumeRef.current = musicVolume;
+	sfxMutedRef.current = sfxMuted;
+	hydratedRef.current = hydrated;
+
+	// Load persisted volumes and mute states on mount. Wait for all reads before
+	// flagging `hydrated` so the soundtrack is only created with the persisted
+	// mute/volume already applied (avoids starting unmuted and never re-muting).
 	useEffect(() => {
-		AsyncStorage.getItem(MUSIC_VOL_KEY).then((v) => {
-			if (v !== null) setMusicVolumeState(parseFloat(v));
-		}).catch(() => {});
-		AsyncStorage.getItem(SFX_VOL_KEY).then((v) => {
-			if (v !== null) setSfxVolumeState(parseFloat(v));
-		}).catch(() => {});
-		AsyncStorage.getItem(MUSIC_MUTE_KEY).then((v) => {
-			if (v === "1") setMusicMuted(true);
-		}).catch(() => {});
-		AsyncStorage.getItem(SFX_MUTE_KEY).then((v) => {
-			if (v === "1") setSfxMuted(true);
-		}).catch(() => {});
+		Promise.all([
+			AsyncStorage.getItem(MUSIC_VOL_KEY),
+			AsyncStorage.getItem(SFX_VOL_KEY),
+			AsyncStorage.getItem(MUSIC_MUTE_KEY),
+			AsyncStorage.getItem(SFX_MUTE_KEY),
+		]).then(([musicVol, sfxVol, musicMute, sfxMute]) => {
+			if (musicVol !== null) setMusicVolumeState(parseFloat(musicVol));
+			if (sfxVol !== null) setSfxVolumeState(parseFloat(sfxVol));
+			if (musicMute === "1") setMusicMuted(true);
+			if (sfxMute === "1") setSfxMuted(true);
+		}).catch(() => {}).finally(() => setHydrated(true));
 	}, []);
 
 	// Load SFX sounds
@@ -91,6 +105,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 		Audio.Sound.createAsync(require("@/assets/folley/tap-btn.mp3"), {
 			shouldPlay: false,
 			volume: sfxVolume,
+			isMuted: sfxMutedRef.current,
 		}).then(({ sound }) => {
 			if (mounted) tapRef.current = sound;
 		});
@@ -98,6 +113,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 		Audio.Sound.createAsync(require("@/assets/folley/shuffle-cards.mp3"), {
 			shouldPlay: false,
 			volume: sfxVolume,
+			isMuted: sfxMutedRef.current,
 		}).then(({ sound }) => {
 			if (mounted) shuffleRef.current = sound;
 		});
@@ -105,6 +121,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 		Audio.Sound.createAsync(require("@/assets/folley/chat-message.mp3"), {
 			shouldPlay: false,
 			volume: sfxVolume,
+			isMuted: sfxMutedRef.current,
 		}).then(({ sound }) => {
 			if (mounted) chatRef.current = sound;
 		});
@@ -112,6 +129,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 		Audio.Sound.createAsync(require("@/assets/folley/turn-alert.mp3"), {
 			shouldPlay: false,
 			volume: sfxVolume,
+			isMuted: sfxMutedRef.current,
 		}).then(({ sound }) => {
 			if (mounted) turnRef.current = sound;
 		});
@@ -150,6 +168,17 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 		soundtrackRef.current?.setIsMutedAsync(musicMuted).catch(() => {});
 	}, [musicMuted]);
 
+	// Once persisted state is loaded, start the soundtrack that was requested
+	// before hydration (playSoundtrack defers creation until then), so the track
+	// is created with the correct persisted mute/volume from the first play.
+	useEffect(() => {
+		if (!hydrated) return;
+		const desired = desiredSoundtrackRef.current;
+		if (desired && soundtrackKeyRef.current === null) {
+			playSoundtrack(desired.source, desired.key);
+		}
+	}, [hydrated]);
+
 	// Web: navegadores bloqueiam autoplay sem gesto do usuário. A intro (tocada
 	// ao abrir o app, antes de qualquer interação) fica em pausa silenciosa.
 	// Destrava no primeiro gesto: retoma a faixa carregada ou recarrega a desejada.
@@ -178,7 +207,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 			window.removeEventListener("keydown", unlock);
 			window.removeEventListener("touchstart", unlock);
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const playTap = () => {
@@ -205,6 +233,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 	// não reinicia — garante continuidade entre telas de menu.
 	const playSoundtrack = async (source: AVPlaybackSource, key: string) => {
 		desiredSoundtrackRef.current = { source, key };
+		// Defer creation until persisted mute/volume is loaded; the [hydrated]
+		// effect restarts the desired track once ready.
+		if (!hydratedRef.current) return;
 		if (soundtrackKeyRef.current === key) return;
 		soundtrackKeyRef.current = key;
 
@@ -216,8 +247,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 			const { sound } = await Audio.Sound.createAsync(source, {
 				shouldPlay: true,
 				isLooping: true,
-				volume: effectiveMusicVolume,
-				isMuted: musicMuted,
+				volume: musicMutedRef.current ? 0 : musicVolumeRef.current,
+				isMuted: musicMutedRef.current,
 			});
 			// A faixa pode ter mudado enquanto carregava
 			if (soundtrackKeyRef.current !== key) {
@@ -225,6 +256,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 				return;
 			}
 			soundtrackRef.current = sound;
+			// Re-apply in case the user toggled mute/volume while the track loaded.
+			sound.setIsMutedAsync(musicMutedRef.current).catch(() => {});
+			sound.setVolumeAsync(musicMutedRef.current ? 0 : musicVolumeRef.current).catch(() => {});
 		} catch {}
 	};
 
