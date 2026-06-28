@@ -1,4 +1,5 @@
 import { useAudio } from "@/contexts/AudioContext";
+import { useActionHints } from "@/store/actionHintsStore";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,6 +7,7 @@ import {
 	Animated,
 	Modal,
 	Pressable,
+	Switch,
 	Text,
 	TouchableOpacity,
 	useWindowDimensions,
@@ -39,12 +41,19 @@ export const SettingsDrawer = ({
 		toggleMusicMute,
 		toggleSfxMute,
 	} = useAudio();
+	const hintsEnabled = useActionHints((s) => s.enabled);
+	const setHintsEnabled = useActionHints((s) => s.setEnabled);
+	const hydrateHints = useActionHints((s) => s.hydrate);
 	const [mounted, setMounted] = useState(false);
 	const slideY = useRef(new Animated.Value(400)).current;
 	const backdropOpacity = useRef(new Animated.Value(0)).current;
 	const { width } = useWindowDimensions();
 	const isDesktop = width >= 1100;
 	const panelWidth = Math.min(420, width - 48);
+
+	useEffect(() => {
+		hydrateHints();
+	}, [hydrateHints]);
 
 	useEffect(() => {
 		if (visible) {
@@ -146,6 +155,22 @@ export const SettingsDrawer = ({
 					muted={sfxMuted}
 					onToggleMute={toggleSfxMute}
 				/>
+
+				<View style={styles.divider} />
+
+				{/* Guia de ações (dicas para botões só-ícone no mobile) */}
+				<View style={styles.toggleRow}>
+					<Text style={styles.rowLabel}>{t("settings.actionHints")}</Text>
+					<Switch
+						value={hintsEnabled}
+						onValueChange={(v) => {
+							playTap();
+							setHintsEnabled(v);
+						}}
+						trackColor={{ false: "#334155", true: "rgba(232,213,163,0.6)" }}
+						thumbColor={hintsEnabled ? "#E8D5A3" : "#94A3B8"}
+					/>
+				</View>
 
 				{onReset && (
 					<>

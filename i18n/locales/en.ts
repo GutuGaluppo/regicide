@@ -148,6 +148,7 @@ const en: Translations = {
 		title: "Settings",
 		music: "Music",
 		sfx: "Sound effects",
+		actionHints: "Action hints",
 		restart: "Restart game",
 		exit: "Exit to home",
 		abandon: "Abandon game",
@@ -357,6 +358,7 @@ const en: Translations = {
 		},
 		reveal: {
 			attackedWith: "Attacked with",
+			defended: "Defended with",
 			discarded: "Discarded for damage",
 			defeated: "defeated the enemy!",
 			yielded: "passed their turn",
@@ -440,6 +442,7 @@ const en: Translations = {
 	},
 	chat: {
 		title: "Chat",
+		close: "Close chat",
 		placeholder: "Message...",
 		send: "Send",
 		empty: "No messages yet.",

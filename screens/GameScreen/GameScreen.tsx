@@ -19,6 +19,7 @@ import {
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
 import { useGameScreenStore } from "@/contexts/GameStoreContext";
+import { useActionHints } from "@/store/actionHintsStore";
 import { useBackgroundCaching } from "@/hooks/useBackgroundCaching";
 import { useEnemyCardScale } from "@/hooks/useEnemyCardScale";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
@@ -79,6 +80,7 @@ export const GameScreen = () => {
 
 	useEffect(() => {
 		initialize();
+		useActionHints.getState().hydrate();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 

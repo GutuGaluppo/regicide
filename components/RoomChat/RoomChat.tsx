@@ -9,12 +9,14 @@ import { useTranslation } from "react-i18next";
 import {
 	KeyboardAvoidingView,
 	Platform,
+	Pressable,
 	ScrollView,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./RoomChat.styles";
 
 export const RoomChat = ({
@@ -28,6 +30,7 @@ export const RoomChat = ({
 }) => {
 	const { t } = useTranslation();
 	const { isTablet } = useResponsiveLayout();
+	const insets = useSafeAreaInsets();
 
 	const messages = useChatStore((s) => s.messages);
 	const unreadCount = useChatStore((s) => s.unreadCount);
@@ -76,11 +79,12 @@ export const RoomChat = ({
 		const value = draft;
 		setDraft("");
 		void sendText(value);
+		// Mantém o foco após enviar (botão ou teclado), sem fechar o teclado.
+		refocusInput();
 	};
 
 	const handleSubmitEditing = () => {
 		handleSend();
-		refocusInput();
 	};
 
 	// Modo overlay (mobile/tablet ou desktop fechado): mostra o FAB quando fechado.
@@ -110,24 +114,41 @@ export const RoomChat = ({
 		);
 	}
 
+	// No mobile (bottom sheet), reserva o espaço seguro inferior na barra de input.
+	const inputRowStyle =
+		!docked && !isTablet
+			? [styles.inputRow, { paddingBottom: 12 + (insets.bottom || 0) }]
+			: styles.inputRow;
+
 	return (
-		<KeyboardAvoidingView
-			style={[
-				styles.panel,
-				docked
-					? styles.panelDocked
-					: isTablet
-						? styles.panelTablet
-						: styles.panelMobile,
-			]}
-			behavior={Platform.OS === "ios" ? "padding" : undefined}
-		>
+		<>
+			{/* Backdrop só no modo overlay (mobile/tablet): toque fora fecha o chat. */}
+			{!docked && (
+				<Pressable
+					style={styles.backdrop}
+					onPress={closeChat}
+					accessibilityRole="button"
+					accessibilityLabel={t("chat.close")}
+				/>
+			)}
+			<KeyboardAvoidingView
+				style={[
+					styles.panel,
+					docked
+						? styles.panelDocked
+						: isTablet
+							? styles.panelTablet
+							: styles.panelMobile,
+				]}
+				behavior={Platform.OS === "ios" ? "padding" : undefined}
+				keyboardVerticalOffset={0}
+			>
 			<View style={styles.header}>
 				<Text style={styles.headerTitle}>{t("chat.title")}</Text>
 				<TouchableOpacity
 					onPress={closeChat}
 					hitSlop={10}
-					accessibilityLabel="Fechar"
+					accessibilityLabel={t("chat.close")}
 				>
 					<Ionicons name="close" size={22} color="#94A3B8" />
 				</TouchableOpacity>
@@ -176,7 +197,7 @@ export const RoomChat = ({
 				</ScrollView>
 			)}
 
-			<View style={styles.inputRow}>
+			<View style={inputRowStyle}>
 				<TextInput
 					ref={inputRef}
 					style={styles.input}
@@ -188,7 +209,7 @@ export const RoomChat = ({
 					multiline
 					returnKeyType="send"
 					onSubmitEditing={handleSubmitEditing}
-					blurOnSubmit
+					submitBehavior="submit"
 				/>
 				<TouchableOpacity
 					style={[
@@ -203,6 +224,7 @@ export const RoomChat = ({
 					<Ionicons name="send" size={18} color="#0f172a" />
 				</TouchableOpacity>
 			</View>
-		</KeyboardAvoidingView>
+			</KeyboardAvoidingView>
+		</>
 	);
 };

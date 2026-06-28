@@ -148,6 +148,7 @@ const es: Translations = {
 		title: "Configuración",
 		music: "Música",
 		sfx: "Efectos de sonido",
+		actionHints: "Pistas de acciones",
 		restart: "Reiniciar partida",
 		exit: "Salir al inicio",
 		abandon: "Abandonar partida",
@@ -357,6 +358,7 @@ const es: Translations = {
 		},
 		reveal: {
 			attackedWith: "Atacó con",
+			defended: "Se defendió con",
 			discarded: "Descartó por daño",
 			defeated: "¡derrotó al enemigo!",
 			yielded: "pasó su turno",
@@ -440,6 +442,7 @@ const es: Translations = {
 	},
 	chat: {
 		title: "Chat",
+		close: "Cerrar chat",
 		placeholder: "Mensaje...",
 		send: "Enviar",
 		empty: "Aún no hay mensajes.",

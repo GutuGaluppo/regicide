@@ -49,6 +49,12 @@ export const styles = StyleSheet.create({
 		gap: 14,
 		paddingVertical: 14,
 	},
+	toggleRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingVertical: 10,
+	},
 	rowIcon: {
 		color: "#F1F5F9",
 		fontSize: 20,

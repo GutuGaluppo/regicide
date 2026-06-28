@@ -54,10 +54,13 @@ export const TurnRevealOverlay = ({ reveal }: Props) => {
 				)}
 
 				{hasAttack && (
-					<View style={styles.section}>
-						<Text style={styles.sectionLabel}>
-							{t("multiplayer.reveal.attackedWith")}
-						</Text>
+					<View style={[styles.section, styles.attackSection]}>
+						<View style={styles.sectionHeader}>
+							<View style={[styles.accent, styles.attackAccent]} />
+							<Text style={[styles.sectionLabel, styles.attackLabel]}>
+								{t("multiplayer.reveal.attackedWith")}
+							</Text>
+						</View>
 						<ScrollView
 							horizontal
 							showsHorizontalScrollIndicator={false}
@@ -71,10 +74,13 @@ export const TurnRevealOverlay = ({ reveal }: Props) => {
 				)}
 
 				{hasDiscard && (
-					<View style={styles.section}>
-						<Text style={[styles.sectionLabel, styles.discardLabel]}>
-							{t("multiplayer.reveal.discarded")}
-						</Text>
+					<View style={[styles.section, styles.defenseSection]}>
+						<View style={styles.sectionHeader}>
+							<View style={[styles.accent, styles.defenseAccent]} />
+							<Text style={[styles.sectionLabel, styles.defenseLabel]}>
+								{t("multiplayer.reveal.defended")}
+							</Text>
+						</View>
 						<ScrollView
 							horizontal
 							showsHorizontalScrollIndicator={false}
@@ -139,15 +145,47 @@ const styles = StyleSheet.create({
 		marginTop: -4,
 	},
 	section: {
-		gap: 6,
+		gap: 8,
+		borderRadius: 12,
+		paddingHorizontal: 12,
+		paddingVertical: 10,
+		borderWidth: 1,
+	},
+	attackSection: {
+		backgroundColor: "rgba(248,113,113,0.08)",
+		borderColor: "rgba(248,113,113,0.28)",
+	},
+	defenseSection: {
+		backgroundColor: "rgba(96,165,250,0.08)",
+		borderColor: "rgba(96,165,250,0.28)",
+	},
+	sectionHeader: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+	},
+	accent: {
+		width: 4,
+		height: 16,
+		borderRadius: 2,
+	},
+	attackAccent: {
+		backgroundColor: "#F87171",
+	},
+	defenseAccent: {
+		backgroundColor: "#60A5FA",
 	},
 	sectionLabel: {
-		fontFamily: "IMFellEnglish",
-		fontSize: 13,
-		color: "#E8D5A3",
+		fontFamily: "Cinzel",
+		fontSize: 15,
+		letterSpacing: 0.5,
+		fontWeight: "700",
 	},
-	discardLabel: {
-		color: "#F87171",
+	attackLabel: {
+		color: "#FCA5A5",
+	},
+	defenseLabel: {
+		color: "#93C5FD",
 	},
 	cardsRow: {
 		flexDirection: "row",

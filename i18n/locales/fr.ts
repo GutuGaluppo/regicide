@@ -149,6 +149,7 @@ const fr: Translations = {
 		title: "Paramètres",
 		music: "Musique",
 		sfx: "Effets sonores",
+		actionHints: "Aides d'action",
 		restart: "Recommencer la partie",
 		exit: "Retour à l'accueil",
 		abandon: "Abandonner la partie",
@@ -358,6 +359,7 @@ const fr: Translations = {
 		},
 		reveal: {
 			attackedWith: "A attaqué avec",
+			defended: "S'est défendu avec",
 			discarded: "Défaussé pour les dégâts",
 			defeated: "a vaincu l'ennemi !",
 			yielded: "a passé son tour",
@@ -441,6 +443,7 @@ const fr: Translations = {
 	},
 	chat: {
 		title: "Chat",
+		close: "Fermer le chat",
 		placeholder: "Message...",
 		send: "Envoyer",
 		empty: "Aucun message pour l'instant.",

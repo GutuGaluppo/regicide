@@ -33,6 +33,12 @@ export const styles = StyleSheet.create({
 		fontSize: 11,
 		fontWeight: "700",
 	},
+	// Backdrop do modo overlay: cobre a tela atrás do painel; toque fecha o chat.
+	backdrop: {
+		...StyleSheet.absoluteFillObject,
+		backgroundColor: "rgba(0,0,0,0.45)",
+		zIndex: 1090,
+	},
 	// Painel — zIndex acima do ScreenHeader (1000) para o chat cobrir o botão de
 	// settings (ex.: o "fechar" do chat no tablet ficava atrás do settings).
 	panel: {
@@ -45,7 +51,7 @@ export const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 0,
-		height: "62%",
+		height: "90%",
 		borderTopWidth: 1,
 		borderTopLeftRadius: 18,
 		borderTopRightRadius: 18,

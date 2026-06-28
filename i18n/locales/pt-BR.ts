@@ -146,6 +146,7 @@ const ptBR = {
 		title: "Configurações",
 		music: "Música",
 		sfx: "Efeitos sonoros",
+		actionHints: "Dicas de ação",
 		restart: "Reiniciar partida",
 		exit: "Sair para o início",
 		abandon: "Abandonar Partida",
@@ -354,6 +355,7 @@ const ptBR = {
 		},
 		reveal: {
 			attackedWith: "Atacou com",
+			defended: "Defendeu com",
 			discarded: "Descartou para sofrer dano",
 			defeated: "derrotou o inimigo!",
 			yielded: "passou a vez",
@@ -437,6 +439,7 @@ const ptBR = {
 	},
 	chat: {
 		title: "Chat",
+		close: "Fechar chat",
 		placeholder: "Mensagem...",
 		send: "Enviar",
 		empty: "Nenhuma mensagem ainda.",
