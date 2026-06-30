@@ -454,27 +454,81 @@ const es: Translations = {
 	},
 	tutorial: {
 		skip: "Omitir",
-		welcome: {
-			title: "¡Bienvenido a Regicide!",
-			body: "Combatirás a los enemigos del castillo jugando cartas de tu mano. El número en el enemigo es su vida. ⚔ es el daño que causa si no es derrotado. ¡Practiquemos!",
-			btn: "Comenzar tutorial",
-		},
-		select_card: {
-			title: "Selecciona una carta",
-			body: "Toca una carta en tu mano para seleccionarla.",
-		},
-		attack: {
-			title: "¡Hora de atacar!",
-			body: "¡Perfecto! Ahora toca Atacar para golpear al enemigo.",
-		},
-		suffer_damage: {
-			title: "El enemigo contraataca",
-			body: "Selecciona cartas para descartar y cubrir el daño recibido. Debes cubrir el monto exacto o descartar toda tu mano.",
-		},
-		complete: {
-			title: "¡Ya lo entendiste!",
-			body: "Ahora conoces lo básico. ¡Buena suerte en la batalla!",
-			btn: "¡Jugar!",
+		next: "Siguiente",
+		play: "¡Jugar!",
+		steps: {
+			enemy_intro: {
+				title: "El enemigo",
+				body: "Regicide es cooperativo: juntos deben derrotar a los 12 enemigos del castillo. Este es el enemigo actual, una Jota.",
+			},
+			enemy_immunity: {
+				title: "Inmunidad",
+				body: "Cada enemigo es inmune a los poderes de las cartas de su mismo palo. El Comodín anula esa inmunidad.",
+			},
+			enemy_life: {
+				title: "Vida",
+				body: "La vida del enemigo. Suma el valor de las cartas que juegas para reducirla a cero y derrotarlo (Jota 20, Reina 30, Rey 40).",
+			},
+			enemy_attack: {
+				title: "Ataque",
+				body: "El daño que el enemigo causa cada turno si no es derrotado. Cubres ese daño descartando cartas (Jota 10, Reina 15, Rey 20).",
+			},
+			deck_castle: {
+				title: "Mazo Castillo",
+				body: "Guarda a los 12 jefes — Jotas, Reinas y Reyes — boca abajo.",
+			},
+			deck_tavern: {
+				title: "Mazo Taberna",
+				body: "Es de donde robas cartas para tu mano.",
+			},
+			deck_discard: {
+				title: "Pila de descarte",
+				body: "Las cartas usadas van aquí. El poder de Corazones (♥) recupera cartas de esta pila.",
+			},
+			suit_tracker: {
+				title: "Poderes de los palos",
+				body: "Cada palo tiene un poder: ♥ Corazones curan, ♦ Diamantes roban cartas, ♣ Tréboles duplican el daño y ♠ Picas reducen el ataque del enemigo.",
+			},
+			btn_sort_value: {
+				title: "Ordenar por valor",
+				body: "Reordena las cartas de tu mano por valor.",
+			},
+			btn_sort_suit: {
+				title: "Ordenar por palo",
+				body: "Agrupa las cartas de tu mano por palo.",
+			},
+			btn_attack_info: {
+				title: "Atacar",
+				body: "Juega las cartas seleccionadas contra el enemigo. El valor es el daño; el palo activa el poder.",
+			},
+			hand_info: {
+				title: "Tu mano",
+				body: "Juega una carta, una combinación (cartas del mismo número que sumen hasta 10) o un Compañero Animal (As) junto a otra carta.",
+			},
+			history_info: {
+				title: "Historial",
+				body: "Abre el registro de las acciones de la partida para revisar las jugadas.",
+			},
+			skip_info: {
+				title: "Pasar el turno",
+				body: "En multijugador hay un botón Pasar para ceder el turno sin jugar. No aparece en un jugador.",
+			},
+			select_card: {
+				title: "Selecciona una carta",
+				body: "Toca una carta en tu mano para seleccionarla.",
+			},
+			attack: {
+				title: "¡Hora de atacar!",
+				body: "Ahora toca Atacar para golpear al enemigo.",
+			},
+			defend: {
+				title: "Defiéndete",
+				body: "El enemigo contraatacó. Selecciona cartas y toca Descartar para cubrir el daño.",
+			},
+			complete: {
+				title: "¡Ya lo entendiste!",
+				body: "Ahora conoces lo básico. ¡Buena suerte en la batalla!",
+			},
 		},
 	},
 };

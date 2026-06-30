@@ -455,27 +455,81 @@ const fr: Translations = {
 	},
 	tutorial: {
 		skip: "Passer",
-		welcome: {
-			title: "Bienvenue dans Regicide !",
-			body: "Vous combattrez les ennemis du château en jouant des cartes de votre main. Le chiffre sur l'ennemi est sa vie. ⚔ est le dégât qu'il inflige s'il n'est pas vaincu. Entraînons-nous !",
-			btn: "Commencer le tutoriel",
-		},
-		select_card: {
-			title: "Sélectionnez une carte",
-			body: "Touchez une carte dans votre main pour la sélectionner.",
-		},
-		attack: {
-			title: "Place à l'attaque !",
-			body: "Parfait ! Maintenant touchez Attaquer pour frapper l'ennemi.",
-		},
-		suffer_damage: {
-			title: "L'ennemi contre-attaque",
-			body: "Sélectionnez des cartes à défausser pour couvrir les dégâts reçus. Vous devez couvrir le montant exact ou défausser toute votre main.",
-		},
-		complete: {
-			title: "Vous avez compris !",
-			body: "Vous connaissez maintenant les bases. Bonne chance au combat !",
-			btn: "Jouer !",
+		next: "Suivant",
+		play: "Jouer !",
+		steps: {
+			enemy_intro: {
+				title: "L'ennemi",
+				body: "Regicide est coopératif : ensemble, vous devez vaincre les 12 ennemis du château. Voici l'ennemi actuel, un Valet.",
+			},
+			enemy_immunity: {
+				title: "Immunité",
+				body: "Chaque ennemi est immunisé contre les pouvoirs des cartes de sa propre couleur. Le Joker annule cette immunité.",
+			},
+			enemy_life: {
+				title: "Vie",
+				body: "La vie de l'ennemi. Additionnez la valeur des cartes jouées pour la réduire à zéro et le vaincre (Valet 20, Dame 30, Roi 40).",
+			},
+			enemy_attack: {
+				title: "Attaque",
+				body: "Les dégâts que l'ennemi inflige chaque tour s'il n'est pas vaincu. Vous couvrez ces dégâts en défaussant des cartes (Valet 10, Dame 15, Roi 20).",
+			},
+			deck_castle: {
+				title: "Pile Château",
+				body: "Contient les 12 boss — Valets, Dames et Rois — face cachée.",
+			},
+			deck_tavern: {
+				title: "Pile Taverne",
+				body: "C'est de là que vous piochez des cartes dans votre main.",
+			},
+			deck_discard: {
+				title: "Défausse",
+				body: "Les cartes utilisées vont ici. Le pouvoir de Cœur (♥) récupère des cartes de cette pile.",
+			},
+			suit_tracker: {
+				title: "Pouvoirs des couleurs",
+				body: "Chaque couleur a un pouvoir : ♥ Cœur soigne, ♦ Carreau pioche, ♣ Trèfle double les dégâts et ♠ Pique réduit l'attaque de l'ennemi.",
+			},
+			btn_sort_value: {
+				title: "Trier par valeur",
+				body: "Réorganise les cartes de votre main par valeur.",
+			},
+			btn_sort_suit: {
+				title: "Trier par couleur",
+				body: "Regroupe les cartes de votre main par couleur.",
+			},
+			btn_attack_info: {
+				title: "Attaquer",
+				body: "Joue les cartes sélectionnées contre l'ennemi. La valeur est le dégât ; la couleur active le pouvoir.",
+			},
+			hand_info: {
+				title: "Votre main",
+				body: "Jouez une carte, une combinaison (cartes de même valeur totalisant jusqu'à 10) ou un Compagnon Animal (As) avec une autre carte.",
+			},
+			history_info: {
+				title: "Historique",
+				body: "Ouvre le journal des actions de la partie pour revoir les coups.",
+			},
+			skip_info: {
+				title: "Passer son tour",
+				body: "En multijoueur, un bouton Passer permet de céder son tour sans jouer. Il n'apparaît pas en solo.",
+			},
+			select_card: {
+				title: "Sélectionnez une carte",
+				body: "Touchez une carte dans votre main pour la sélectionner.",
+			},
+			attack: {
+				title: "Place à l'attaque !",
+				body: "Maintenant touchez Attaquer pour frapper l'ennemi.",
+			},
+			defend: {
+				title: "Défendez-vous",
+				body: "L'ennemi a contre-attaqué. Sélectionnez des cartes et touchez Défausser pour couvrir les dégâts.",
+			},
+			complete: {
+				title: "Vous avez compris !",
+				body: "Vous connaissez maintenant les bases. Bonne chance au combat !",
+			},
 		},
 	},
 };

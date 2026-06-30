@@ -451,27 +451,81 @@ const ptBR = {
 	},
 	tutorial: {
 		skip: "Pular",
-		welcome: {
-			title: "Bem-vindo ao Regicide!",
-			body: "Você vai batalhar contra os inimigos do castelo jogando cartas da sua mão. O número no inimigo é a vida dele. ⚔ é o dano que ele causa se não for derrotado. Vamos treinar!",
-			btn: "Começar tutorial",
-		},
-		select_card: {
-			title: "Selecione uma carta",
-			body: "Toque em uma carta da sua mão para selecioná-la.",
-		},
-		attack: {
-			title: "Hora de atacar!",
-			body: "Perfeito! Agora toque em Atacar para golpear o inimigo.",
-		},
-		suffer_damage: {
-			title: "O inimigo contra-ataca",
-			body: "Selecione cartas para descartar e cobrir o dano recebido. Você precisa cobrir o valor exato ou descartar a mão inteira.",
-		},
-		complete: {
-			title: "Você entendeu!",
-			body: "Agora você sabe o básico. Boa sorte na batalha!",
-			btn: "Jogar!",
+		next: "Próximo",
+		play: "Jogar!",
+		steps: {
+			enemy_intro: {
+				title: "O inimigo",
+				body: "Regicídio é cooperativo: vocês precisam derrotar os 12 inimigos do castelo. Este é o inimigo atual, um Valete.",
+			},
+			enemy_immunity: {
+				title: "Imunidade",
+				body: "Cada inimigo é imune aos poderes das cartas do mesmo naipe que ele. O Jóker (Curinga) anula essa imunidade.",
+			},
+			enemy_life: {
+				title: "Vida",
+				body: "A vida do inimigo. Some o valor das cartas jogadas para zerá-la e derrotá-lo (Valete 20, Dama 30, Rei 40).",
+			},
+			enemy_attack: {
+				title: "Ataque",
+				body: "O dano que o inimigo causa a cada turno, se não for derrotado. Você cobre esse dano descartando cartas (Valete 10, Dama 15, Rei 20).",
+			},
+			deck_castle: {
+				title: "Baralho Castelo",
+				body: "Guarda os 12 chefes — Valetes, Damas e Reis — virados para baixo.",
+			},
+			deck_tavern: {
+				title: "Baralho Taverna",
+				body: "É de onde você compra cartas para a sua mão.",
+			},
+			deck_discard: {
+				title: "Pilha de Descarte",
+				body: "As cartas usadas vão para cá. O poder de Copas (♥) recupera cartas desta pilha.",
+			},
+			suit_tracker: {
+				title: "Poderes dos naipes",
+				body: "Cada naipe tem um poder: ♥ Copas cura, ♦ Ouros compra cartas, ♣ Paus dobra o dano e ♠ Espadas reduz o ataque do inimigo.",
+			},
+			btn_sort_value: {
+				title: "Organizar por valor",
+				body: "Reordena as cartas da sua mão pelo valor.",
+			},
+			btn_sort_suit: {
+				title: "Organizar por naipe",
+				body: "Agrupa as cartas da sua mão por naipe.",
+			},
+			btn_attack_info: {
+				title: "Atacar",
+				body: "Joga as cartas selecionadas contra o inimigo. O valor é o dano; o naipe ativa o poder.",
+			},
+			hand_info: {
+				title: "Sua mão",
+				body: "Jogue uma carta, uma combinação (cartas de mesmo número somando até 10) ou um Companheiro Animal (Ás) com outra carta.",
+			},
+			history_info: {
+				title: "Histórico",
+				body: "Abre o registro das ações da partida para você revisar as jogadas.",
+			},
+			skip_info: {
+				title: "Passar a vez",
+				body: "No multiplayer há o botão Passar, para ceder a vez sem jogar. Ele não aparece no modo de um jogador.",
+			},
+			select_card: {
+				title: "Selecione uma carta",
+				body: "Toque em uma carta da sua mão para selecioná-la.",
+			},
+			attack: {
+				title: "Hora de atacar!",
+				body: "Agora toque em Atacar para golpear o inimigo.",
+			},
+			defend: {
+				title: "Defenda-se",
+				body: "O inimigo contra-atacou. Selecione cartas e toque em Descartar para cobrir o dano.",
+			},
+			complete: {
+				title: "Você entendeu!",
+				body: "Agora você sabe o básico. Boa sorte na batalha!",
+			},
 		},
 	},
 };

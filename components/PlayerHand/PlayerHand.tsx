@@ -39,6 +39,9 @@ export const PlayerHand = ({
 	onCardDealComplete,
 	onCardDiscardComplete,
 	waitingPlayedCards,
+	highlightPlay,
+	highlightSortValue,
+	highlightSortSuit,
 }: PropsType) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
@@ -180,6 +183,9 @@ export const PlayerHand = ({
 					onYield={onYield}
 					playDisabled={playDisabled || isDealing}
 					locked={locked || isDealing}
+					highlightPlay={highlightPlay}
+					highlightSortValue={highlightSortValue}
+					highlightSortSuit={highlightSortSuit}
 				/>
 			)}
 			<View

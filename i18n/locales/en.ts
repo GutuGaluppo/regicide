@@ -454,27 +454,81 @@ const en: Translations = {
 	},
 	tutorial: {
 		skip: "Skip",
-		welcome: {
-			title: "Welcome to Regicide!",
-			body: "You will battle the castle's enemies by playing cards from your hand. The number on the enemy is their health. ⚔ is the damage they deal if not defeated. Let's practice!",
-			btn: "Start tutorial",
-		},
-		select_card: {
-			title: "Select a card",
-			body: "Tap a card in your hand to select it.",
-		},
-		attack: {
-			title: "Time to attack!",
-			body: "Great! Now tap Attack to strike the enemy.",
-		},
-		suffer_damage: {
-			title: "The enemy strikes back",
-			body: "Select cards to discard and cover the incoming damage. You must cover the exact amount or discard your entire hand.",
-		},
-		complete: {
-			title: "You've got it!",
-			body: "Now you know the basics. Good luck in battle!",
-			btn: "Play!",
+		next: "Next",
+		play: "Play!",
+		steps: {
+			enemy_intro: {
+				title: "The enemy",
+				body: "Regicide is cooperative: together you must defeat the castle's 12 enemies. This is the current enemy, a Jack.",
+			},
+			enemy_immunity: {
+				title: "Immunity",
+				body: "Each enemy is immune to the powers of cards matching its own suit. The Jester cancels that immunity.",
+			},
+			enemy_life: {
+				title: "Health",
+				body: "The enemy's health. Add up the value of the cards you play to bring it to zero and defeat it (Jack 20, Queen 30, King 40).",
+			},
+			enemy_attack: {
+				title: "Attack",
+				body: "The damage the enemy deals each turn if not defeated. You cover this damage by discarding cards (Jack 10, Queen 15, King 20).",
+			},
+			deck_castle: {
+				title: "Castle deck",
+				body: "Holds the 12 bosses — Jacks, Queens and Kings — face down.",
+			},
+			deck_tavern: {
+				title: "Tavern deck",
+				body: "This is where you draw cards into your hand from.",
+			},
+			deck_discard: {
+				title: "Discard pile",
+				body: "Used cards go here. The Hearts (♥) power recovers cards from this pile.",
+			},
+			suit_tracker: {
+				title: "Suit powers",
+				body: "Each suit has a power: ♥ Hearts heal, ♦ Diamonds draw cards, ♣ Clubs double the damage, and ♠ Spades reduce the enemy's attack.",
+			},
+			btn_sort_value: {
+				title: "Sort by value",
+				body: "Reorders the cards in your hand by value.",
+			},
+			btn_sort_suit: {
+				title: "Sort by suit",
+				body: "Groups the cards in your hand by suit.",
+			},
+			btn_attack_info: {
+				title: "Attack",
+				body: "Plays the selected cards against the enemy. The value is the damage; the suit triggers the power.",
+			},
+			hand_info: {
+				title: "Your hand",
+				body: "Play one card, a combo (same-number cards summing up to 10), or an Animal Companion (Ace) together with another card.",
+			},
+			history_info: {
+				title: "History",
+				body: "Opens the log of the match's actions so you can review the plays.",
+			},
+			skip_info: {
+				title: "Pass the turn",
+				body: "In multiplayer there's a Pass button to yield your turn without playing. It does not appear in single-player.",
+			},
+			select_card: {
+				title: "Select a card",
+				body: "Tap a card in your hand to select it.",
+			},
+			attack: {
+				title: "Time to attack!",
+				body: "Now tap Attack to strike the enemy.",
+			},
+			defend: {
+				title: "Defend yourself",
+				body: "The enemy struck back. Select cards and tap Discard to cover the damage.",
+			},
+			complete: {
+				title: "You've got it!",
+				body: "Now you know the basics. Good luck in battle!",
+			},
 		},
 	},
 };

@@ -13,9 +13,11 @@ import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { SuitTracker } from "@/components/SuitTracker";
 import { TurnRevealOverlay } from "@/components/TurnRevealOverlay/TurnRevealOverlay";
 import {
-	TutorialStepPanel,
-	TutorialWelcomeModal,
+	SpotlightOverlay,
+	TutorialTarget,
+	TutorialTooltip,
 } from "@/components/TutorialOverlay";
+import { useTutorialTarget } from "@/store/tutorialTargetStore";
 import { VictoryScreen } from "@/components/VictoryScreen";
 import { useAudio } from "@/contexts/AudioContext";
 import { useGameScreenStore } from "@/contexts/GameStoreContext";
@@ -190,8 +192,10 @@ export const GameScreen = () => {
 
 	const {
 		isTutorial,
-		step,
-		advanceStep,
+		current: tutorialStep,
+		stepIndex,
+		stepTotal,
+		next: tutorialNext,
 		exitTutorial,
 		effectiveOnPlay,
 		yieldBlocked,
@@ -200,6 +204,12 @@ export const GameScreen = () => {
 		selectedIdsSize: selectedIds.size,
 		handlePlay,
 	});
+
+	const tutorialTargetId = tutorialStep?.targetId ?? null;
+	// Alvo destacado no passo atual (undefined → balão central).
+	const tutorialStepRect = useTutorialTarget(tutorialTargetId);
+	// Passos informativos (advance "next") não devem disparar a ação do alvo.
+	const tutorialInteractive = isTutorial && tutorialStep?.advance !== "next";
 
 	// Cálculo de fase para o SuitTracker — mesmo critério do CastleFooter
 	const allEnemies = [...gameState.defeatedEnemies, ...gameState.castle];
@@ -271,23 +281,29 @@ export const GameScreen = () => {
 						]}
 						onLayout={handleStatusBarLayout}
 					>
-						<StatusCard
-							count={gameState.castle.length}
-							label={t("game.status.castle")}
-						/>
-						<View ref={tavernRef} collapsable={false}>
+						<TutorialTarget id="tutorial-deck-castle" active={isTutorial}>
 							<StatusCard
-								count={tavernDeck.length}
-								label={t("game.status.tavern")}
+								count={gameState.castle.length}
+								label={t("game.status.castle")}
 							/>
-						</View>
-						<View ref={discardRef} collapsable={false}>
-							<StatusCard
-								count={discardPile.length}
-								label={t("game.status.discard")}
-								faceCard={discardPile[discardPile.length - 1] ?? null}
-							/>
-						</View>
+						</TutorialTarget>
+						<TutorialTarget id="tutorial-deck-tavern" active={isTutorial}>
+							<View ref={tavernRef} collapsable={false}>
+								<StatusCard
+									count={tavernDeck.length}
+									label={t("game.status.tavern")}
+								/>
+							</View>
+						</TutorialTarget>
+						<TutorialTarget id="tutorial-deck-discard" active={isTutorial}>
+							<View ref={discardRef} collapsable={false}>
+								<StatusCard
+									count={discardPile.length}
+									label={t("game.status.discard")}
+									faceCard={discardPile[discardPile.length - 1] ?? null}
+								/>
+							</View>
+						</TutorialTarget>
 					</View>
 
 					<View
@@ -302,7 +318,14 @@ export const GameScreen = () => {
 					>
 						{(phase === "player_turn" || phase === "suffer_damage") &&
 							currentEnemy && (
+								<TutorialTarget
+									id="tutorial-enemy"
+									active={isTutorial}
+									measureSignal={tutorialStep?.id}
+								>
 								<EnemyCard
+									tutorialActive={isTutorial}
+									tutorialMeasureSignal={tutorialStep?.id}
 									enemy={currentEnemy}
 									currentHP={currentHP}
 									effectiveAttack={effectiveAttack}
@@ -332,24 +355,24 @@ export const GameScreen = () => {
 										phase === "player_turn" ? previewShieldGain : 0
 									}
 								/>
+								</TutorialTarget>
 							)}
 					</View>
-
-					{isTutorial && (
-						<TutorialStepPanel
-							step={step}
-							onComplete={exitTutorial}
-							onSkip={exitTutorial}
-						/>
-					)}
 
 					{playError && <Text style={styles.error}>{playError}</Text>}
 
 					{(phase === "player_turn" || phase === "suffer_damage") && (
-						<View
-							style={[styles.handSection, { paddingHorizontal: screenPadding }]}
+						<TutorialTarget
+							id="tutorial-hand"
+							active={isTutorial && tutorialTargetId === "tutorial-hand"}
+							measureSignal={tutorialStep?.id}
+							style={styles.handSection}
 						>
+							<View style={{ paddingHorizontal: screenPadding }}>
 							<PlayerHand
+								highlightPlay={tutorialTargetId === "tutorial-attack"}
+								highlightSortValue={tutorialTargetId === "tutorial-sort-value"}
+								highlightSortSuit={tutorialTargetId === "tutorial-sort-suit"}
 								hand={gameState.playerHand}
 								compactVerticalSpacing={compactHand}
 								selectedIds={selectedIds}
@@ -376,14 +399,17 @@ export const GameScreen = () => {
 								onCardDealComplete={handleCardDealComplete}
 								onCardDiscardComplete={handleCardDiscardComplete}
 							/>
-						</View>
+							</View>
+						</TutorialTarget>
 					)}
 
-					<SuitTracker
-						enemies={phaseEnemies}
-						defeatedIds={defeatedIds}
-						currentSuit={currentEnemy?.suit ?? null}
-					/>
+					<TutorialTarget id="tutorial-suit-tracker" active={isTutorial}>
+						<SuitTracker
+							enemies={phaseEnemies}
+							defeatedIds={defeatedIds}
+							currentSuit={currentEnemy?.suit ?? null}
+						/>
+					</TutorialTarget>
 					{showParticipantsSidebar && (
 						<ParticipantsSidebar
 							players={orderedPlayers}
@@ -403,7 +429,11 @@ export const GameScreen = () => {
 
 				<ScreenHeader
 					onSettingsPress={() => setSettingsVisible(true)}
-					rightExtra={<GameLogButton onPress={() => setLogVisible(true)} />}
+					rightExtra={
+						<TutorialTarget id="tutorial-history" active={isTutorial}>
+							<GameLogButton onPress={() => setLogVisible(true)} />
+						</TutorialTarget>
+					}
 				/>
 			</View>
 
@@ -455,11 +485,43 @@ export const GameScreen = () => {
 				onCancel={() => setConfirmYieldVisible(false)}
 			/>
 
-			{isTutorial && step === "welcome" && (
-				<TutorialWelcomeModal
-					onStart={() => advanceStep("select_card")}
-					onSkip={exitTutorial}
-				/>
+			{/* Tutorial spotlight: escurece a tela e destaca só o alvo do passo.
+			    Tocar fora do recorte não dispensa. Passos informativos avançam pelo
+			    botão "Próximo"; os de prática, ao executar a ação no jogo. */}
+			{isTutorial && tutorialStep && (
+				<>
+					<SpotlightOverlay
+						rect={tutorialStepRect}
+						interactive={tutorialInteractive}
+					/>
+					<TutorialTooltip
+						rect={tutorialStepRect}
+						title={t(`tutorial.steps.${tutorialStep.id}.title`)}
+						body={t(`tutorial.steps.${tutorialStep.id}.body`)}
+						icon={
+							tutorialStep.id === "skip_info"
+								? require("@/assets/icons/skip_icon.png")
+								: undefined
+						}
+						progress={`${stepIndex + 1} / ${stepTotal}`}
+						primaryLabel={
+							tutorialStep.id === "complete"
+								? t("tutorial.play")
+								: tutorialStep.advance === "next"
+									? t("tutorial.next")
+									: undefined
+						}
+						onPrimary={
+							tutorialStep.id === "complete"
+								? exitTutorial
+								: tutorialStep.advance === "next"
+									? tutorialNext
+									: undefined
+						}
+						skipLabel={tutorialStep.id === "complete" ? undefined : t("tutorial.skip")}
+						onSkip={tutorialStep.id === "complete" ? undefined : exitTutorial}
+					/>
+				</>
 			)}
 
 			{reveal && <TurnRevealOverlay reveal={reveal} />}

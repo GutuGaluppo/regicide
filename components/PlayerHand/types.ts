@@ -43,4 +43,8 @@ export type PropsType = {
 	onCardDiscardComplete?: (discardId: number, cardId: string) => void;
 	// Multiplayer: cartas jogadas pelo jogador ativo (exibidas quando !isMyTurn)
 	waitingPlayedCards?: Card[];
+	// Tutorial: destaca o respectivo botão como alvo do spotlight.
+	highlightPlay?: boolean;
+	highlightSortValue?: boolean;
+	highlightSortSuit?: boolean;
 };

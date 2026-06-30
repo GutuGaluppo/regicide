@@ -6,6 +6,7 @@ import { getCardImage, getHandCardImage } from "@/data/images";
 import { Card, Enemy } from "@/data/types";
 import { EnemyCardLayout, getEnemyCardLayout } from "@/hooks/useEnemyCardScale";
 import { getHpColor } from "@/utils/hpColor";
+import { TutorialTarget } from "@/components/TutorialOverlay/TutorialTarget";
 import { Image } from "expo-image";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,6 +43,8 @@ export const EnemyCard = ({
 	onCardMeasure,
 	onShieldPileMeasure,
 	onJesterAnimationStateChange,
+	tutorialActive = false,
+	tutorialMeasureSignal,
 }: {
 	enemy: Enemy;
 	currentHP: number;
@@ -74,6 +77,10 @@ export const EnemyCard = ({
 		h: number;
 	}) => void;
 	onJesterAnimationStateChange?: (isAnimating: boolean) => void;
+	/** Mede os anéis de Vida/Ataque como alvos do tutorial spotlight. */
+	tutorialActive?: boolean;
+	/** Ao mudar, força nova medição dos anéis (troca de passo do tutorial). */
+	tutorialMeasureSignal?: unknown;
 }) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
@@ -343,18 +350,24 @@ export const EnemyCard = ({
 						>
 							{t("enemy.attack")}
 						</Text>
-						<ProgressRing
-							percent={attackPercent}
-							size={layout.ringSize}
-							strokeWidth={layout.ringStroke}
-							color="#b8860a"
+						<TutorialTarget
+							id="tutorial-enemy-attack"
+							active={tutorialActive}
+							measureSignal={tutorialMeasureSignal}
 						>
-							<NumberSprite
-								value={displayAttack}
-								type="deckstatus"
-								height={layout.numberHeight}
-							/>
-						</ProgressRing>
+							<ProgressRing
+								percent={attackPercent}
+								size={layout.ringSize}
+								strokeWidth={layout.ringStroke}
+								color="#b8860a"
+							>
+								<NumberSprite
+									value={displayAttack}
+									type="deckstatus"
+									height={layout.numberHeight}
+								/>
+							</ProgressRing>
+						</TutorialTarget>
 						{(shielded || previewShielded) && (
 							<View
 								style={[
@@ -505,14 +518,20 @@ export const EnemyCard = ({
 							},
 						]}
 					>
-						<ProgressRing
-							percent={hpPercent}
-							size={layout.ringSize}
-							strokeWidth={layout.ringStroke}
-							color={hpColor}
+						<TutorialTarget
+							id="tutorial-enemy-hp"
+							active={tutorialActive}
+							measureSignal={tutorialMeasureSignal}
 						>
-							<NumberSprite value={displayHP} type="health" height={layout.numberHeight} />
-						</ProgressRing>
+							<ProgressRing
+								percent={hpPercent}
+								size={layout.ringSize}
+								strokeWidth={layout.ringStroke}
+								color={hpColor}
+							>
+								<NumberSprite value={displayHP} type="health" height={layout.numberHeight} />
+							</ProgressRing>
+						</TutorialTarget>
 						<Text
 							style={[
 								styles.badgeLabel,
