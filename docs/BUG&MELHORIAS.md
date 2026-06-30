@@ -17,6 +17,25 @@ Ignore commented list was implemented in the codebase.
 - The modal with the current player acction (TurnRevealOverlay) must reveal the cards used to attack and received damage, and the card used to defend, if any. Make sure the titles "Attack" and "Defend" are clear (contrasting with the background and a little bigger) and provide more clarity to the players about the actions taken during the turn.
 - In the browser, if the player mute the music once, close the window, and then open the game again, the music should remain muted, but it is not persisting (the icon shows that it is muted but it is not actually muted). The same should apply to the sound effects. Root cause: AudioContext loaded the persisted mute flags asynchronously, so the soundtrack was created from a stale (unmuted) closure before hydration completed, and the re-mute effect no-op'd because the sound ref was still null mid-load. Fixed by gating soundtrack creation on hydration and reading mute/volume from refs. -->
 
+<!-- - Passo a passo do tutorial:
+  - [x] A primeira etapa com a mensagem "Bem-vindo ao Regicide!..." deve ser dividida entre:
+    - [x] Apresentação do inimigo com o foco no inimigo do centro e o resto da tela escurecida.
+    - [x] Explicação da imunidade do inimigo através do naipe (foco na carta do inimigo — o naipe está embutido na arte).
+    - [x] Apresentar a Vida do inimigo (foco no anel de Vida).
+    - [x] Apresentação do ataque do inimigo (foco no anel de Ataque).
+  - [x] Apresentação dos decks - Castelo, Taverna, Descarte (um a um).
+  - [x] Apresentação do SuitTracker.
+  - [x] Explicação dos botões de ação - Organizar por valor, Organizar por naipe, Atacar (Defender é hands-on no contra-ataque, destacando o botão Descartar).
+  - [x] Explicação da mão do jogador.
+  - [x] Apresentação do botão Histórico.
+  - [x] Incluir passo "Skip" (Passar) esclarecendo, por texto, que só aparece em jogo Multiplayer.
+- [x] Todos os passos têm explicações baseadas nas regras do jogo - pt-rulebook.pdf.
+- [x] Todos os textos traduzidos para todas as línguas suportadas (en, pt-BR, es, fr). -->
+
 TODO:
 
-- (none — all items above are implemented; see docs/BUGS_E_MELHORIAS_IMPLEMENTACAO.md)
+Ajuste no tutorial.
+
+- [ ] O "buraco de foco" na etapa de apresentação da vida e do ataque do inimigo deve ser ajustado para que o anel de vida e o anel de ataque fiquem totalmente visíveis, centralizados e sem cortes. Atualmente, o buraco de foco está cortando parte dos anéis (lado esquerdo do anel de vida, e lado direito do anel de ataque), dificultando a visualização completa das informações importantes para o jogador.
+- [ ] Na etapa Passar a vez, inclua o icone do botão para reforçar a compreensão.
+- [ ] Na etapa de Descarte, o buraco mostra apenas o botão de Descartar, e o texto explicando a ação que deve ser tomada (Selecionar cartas para descarte). Porém, não é possível selecionar as cartas (estão na area escurecida). Ajustar o buraco de foco para que o jogador consiga selecionar as cartas para descarte, mantendo a explicação da ação.
