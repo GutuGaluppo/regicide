@@ -11,13 +11,26 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { styles as base } from "./TutorialOverlay.styles";
 
 /** Espaço entre o recorte e o balão (acompanha o padding do SpotlightOverlay). */
 const SPOT_PAD = 8;
 const GAP = 14;
 const EDGE = 16;
 const MAX_WIDTH = 340;
+
+// ── Tema "Arcano" — teal escuro, menta luminosa e acento violeta ──
+const COLORS = {
+	card: "rgba(14, 31, 28, 0.98)",
+	border: "rgba(95, 208, 176, 0.5)",
+	glow: "#5FD0B0",
+	title: "#7CE0C0",
+	body: "#C7D8D2",
+	skip: "#6E8C84",
+	progress: "rgba(124, 224, 192, 0.55)",
+	btn: "rgba(109, 74, 160, 0.55)",
+	btnBorder: "rgba(155, 123, 208, 0.9)",
+	btnText: "#E6FBF2",
+};
 
 type Props = {
 	rect?: TutorialRect;
@@ -63,18 +76,18 @@ export const TutorialTooltip = ({
 			{icon && (
 				<Image source={icon} style={styles.icon} resizeMode="contain" />
 			)}
-			<View style={base.panelHeader}>
-				<Text style={base.panelTitle}>{title}</Text>
+			<View style={styles.header}>
+				<Text style={styles.title}>{title}</Text>
 				{onSkip && (
-					<TouchableOpacity style={base.skipBtn} onPress={onSkip}>
-						<Text style={base.skipText}>{skipLabel}</Text>
+					<TouchableOpacity style={styles.skipBtn} onPress={onSkip}>
+						<Text style={styles.skipText}>{skipLabel}</Text>
 					</TouchableOpacity>
 				)}
 			</View>
-			<Text style={base.panelBody}>{body}</Text>
+			<Text style={styles.body}>{body}</Text>
 			{primaryLabel && onPrimary && (
-				<TouchableOpacity style={base.primaryBtn} onPress={onPrimary}>
-					<Text style={base.primaryBtnText}>{primaryLabel}</Text>
+				<TouchableOpacity style={styles.primaryBtn} onPress={onPrimary}>
+					<Text style={styles.primaryBtnText}>{primaryLabel}</Text>
 				</TouchableOpacity>
 			)}
 			{progress && <Text style={styles.progress}>{progress}</Text>}
@@ -135,22 +148,75 @@ const styles = StyleSheet.create({
 	card: {
 		width: MAX_WIDTH,
 		maxWidth: "100%",
-		backgroundColor: "rgba(10, 7, 3, 0.98)",
-		borderWidth: 1,
-		borderColor: "rgba(232, 213, 163, 0.55)",
-		borderRadius: 12,
+		backgroundColor: COLORS.card,
+		borderWidth: 1.5,
+		borderColor: COLORS.border,
+		borderRadius: 14,
 		paddingHorizontal: 18,
 		paddingTop: 14,
 		paddingBottom: 12,
-		gap: 6,
+		gap: 7,
+		// Brilho arcano suave (iOS); Android usa a elevation do root.
+		shadowColor: COLORS.glow,
+		shadowOpacity: 0.3,
+		shadowRadius: 14,
+		shadowOffset: { width: 0, height: 0 },
 	},
 	cardCentered: {
 		maxWidth: 400,
 	},
-	progress: {
+	header: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: 8,
+	},
+	title: {
+		flex: 1,
+		fontFamily: "Cinzel",
+		fontSize: 16,
+		fontWeight: "700",
+		letterSpacing: 1.8,
+		textTransform: "uppercase",
+		color: COLORS.title,
+	},
+	body: {
 		fontFamily: "IMFellEnglish",
-		fontSize: 12,
-		color: "rgba(148, 163, 184, 0.7)",
+		fontSize: 15,
+		lineHeight: 22,
+		color: COLORS.body,
+	},
+	skipBtn: {
+		paddingHorizontal: 4,
+		paddingVertical: 2,
+	},
+	skipText: {
+		fontFamily: "IMFellEnglish-Italic",
+		fontSize: 13,
+		color: COLORS.skip,
+	},
+	primaryBtn: {
+		backgroundColor: COLORS.btn,
+		borderWidth: 1,
+		borderColor: COLORS.btnBorder,
+		borderRadius: 9,
+		paddingVertical: 11,
+		alignItems: "center",
+		marginTop: 6,
+	},
+	primaryBtnText: {
+		fontFamily: "Cinzel",
+		fontSize: 14,
+		fontWeight: "700",
+		letterSpacing: 1.5,
+		textTransform: "uppercase",
+		color: COLORS.btnText,
+	},
+	progress: {
+		fontFamily: "Cinzel",
+		fontSize: 11,
+		letterSpacing: 1,
+		color: COLORS.progress,
 		textAlign: "center",
 		marginTop: 2,
 	},
