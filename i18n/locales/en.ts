@@ -456,6 +456,7 @@ const en: Translations = {
 	tutorial: {
 		skip: "Skip",
 		next: "Next",
+		back: "Back",
 		play: "Play!",
 		steps: {
 			enemy_intro: {
@@ -505,6 +506,10 @@ const en: Translations = {
 			hand_info: {
 				title: "Your hand",
 				body: "Play one card, a combo (same-number cards summing up to 10), or an Animal Companion (Ace) together with another card.",
+			},
+			card_detail: {
+				title: "Card details",
+				body: "Try it: press and hold a card in your hand to open its details — value, suit and the power it triggers. Check as many as you like, then tap Next.",
 			},
 			history_info: {
 				title: "History",

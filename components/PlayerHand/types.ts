@@ -47,4 +47,12 @@ export type PropsType = {
 	highlightPlay?: boolean;
 	highlightSortValue?: boolean;
 	highlightSortSuit?: boolean;
+	/**
+	 * Tutorial (passo do clique longo): a carta só responde ao clique longo. O
+	 * toque simples fica inerte para não selecionar cartas antes da hora — uma
+	 * seleção acidental faria o passo `select_card` avançar sozinho depois.
+	 */
+	detailOnly?: boolean;
+	/** Abertura (carta) e fechamento (null) do drawer de detalhes da carta. */
+	onCardDetailChange?: (card: Card | null) => void;
 };

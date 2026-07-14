@@ -30,6 +30,9 @@ const COLORS = {
 	btn: "rgba(109, 74, 160, 0.55)",
 	btnBorder: "rgba(155, 123, 208, 0.9)",
 	btnText: "#E6FBF2",
+	// Secundário ("Voltar"): sem preenchimento, para não competir com o primário.
+	backBtnBorder: "rgba(95, 208, 176, 0.45)",
+	backBtnText: "#8FBFB2",
 };
 
 type Props = {
@@ -42,6 +45,9 @@ type Props = {
 	progress?: string;
 	primaryLabel?: string;
 	onPrimary?: () => void;
+	/** Volta ao passo anterior; ausente quando não há passo para revisar. */
+	backLabel?: string;
+	onBack?: () => void;
 	skipLabel?: string;
 	onSkip?: () => void;
 };
@@ -59,6 +65,8 @@ export const TutorialTooltip = ({
 	progress,
 	primaryLabel,
 	onPrimary,
+	backLabel,
+	onBack,
 	skipLabel,
 	onSkip,
 }: Props) => {
@@ -71,8 +79,21 @@ export const TutorialTooltip = ({
 		if (width !== size.width || height !== size.height) setSize({ width, height });
 	};
 
+	// Ancorado, o card fica em um pai de largura automática — `maxWidth: "100%"`
+	// não tem contra o que resolver e a largura fixa vazaria em telas estreitas.
+	const cardWidth = Math.min(
+		MAX_WIDTH,
+		W - insets.left - insets.right - EDGE * 2,
+	);
+
+	const showPrimary = !!primaryLabel && !!onPrimary;
+	const showBack = !!backLabel && !!onBack;
+
 	const card = (
-		<View style={[styles.card, !rect && styles.cardCentered]} onLayout={onLayout}>
+		<View
+			style={[styles.card, { width: cardWidth }, !rect && styles.cardCentered]}
+			onLayout={onLayout}
+		>
 			{icon && (
 				<Image source={icon} style={styles.icon} resizeMode="contain" />
 			)}
@@ -85,10 +106,27 @@ export const TutorialTooltip = ({
 				)}
 			</View>
 			<Text style={styles.body}>{body}</Text>
-			{primaryLabel && onPrimary && (
-				<TouchableOpacity style={styles.primaryBtn} onPress={onPrimary}>
-					<Text style={styles.primaryBtnText}>{primaryLabel}</Text>
-				</TouchableOpacity>
+			{(showBack || showPrimary) && (
+				<View style={styles.actions}>
+					{showBack && (
+						<TouchableOpacity
+							style={[styles.backBtn, !showPrimary && styles.actionAlone]}
+							onPress={onBack}
+							accessibilityRole="button"
+						>
+							<Text style={styles.backBtnText}>{backLabel}</Text>
+						</TouchableOpacity>
+					)}
+					{showPrimary && (
+						<TouchableOpacity
+							style={[styles.primaryBtn, !showBack && styles.actionAlone]}
+							onPress={onPrimary}
+							accessibilityRole="button"
+						>
+							<Text style={styles.primaryBtnText}>{primaryLabel}</Text>
+						</TouchableOpacity>
+					)}
+				</View>
 			)}
 			{progress && <Text style={styles.progress}>{progress}</Text>}
 		</View>
@@ -195,14 +233,41 @@ const styles = StyleSheet.create({
 		fontSize: 13,
 		color: COLORS.skip,
 	},
+	actions: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+		marginTop: 6,
+	},
+	// Sozinho na linha, o botão ocupa a largura toda (como era antes do "Voltar").
+	actionAlone: {
+		flex: 1,
+	},
 	primaryBtn: {
+		flex: 2,
 		backgroundColor: COLORS.btn,
 		borderWidth: 1,
 		borderColor: COLORS.btnBorder,
 		borderRadius: 9,
 		paddingVertical: 11,
 		alignItems: "center",
-		marginTop: 6,
+	},
+	backBtn: {
+		flex: 1,
+		borderWidth: 1,
+		borderColor: COLORS.backBtnBorder,
+		borderRadius: 9,
+		paddingVertical: 11,
+		paddingHorizontal: 8,
+		alignItems: "center",
+	},
+	backBtnText: {
+		fontFamily: "Cinzel",
+		fontSize: 13,
+		fontWeight: "700",
+		letterSpacing: 1.2,
+		textTransform: "uppercase",
+		color: COLORS.backBtnText,
 	},
 	primaryBtnText: {
 		fontFamily: "Cinzel",

@@ -457,6 +457,7 @@ const fr: Translations = {
 	tutorial: {
 		skip: "Passer",
 		next: "Suivant",
+		back: "Retour",
 		play: "Jouer !",
 		steps: {
 			enemy_intro: {
@@ -506,6 +507,10 @@ const fr: Translations = {
 			hand_info: {
 				title: "Votre main",
 				body: "Jouez une carte, une combinaison (cartes de même valeur totalisant jusqu'à 10) ou un Compagnon Animal (As) avec une autre carte.",
+			},
+			card_detail: {
+				title: "Détails de la carte",
+				body: "Essayez : appuyez longuement sur une carte de votre main pour afficher ses détails — valeur, couleur et le pouvoir qu’elle déclenche. Consultez-en autant que vous voulez, puis touchez Suivant.",
 			},
 			history_info: {
 				title: "Historique",

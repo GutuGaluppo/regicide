@@ -46,6 +46,8 @@ export const PlayerHand = ({
 	highlightPlay,
 	highlightSortValue,
 	highlightSortSuit,
+	detailOnly = false,
+	onCardDetailChange,
 }: PropsType) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
@@ -80,6 +82,12 @@ export const PlayerHand = ({
 	const handleLongPress = (card: Card) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		setDetailCard(card);
+		onCardDetailChange?.(card);
+	};
+
+	const handleDetailClose = () => {
+		setDetailCard(null);
+		onCardDetailChange?.(null);
 	};
 
 	const pending = pendingDamage ?? 0;
@@ -224,7 +232,7 @@ export const PlayerHand = ({
 							key={card.id}
 							card={card}
 							selected={isSelected}
-							onPress={() => onCardPress(card)}
+							onPress={detailOnly ? undefined : () => onCardPress(card)}
 							onLongPress={() => handleLongPress(card)}
 							onDealComplete={onCardDealComplete}
 							onDiscardComplete={onCardDiscardComplete}
@@ -246,7 +254,9 @@ export const PlayerHand = ({
 										}
 									: undefined
 							}
-							pressDisabled={!interactive || isDimmed}
+							// No passo do clique longo a carta segue tocável (só o toque
+							// simples é que fica inerte), senão não haveria o que praticar.
+							pressDisabled={!detailOnly && (!interactive || isDimmed)}
 							immuneSuit={immuneSuit}
 							sufferMode={phase === "suffer_damage"}
 							dimmed={isDimmed}
@@ -262,7 +272,7 @@ export const PlayerHand = ({
 				card={detailCard}
 				visible={detailCard !== null}
 				immuneSuit={immuneSuit}
-				onClose={() => setDetailCard(null)}
+				onClose={handleDetailClose}
 			/>
 		</View>
 	);

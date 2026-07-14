@@ -132,6 +132,8 @@ export const GameScreen = () => {
 	const [confirmYieldVisible, setConfirmYieldVisible] = useState(false);
 	const [statusBarHeight, setStatusBarHeight] = useState(0);
 	const [centerLayout, setCenterLayout] = useState({ width: 0, height: 0 });
+	// Sinaliza ao tutorial que o jogador fechou o drawer de detalhes da carta.
+	const [cardDetailClosedSignal, setCardDetailClosedSignal] = useState(0);
 
 	const statusBarTop = Math.max(insets.top + 12, 50);
 	const effectiveStatusBarHeight = statusBarHeight || 76;
@@ -199,6 +201,9 @@ export const GameScreen = () => {
 		stepIndex,
 		stepTotal,
 		next: tutorialNext,
+		back: tutorialBack,
+		canGoBack: tutorialCanGoBack,
+		cardDetailPracticed: tutorialCardDetailPracticed,
 		exitTutorial,
 		effectiveOnPlay,
 		yieldBlocked,
@@ -206,7 +211,18 @@ export const GameScreen = () => {
 		phase,
 		selectedIdsSize: selectedIds.size,
 		handlePlay,
+		cardDetailClosedSignal,
 	});
+
+	// Ação principal do balão. Os passos de prática não têm botão — quem avança é
+	// a ação no jogo. A exceção é o clique longo: praticado o gesto, o jogador
+	// segue no seu tempo (fechar o drawer sozinho não avança o tutorial).
+	const tutorialPrimary =
+		tutorialStep?.id === "complete"
+			? { label: t("tutorial.play"), action: exitTutorial }
+			: tutorialStep?.advance === "next" || tutorialCardDetailPracticed
+				? { label: t("tutorial.next"), action: tutorialNext }
+				: undefined;
 
 	const tutorialTargetId = tutorialStep?.targetId ?? null;
 	// Alvo destacado no passo atual (undefined → balão central).
@@ -402,6 +418,15 @@ export const GameScreen = () => {
 								waitingPlayedCards={!isMyTurn ? lastPlayedCards : undefined}
 								onCardDealComplete={handleCardDealComplete}
 								onCardDiscardComplete={handleCardDiscardComplete}
+								detailOnly={tutorialStep?.advance === "card_detail"}
+								onCardDetailChange={
+									isTutorial
+										? (card) => {
+												if (card === null)
+													setCardDetailClosedSignal((signal) => signal + 1);
+											}
+										: undefined
+								}
 							/>
 							</View>
 						</TutorialTarget>
@@ -508,20 +533,10 @@ export const GameScreen = () => {
 								: undefined
 						}
 						progress={`${stepIndex + 1} / ${stepTotal}`}
-						primaryLabel={
-							tutorialStep.id === "complete"
-								? t("tutorial.play")
-								: tutorialStep.advance === "next"
-									? t("tutorial.next")
-									: undefined
-						}
-						onPrimary={
-							tutorialStep.id === "complete"
-								? exitTutorial
-								: tutorialStep.advance === "next"
-									? tutorialNext
-									: undefined
-						}
+						primaryLabel={tutorialPrimary?.label}
+						onPrimary={tutorialPrimary?.action}
+						backLabel={tutorialCanGoBack ? t("tutorial.back") : undefined}
+						onBack={tutorialCanGoBack ? tutorialBack : undefined}
 						skipLabel={tutorialStep.id === "complete" ? undefined : t("tutorial.skip")}
 						onSkip={tutorialStep.id === "complete" ? undefined : exitTutorial}
 					/>
