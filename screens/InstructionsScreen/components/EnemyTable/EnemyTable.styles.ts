@@ -2,6 +2,7 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
 	table: {
+		width: "100%",
 		borderRadius: 8,
 		overflow: "hidden",
 		borderWidth: 1,
@@ -20,6 +21,8 @@ export const styles = StyleSheet.create({
 	},
 	tableCell: {
 		flex: 1,
+		minWidth: 0,
+		flexShrink: 1,
 		color: "#CBD5E1",
 		fontSize: 13,
 	},

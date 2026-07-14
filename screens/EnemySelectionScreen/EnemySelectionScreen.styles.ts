@@ -21,12 +21,4 @@ export const styles = StyleSheet.create({
 		height: "100%",
 		borderRadius: 10,
 	},
-	cardDefeated: {
-		opacity: 0.3,
-	},
-	defeatedOverlay: {
-		...StyleSheet.absoluteFillObject,
-		backgroundColor: "rgba(0,0,0,0.5)",
-		borderRadius: 10,
-	},
 });

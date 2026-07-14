@@ -2,6 +2,7 @@ import type { Translations } from "./pt-BR";
 
 const es: Translations = {
 	common: {
+		close: "Cerrar",
 		attack: "Ataque",
 		health: "Vida",
 		newGame: "Nueva partida",
@@ -455,6 +456,7 @@ const es: Translations = {
 	tutorial: {
 		skip: "Omitir",
 		next: "Siguiente",
+		back: "Atrás",
 		play: "¡Jugar!",
 		steps: {
 			enemy_intro: {
@@ -504,6 +506,10 @@ const es: Translations = {
 			hand_info: {
 				title: "Tu mano",
 				body: "Juega una carta, una combinación (cartas del mismo número que sumen hasta 10) o un Compañero Animal (As) junto a otra carta.",
+			},
+			card_detail: {
+				title: "Detalles de la carta",
+				body: "Pruébalo: mantén pulsada una carta de tu mano para abrir sus detalles: valor, palo y el poder que activa. Mira las que quieras y pulsa Siguiente al terminar.",
 			},
 			history_info: {
 				title: "Historial",

@@ -88,6 +88,22 @@ const CARD_IMAGES: Record<string, number> = {
 	"K-spades": require("../assets/cards/outlined/Vexx_Outlined.png"),
 };
 
+// Arte "sombra" de cada nobre — usada para representá-lo já derrotado.
+const SHADOW_CARD_IMAGES: Record<string, number> = {
+	"J-hearts": require("../assets/cards/shadows/jacks/Letholdus_01.png"),
+	"J-diamonds": require("../assets/cards/shadows/jacks/Kalannar_01.png"),
+	"J-clubs": require("../assets/cards/shadows/jacks/Tezfur_01.png"),
+	"J-spades": require("../assets/cards/shadows/jacks/Nobutada_01.png"),
+	"Q-hearts": require("../assets/cards/shadows/queens/Catherine_01.png"),
+	"Q-diamonds": require("../assets/cards/shadows/queens/Malice_01.png"),
+	"Q-clubs": require("../assets/cards/shadows/queens/Hostla_01.png"),
+	"Q-spades": require("../assets/cards/shadows/queens/Lilith.png"),
+	"K-hearts": require("../assets/cards/shadows/kings/Edward_01.png"),
+	"K-diamonds": require("../assets/cards/shadows/kings/Tathzaer_01.png"),
+	"K-clubs": require("../assets/cards/shadows/kings/Fyrnod_01.png"),
+	"K-spades": require("../assets/cards/shadows/kings/Vexx_01.png"),
+};
+
 const FOOTER_CARD_IMAGES: Record<string, number> = {
 	"J-hearts": require("../assets/cards/Letholdus_01.png"),
 	"J-diamonds": require("../assets/cards/Kalannar_01.png"),
@@ -108,6 +124,10 @@ export const getCardImage = (
 	suit: Suit,
 ): number => {
 	return CARD_IMAGES[`${rank}-${suit}`];
+};
+
+export const getShadowCardImage = (rank: EnemyRank, suit: Suit): number => {
+	return SHADOW_CARD_IMAGES[`${rank}-${suit}`];
 };
 
 export const getFooterCardImage = (

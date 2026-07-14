@@ -27,7 +27,7 @@ import { getEnemyName } from "@/data/enemyNames";
 import { Enemy, Suit } from "@/data/types";
 import { styles } from "./EnemyModal.styles";
 
-const CROWN_ICON = require("@/assets/icons/crown_white.png");
+const CLOSE_ICON = require("@/assets/icons/letter-x.png");
 
 const SUITS: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
 
@@ -117,8 +117,14 @@ export const EnemyModal = ({
 				<View style={styles.handle} />
 
 				{/* Close button */}
-				<TouchableOpacity style={styles.closeBtn} onPress={() => { playTap(); onClose(); }} activeOpacity={0.7}>
-					<Image source={CROWN_ICON} style={styles.closeIcon} contentFit="contain" />
+				<TouchableOpacity
+					style={styles.closeBtn}
+					onPress={() => { playTap(); onClose(); }}
+					activeOpacity={0.7}
+					accessibilityRole="button"
+					accessibilityLabel={t("common.close")}
+				>
+					<Image source={CLOSE_ICON} style={styles.closeIcon} contentFit="contain" />
 				</TouchableOpacity>
 
 				<ScrollView

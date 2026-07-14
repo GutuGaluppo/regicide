@@ -1,4 +1,8 @@
 import Section from "@/screens/InstructionsScreen/Sections/Section";
+import {
+	columnFlex,
+	sectionLayout,
+} from "@/screens/InstructionsScreen/Sections/sectionLayout.styles";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { t } from "i18next";
 import { Text, View } from "react-native";
@@ -13,14 +17,20 @@ export default function EndConditions() {
 		<Section title={t(`${s("endConditions")}.title`)}>
 			<View
 				style={[
-					styles.contentLayout,
-					isTablet ? styles.contentLayoutRow : styles.contentLayoutColumn,
+					sectionLayout.content,
+					isTablet ? sectionLayout.contentRow : sectionLayout.contentColumn,
 				]}
 			>
-				<View style={styles.textColumn}>
+				<View style={[sectionLayout.column, columnFlex(1.1, isTablet)]}>
 					<Text style={styles.bodyText}>{t(`${s("endConditions")}.body`)}</Text>
 				</View>
-				<View style={styles.statusColumn}>
+				<View
+					style={[
+						sectionLayout.column,
+						styles.statusColumn,
+						columnFlex(0.9, isTablet),
+					]}
+				>
 					<View style={styles.victoryBlock}>
 						<View style={styles.defeatTitleRow}>
 							<Image

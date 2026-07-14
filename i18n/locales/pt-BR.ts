@@ -1,5 +1,6 @@
 const ptBR = {
 	common: {
+		close: "Fechar",
 		attack: "Ataque",
 		health: "Vida",
 		newGame: "Novo jogo",
@@ -452,6 +453,7 @@ const ptBR = {
 	tutorial: {
 		skip: "Pular",
 		next: "Próximo",
+		back: "Voltar",
 		play: "Jogar!",
 		steps: {
 			enemy_intro: {
@@ -501,6 +503,10 @@ const ptBR = {
 			hand_info: {
 				title: "Sua mão",
 				body: "Jogue uma carta, uma combinação (cartas de mesmo número somando até 10) ou um Companheiro Animal (Ás) com outra carta.",
+			},
+			card_detail: {
+				title: "Detalhes da carta",
+				body: "Experimente: pressione e segure uma carta da sua mão para abrir os detalhes dela — valor, naipe e o poder que ele ativa. Veja quantas quiser e toque em Próximo quando terminar.",
 			},
 			history_info: {
 				title: "Histórico",

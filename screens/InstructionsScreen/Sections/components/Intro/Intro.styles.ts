@@ -2,6 +2,7 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
 	introBlock: {
+		width: "100%",
 		alignItems: "center",
 		paddingVertical: 20,
 		gap: 6,
@@ -12,6 +13,8 @@ export const styles = StyleSheet.create({
 		marginBottom: 4,
 	},
 	gameName: {
+		maxWidth: "100%",
+		textAlign: "center",
 		fontFamily: "IMFellEnglish-Regular",
 		fontSize: 36,
 		fontWeight: "900",
@@ -19,12 +22,17 @@ export const styles = StyleSheet.create({
 		letterSpacing: 6,
 	},
 	gameSubtitle: {
+		maxWidth: "100%",
+		textAlign: "center",
 		color: "#251692",
 		fontSize: 13,
 		letterSpacing: 0.5,
 	},
 	gameInfoRow: {
+		maxWidth: "100%",
 		flexDirection: "row",
+		flexWrap: "wrap",
+		justifyContent: "center",
 		gap: 30,
 		marginTop: 10,
 		alignItems: "center",
@@ -39,6 +47,7 @@ export const styles = StyleSheet.create({
 	gameInfoImage: {
 		width: 60,
 		height: 60,
+		flexShrink: 0,
 		borderWidth: 1,
 		borderColor: "rgba(148,163,184)",
 		borderRadius: 12,

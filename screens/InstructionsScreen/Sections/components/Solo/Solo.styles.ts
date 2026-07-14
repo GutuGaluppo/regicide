@@ -12,23 +12,11 @@ export const styles = StyleSheet.create({
 		fontWeight: "600",
 		letterSpacing: 0.2,
 	},
+	// Respiro maior entre o texto e a lista de níveis do modo solo.
 	contentLayout: {
 		gap: 26,
-		alignItems: "flex-start",
 	},
-	contentLayoutColumn: {
-		flexDirection: "column",
-	},
-	contentLayoutRow: {
-		flexDirection: "row",
-	},
-	textColumn: {
-		flex: 1.1,
-		minWidth: 0,
-	},
-	tableColumn: {
-		flex: 0.9,
-		minWidth: 0,
-		alignSelf: "stretch",
+	tierColumn: {
+		gap: 6,
 	},
 });

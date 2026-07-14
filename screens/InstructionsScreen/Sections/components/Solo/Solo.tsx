@@ -1,6 +1,10 @@
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import SoloTierList from "@/screens/InstructionsScreen/components/SoloTierList";
 import Section from "@/screens/InstructionsScreen/Sections/Section";
+import {
+	columnFlex,
+	sectionLayout,
+} from "@/screens/InstructionsScreen/Sections/sectionLayout.styles";
 import { t } from "i18next";
 import { Text, View } from "react-native";
 import { styles } from "./Solo.styles";
@@ -18,14 +22,21 @@ export default function Solo() {
 		<Section title={t(`${s("solo")}.title`)}>
 			<View
 				style={[
+					sectionLayout.content,
 					styles.contentLayout,
-					isTablet ? styles.contentLayoutRow : styles.contentLayoutColumn,
+					isTablet ? sectionLayout.contentRow : sectionLayout.contentColumn,
 				]}
 			>
-				<View style={styles.textColumn}>
+				<View style={[sectionLayout.column, columnFlex(1.1, isTablet)]}>
 					<Text style={styles.bodyText}>{t(`${s("solo")}.body`)}</Text>
 				</View>
-				<View style={styles.tableColumn}>
+				<View
+					style={[
+						sectionLayout.column,
+						styles.tierColumn,
+						columnFlex(0.9, isTablet),
+					]}
+				>
 					<Text style={styles.labelText}>{t(`${s("solo")}.tiersLabel`)}</Text>
 					<SoloTierList tiers={tiers} />
 				</View>

@@ -1,4 +1,4 @@
-import { getCardImage } from "@/data/images";
+import { getCardImage, getShadowCardImage } from "@/data/images";
 import { Enemy } from "@/data/types";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useTrackerStore } from "@/store/trackerStore";
@@ -51,12 +51,16 @@ export const EnemySelectionScreen = ({
 							disabled={defeated}
 							activeOpacity={0.75}
 						>
+							{/* Derrotado: a própria arte "sombra" do nobre já comunica a baixa. */}
 							<ExpoImage
-								source={getCardImage(enemy.rank, enemy.suit)}
-								style={[styles.card, defeated && styles.cardDefeated]}
+								source={
+									defeated
+										? getShadowCardImage(enemy.rank, enemy.suit)
+										: getCardImage(enemy.rank, enemy.suit)
+								}
+								style={styles.card}
 								contentFit="contain"
 							/>
-							{defeated && <View style={styles.defeatedOverlay} />}
 						</TouchableOpacity>
 					);
 				})}

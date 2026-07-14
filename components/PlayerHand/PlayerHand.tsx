@@ -9,7 +9,11 @@ import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LayoutAnimation, ScrollView, Text, View } from "react-native";
-import { styles } from "./PlayerHand.styles";
+import {
+	HAND_ROW_LIFT,
+	HAND_ROW_LIFT_COMPACT,
+	styles,
+} from "./PlayerHand.styles";
 import { ActionButtonRow } from "./components/ActionButtonRow";
 import { IconLabelButton } from "./components/ActionButtonRow/IconLabelButton";
 import { SortButton } from "./components/ActionButtonRow/SortButton";
@@ -42,6 +46,8 @@ export const PlayerHand = ({
 	highlightPlay,
 	highlightSortValue,
 	highlightSortSuit,
+	detailOnly = false,
+	onCardDetailChange,
 }: PropsType) => {
 	const { t } = useTranslation();
 	const { playTap } = useAudio();
@@ -76,12 +82,20 @@ export const PlayerHand = ({
 	const handleLongPress = (card: Card) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		setDetailCard(card);
+		onCardDetailChange?.(card);
+	};
+
+	const handleDetailClose = () => {
+		setDetailCard(null);
+		onCardDetailChange?.(null);
 	};
 
 	const pending = pendingDamage ?? 0;
 	const current = selectedTotal ?? 0;
 	const damageSubtraction = Math.max(0, pending - current);
 	const enough = current >= pending;
+	// Dano já coberto: a seleção de novas cartas é encerrada.
+	const discardCovered = phase === "suffer_damage" && pending > 0 && enough;
 	const { isDesktop } = useResponsiveLayout();
 
 	const desktopSortButtons =
@@ -191,23 +205,34 @@ export const PlayerHand = ({
 			<View
 				style={[
 					styles.handRow,
-					{ paddingTop: liftY + (compactVerticalSpacing ? 0 : 4) },
+					{
+						paddingTop:
+							liftY +
+							(compactVerticalSpacing ? HAND_ROW_LIFT_COMPACT : HAND_ROW_LIFT),
+					},
 				]}
 			>
 				{hand.map((card) => {
-					const isDimmed =
+					const isSelected = selectedIds.has(card.id);
+					// Ataque: cartas que não combinam com a seleção atual.
+					const isIncompatible =
 						phase === "player_turn" &&
 						selectedIds.size > 0 &&
-						!selectedIds.has(card.id) &&
+						!isSelected &&
 						!(compatibleIds?.has(card.id) ?? true);
+					// Descarte: coberto o dano, as demais cartas saem de cena — descartar
+					// além do necessário só desperdiça a mão. As já escolhidas seguem
+					// clicáveis para o jogador poder desfazer a seleção.
+					const isSurplus = discardCovered && !isSelected;
+					const isDimmed = isIncompatible || isSurplus;
 					const dealOrder = activeDeal?.orderById.get(card.id);
 					const discardFlight = activeDiscard?.flightById.get(card.id);
 					return (
 						<CardView
 							key={card.id}
 							card={card}
-							selected={selectedIds.has(card.id)}
-							onPress={() => onCardPress(card)}
+							selected={isSelected}
+							onPress={detailOnly ? undefined : () => onCardPress(card)}
 							onLongPress={() => handleLongPress(card)}
 							onDealComplete={onCardDealComplete}
 							onDiscardComplete={onCardDiscardComplete}
@@ -229,7 +254,9 @@ export const PlayerHand = ({
 										}
 									: undefined
 							}
-							pressDisabled={!interactive || isDimmed}
+							// No passo do clique longo a carta segue tocável (só o toque
+							// simples é que fica inerte), senão não haveria o que praticar.
+							pressDisabled={!detailOnly && (!interactive || isDimmed)}
 							immuneSuit={immuneSuit}
 							sufferMode={phase === "suffer_damage"}
 							dimmed={isDimmed}
@@ -245,7 +272,7 @@ export const PlayerHand = ({
 				card={detailCard}
 				visible={detailCard !== null}
 				immuneSuit={immuneSuit}
-				onClose={() => setDetailCard(null)}
+				onClose={handleDetailClose}
 			/>
 		</View>
 	);

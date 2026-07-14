@@ -3,6 +3,10 @@ import { t } from "i18next";
 import { Text, View } from "react-native";
 import DefeatedValueTable from "@/screens/InstructionsScreen/components/DefeatedValueTable";
 import Section from "@/screens/InstructionsScreen/Sections/Section";
+import {
+	columnFlex,
+	sectionLayout,
+} from "@/screens/InstructionsScreen/Sections/sectionLayout.styles";
 import { styles } from "./DefeatedEnemy.styles";
 
 export default function DefeatedEnemy() {
@@ -17,14 +21,14 @@ export default function DefeatedEnemy() {
 		<Section title={t(`${s("defeatedEnemy")}.title`)}>
 			<View
 				style={[
-					styles.contentLayout,
-					isTablet ? styles.contentLayoutRow : styles.contentLayoutColumn,
+					sectionLayout.content,
+					isTablet ? sectionLayout.contentRow : sectionLayout.contentColumn,
 				]}
 			>
-				<View style={styles.textColumn}>
+				<View style={[sectionLayout.column, columnFlex(1.1, isTablet)]}>
 					<Text style={styles.bodyText}>{t(`${s("defeatedEnemy")}.body`)}</Text>
 				</View>
-				<View style={styles.tableColumn}>
+				<View style={[sectionLayout.column, columnFlex(0.9, isTablet)]}>
 					<DefeatedValueTable rows={rows} />
 				</View>
 			</View>

@@ -1,4 +1,4 @@
-import crownIcon from "@/assets/icons/crown_white.png";
+import closeIcon from "@/assets/icons/letter-x.png";
 import { getHeroName } from "@/data/heroes";
 import { getHandCardImage } from "@/data/images";
 import { Card, Suit } from "@/data/types";
@@ -111,9 +111,11 @@ export const CardDetailModal = ({
 					style={styles.closeBtn}
 					onPress={onClose}
 					activeOpacity={0.7}
+					accessibilityRole="button"
+					accessibilityLabel={t("common.close")}
 				>
 					<Image
-						source={crownIcon}
+						source={closeIcon}
 						style={styles.closeIcon}
 						contentFit="contain"
 					/>

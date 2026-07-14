@@ -1,24 +1,7 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-	contentLayout: {
-		gap: 16,
-		alignItems: "flex-start",
-	},
-	contentLayoutColumn: {
-		flexDirection: "column",
-	},
-	contentLayoutRow: {
-		flexDirection: "row",
-	},
-	textColumn: {
-		flex: 1.1,
-		minWidth: 0,
-	},
 	statusColumn: {
-		flex: 0.9,
-		minWidth: 0,
-		alignSelf: "stretch",
 		gap: 12,
 	},
 	bodyText: {
@@ -34,7 +17,13 @@ export const styles = StyleSheet.create({
 		borderLeftWidth: 3,
 		borderLeftColor: "#22C55E",
 	},
-	victoryTitle: { color: "#22C55E", fontWeight: "700", fontSize: 15 },
+	victoryTitle: {
+		flex: 1,
+		minWidth: 0,
+		color: "#22C55E",
+		fontWeight: "700",
+		fontSize: 15,
+	},
 	defeatBlock: {
 		backgroundColor: "rgba(239,68,68,0.1)",
 		borderRadius: 10,
@@ -51,7 +40,14 @@ export const styles = StyleSheet.create({
 	defeatIcon: {
 		width: 20,
 		height: 20,
+		flexShrink: 0,
 	},
-	defeatTitle: { color: "#EF4444", fontWeight: "700", fontSize: 15 },
+	defeatTitle: {
+		flex: 1,
+		minWidth: 0,
+		color: "#EF4444",
+		fontWeight: "700",
+		fontSize: 15,
+	},
 	endText: { color: "#CBD5E1", fontSize: 13, lineHeight: 20 },
 });

@@ -1,16 +1,37 @@
 import { StyleSheet } from "react-native";
 
+const SPACING = { paddingTop: 14, paddingBottom: 44, rowLift: 4 } as const;
+const SPACING_COMPACT = { paddingTop: 8, paddingBottom: 24, rowLift: 0 } as const;
+
+/** Folga extra acima das cartas — some no modo compacto. */
+export const HAND_ROW_LIFT = SPACING.rowLift;
+export const HAND_ROW_LIFT_COMPACT = SPACING_COMPACT.rowLift;
+
+/**
+ * Altura que a mão devolve ao centro da tela ao entrar em espaçamento compacto.
+ * O cálculo de escala do inimigo usa este valor para decidir a compacidade sobre
+ * uma altura normalizada — sem ele a decisão realimenta a própria medição e o
+ * inimigo pisca entre as duas escalas.
+ */
+export const HAND_COMPACT_RECLAIMED_HEIGHT =
+	SPACING.paddingTop -
+	SPACING_COMPACT.paddingTop +
+	SPACING.paddingBottom -
+	SPACING_COMPACT.paddingBottom +
+	SPACING.rowLift -
+	SPACING_COMPACT.rowLift;
+
 export const styles = StyleSheet.create({
 	container: {
-		paddingTop: 14,
-		paddingBottom: 44,
+		paddingTop: SPACING.paddingTop,
+		paddingBottom: SPACING.paddingBottom,
 		width: "100%",
 		maxWidth: 1160,
 		alignSelf: "center",
 	},
 	containerCompact: {
-		paddingTop: 8,
-		paddingBottom: 24,
+		paddingTop: SPACING_COMPACT.paddingTop,
+		paddingBottom: SPACING_COMPACT.paddingBottom,
 	},
 	label: {
 		color: "#94A3B8",
