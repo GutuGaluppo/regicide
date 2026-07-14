@@ -2,6 +2,7 @@ import type { Translations } from "./pt-BR";
 
 const fr: Translations = {
 	common: {
+		close: "Fermer",
 		attack: "Attaque",
 		health: "Vie",
 		newGame: "Nouvelle partie",

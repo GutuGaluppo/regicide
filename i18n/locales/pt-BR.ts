@@ -1,5 +1,6 @@
 const ptBR = {
 	common: {
+		close: "Fechar",
 		attack: "Ataque",
 		health: "Vida",
 		newGame: "Novo jogo",
