@@ -86,6 +86,8 @@ export const PlayerHand = ({
 	const current = selectedTotal ?? 0;
 	const damageSubtraction = Math.max(0, pending - current);
 	const enough = current >= pending;
+	// Dano já coberto: a seleção de novas cartas é encerrada.
+	const discardCovered = phase === "suffer_damage" && pending > 0 && enough;
 	const { isDesktop } = useResponsiveLayout();
 
 	const desktopSortButtons =
@@ -203,18 +205,25 @@ export const PlayerHand = ({
 				]}
 			>
 				{hand.map((card) => {
-					const isDimmed =
+					const isSelected = selectedIds.has(card.id);
+					// Ataque: cartas que não combinam com a seleção atual.
+					const isIncompatible =
 						phase === "player_turn" &&
 						selectedIds.size > 0 &&
-						!selectedIds.has(card.id) &&
+						!isSelected &&
 						!(compatibleIds?.has(card.id) ?? true);
+					// Descarte: coberto o dano, as demais cartas saem de cena — descartar
+					// além do necessário só desperdiça a mão. As já escolhidas seguem
+					// clicáveis para o jogador poder desfazer a seleção.
+					const isSurplus = discardCovered && !isSelected;
+					const isDimmed = isIncompatible || isSurplus;
 					const dealOrder = activeDeal?.orderById.get(card.id);
 					const discardFlight = activeDiscard?.flightById.get(card.id);
 					return (
 						<CardView
 							key={card.id}
 							card={card}
-							selected={selectedIds.has(card.id)}
+							selected={isSelected}
 							onPress={() => onCardPress(card)}
 							onLongPress={() => handleLongPress(card)}
 							onDealComplete={onCardDealComplete}
