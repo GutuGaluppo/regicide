@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const MIN_SCALE = 0.72;
 const MAX_SCALE = 1;
 const DEFAULT_BOTTOM_GAP = 12;
 const DEFAULT_WIDTH_GAP = 12;
+const COMPACT_SCALE_THRESHOLD = 0.9;
+const COMPACT_HEIGHT_RATIO = 0.88;
 
 const BASE = {
 	cardWidth: 210,
@@ -105,9 +107,26 @@ type UseEnemyCardScaleOptions = {
 	widthReserve?: number;
 	bottomGap?: number;
 	widthGap?: number;
+	/**
+	 * Altura que a mão devolve ao container quando `compactHand` está ligado.
+	 * Necessária porque o container medido cresce ao compactar a mão: sem
+	 * descontá-la, a decisão de compactar realimenta a própria medição e alterna
+	 * indefinidamente (o inimigo pisca entre duas escalas).
+	 */
+	compactReclaimedHeight?: number;
 };
 
-export const useEnemyCardScale = ({
+/**
+ * Resolve escala do inimigo e compacidade da mão para um container já medido.
+ *
+ * `compactHand` é o estado **renderizado** da mão — o mesmo que produziu o
+ * `containerHeight` recebido. Ele é descontado para obter a altura "base" (a que
+ * o container teria com a mão sempre em espaçamento normal). Essa base independe
+ * do estado atual, então a decisão é um ponto fixo: sem isso, compactar a mão
+ * devolve altura ao centro, a altura maior desliga a compacidade, e o inimigo
+ * alterna entre duas escalas para sempre (o "flicker" em telas limítrofes).
+ */
+export const resolveEnemyCardScale = ({
 	containerWidth,
 	containerHeight,
 	topReserved,
@@ -115,42 +134,97 @@ export const useEnemyCardScale = ({
 	widthReserve = 0,
 	bottomGap = DEFAULT_BOTTOM_GAP,
 	widthGap = DEFAULT_WIDTH_GAP,
-}: UseEnemyCardScaleOptions) =>
-	useMemo(() => {
-		if (containerWidth <= 0 || containerHeight <= 0) {
-			return {
-				scale: MAX_SCALE,
-				layout: getEnemyCardLayout(MAX_SCALE),
-				minScaleReached: false,
-				compactHand: false,
-			};
-		}
-
-		const availableWidth = Math.max(
-			0,
-			containerWidth - horizontalPadding * 2 - widthReserve - widthGap,
-		);
-		const availableHeight = Math.max(0, containerHeight - topReserved - bottomGap);
-
-		const rawScale = Math.min(
-			availableWidth > 0 ? availableWidth / ENVELOPE.width : MAX_SCALE,
-			availableHeight > 0 ? availableHeight / ENVELOPE.height : MAX_SCALE,
-			MAX_SCALE,
-		);
-		const scale = clamp(rawScale, MIN_SCALE, MAX_SCALE);
-
+	compactReclaimedHeight = 0,
+	compactHand,
+}: UseEnemyCardScaleOptions & { compactHand: boolean }) => {
+	if (containerWidth <= 0 || containerHeight <= 0) {
 		return {
-			scale,
-			layout: getEnemyCardLayout(scale),
-			minScaleReached: scale <= MIN_SCALE + 0.001,
-			compactHand: rawScale < 0.9 || availableHeight < ENVELOPE.height * 0.88,
+			scale: MAX_SCALE,
+			layout: getEnemyCardLayout(MAX_SCALE),
+			minScaleReached: false,
+			nextCompactHand: compactHand,
 		};
-	}, [
-		bottomGap,
-		containerHeight,
+	}
+
+	const availableWidth = Math.max(
+		0,
+		containerWidth - horizontalPadding * 2 - widthReserve - widthGap,
+	);
+	const availableHeight = Math.max(0, containerHeight - topReserved - bottomGap);
+
+	const widthScale =
+		availableWidth > 0 ? availableWidth / ENVELOPE.width : MAX_SCALE;
+	const heightScale = (height: number) =>
+		height > 0 ? height / ENVELOPE.height : MAX_SCALE;
+
+	const rawScale = Math.min(widthScale, heightScale(availableHeight), MAX_SCALE);
+	const scale = clamp(rawScale, MIN_SCALE, MAX_SCALE);
+
+	const baselineHeight = Math.max(
+		0,
+		availableHeight - (compactHand ? compactReclaimedHeight : 0),
+	);
+	const baselineScale = Math.min(
+		widthScale,
+		heightScale(baselineHeight),
+		MAX_SCALE,
+	);
+
+	return {
+		scale,
+		layout: getEnemyCardLayout(scale),
+		minScaleReached: scale <= MIN_SCALE + 0.001,
+		nextCompactHand:
+			baselineScale < COMPACT_SCALE_THRESHOLD ||
+			baselineHeight < ENVELOPE.height * COMPACT_HEIGHT_RATIO,
+	};
+};
+
+export const useEnemyCardScale = (options: UseEnemyCardScaleOptions) => {
+	// Estado renderizado da mão: é ele que corresponde ao `containerHeight` que
+	// acabou de ser medido, por isso serve de base para normalizar a altura.
+	const [compactHand, setCompactHand] = useState(false);
+
+	const {
 		containerWidth,
-		horizontalPadding,
+		containerHeight,
 		topReserved,
-		widthGap,
+		horizontalPadding,
 		widthReserve,
-	]);
+		bottomGap,
+		widthGap,
+		compactReclaimedHeight,
+	} = options;
+
+	const { scale, layout, minScaleReached, nextCompactHand } = useMemo(
+		() =>
+			resolveEnemyCardScale({
+				containerWidth,
+				containerHeight,
+				topReserved,
+				horizontalPadding,
+				widthReserve,
+				bottomGap,
+				widthGap,
+				compactReclaimedHeight,
+				compactHand,
+			}),
+		[
+			bottomGap,
+			compactHand,
+			compactReclaimedHeight,
+			containerHeight,
+			containerWidth,
+			horizontalPadding,
+			topReserved,
+			widthGap,
+			widthReserve,
+		],
+	);
+
+	useEffect(() => {
+		if (nextCompactHand !== compactHand) setCompactHand(nextCompactHand);
+	}, [compactHand, nextCompactHand]);
+
+	return { scale, layout, minScaleReached, compactHand };
+};

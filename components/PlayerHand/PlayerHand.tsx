@@ -9,7 +9,11 @@ import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LayoutAnimation, ScrollView, Text, View } from "react-native";
-import { styles } from "./PlayerHand.styles";
+import {
+	HAND_ROW_LIFT,
+	HAND_ROW_LIFT_COMPACT,
+	styles,
+} from "./PlayerHand.styles";
 import { ActionButtonRow } from "./components/ActionButtonRow";
 import { IconLabelButton } from "./components/ActionButtonRow/IconLabelButton";
 import { SortButton } from "./components/ActionButtonRow/SortButton";
@@ -191,7 +195,11 @@ export const PlayerHand = ({
 			<View
 				style={[
 					styles.handRow,
-					{ paddingTop: liftY + (compactVerticalSpacing ? 0 : 4) },
+					{
+						paddingTop:
+							liftY +
+							(compactVerticalSpacing ? HAND_ROW_LIFT_COMPACT : HAND_ROW_LIFT),
+					},
 				]}
 			>
 				{hand.map((card) => {

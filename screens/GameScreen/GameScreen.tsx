@@ -7,7 +7,10 @@ import { EnemyCaptureOverlay } from "@/components/EnemyCaptureOverlay/EnemyCaptu
 import { EnemyCard } from "@/components/EnemyCard";
 import { EnemyModal } from "@/components/EnemyModal";
 import { GameLogModal } from "@/components/GameLog";
-import { PlayerHand } from "@/components/PlayerHand";
+import {
+	HAND_COMPACT_RECLAIMED_HEIGHT,
+	PlayerHand,
+} from "@/components/PlayerHand";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { SuitTracker } from "@/components/SuitTracker";
@@ -241,6 +244,7 @@ export const GameScreen = () => {
 		topReserved: centerTopPadding,
 		horizontalPadding: screenPadding,
 		widthReserve: showParticipantsSidebar ? 132 : 0,
+		compactReclaimedHeight: HAND_COMPACT_RECLAIMED_HEIGHT,
 	});
 
 	if (phase === "victory")
