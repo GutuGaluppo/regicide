@@ -1,10 +1,10 @@
 # Regicide Tracker
 
-Aplicativo mobile companion para o jogo de cartas **Regicide**, construído com React Native e Expo. Oferece dois modos: um **jogo digital** completo com todas as regras implementadas, e um **tracker físico** para acompanhar partidas com o baralho real.
+Aplicativo companion para o jogo de cartas **Regicide**, construído com React Native e Expo. Roda em iOS, Android e web, e oferece quatro modos: um **jogo digital** completo, um **multiplayer online** em tempo real, um **marcador** para partidas com o baralho físico, e as **regras** consultáveis no app.
 
 ## Sobre o Regicide
 
-Regicide é um jogo cooperativo de cartas em que os jogadores enfrentam os inimigos do castelo (Valetes, Rainhas e Reis) usando as cartas da taverna como armas. Cada naipe concede um poder especial:
+Regicide é um jogo cooperativo (1–4 jogadores) em que se enfrentam os 12 nobres do castelo (Valetes, Rainhas e Reis) usando as cartas da taverna como armas. Cada naipe concede um poder:
 
 | Naipe | Efeito |
 |-------|--------|
@@ -13,81 +13,85 @@ Regicide é um jogo cooperativo de cartas em que os jogadores enfrentam os inimi
 | Ouros | Compra cartas extras para a mão |
 | Paus | Dobra o dano causado |
 
-Cada inimigo é imune ao naipe correspondente ao seu próprio naipe — exceto quando um Jester é jogado.
+Cada inimigo é imune ao seu próprio naipe — exceto quando um Jester é jogado.
 
 ## Funcionalidades
 
-### Modo Digital
-- Partida completa para 2 jogadores com todas as regras do Regicide
-- Mão do jogador interativa com seleção de cartas
-- Validação de jogadas (combos, Animal Companions, Jester)
-- Resolução automática dos efeitos de naipe
-- Fase de sofrer dano com descarte forçado
-- Indicadores visuais de imunidade nas cartas da mão
-- Barras de HP e Ataque em tempo real sobre a imagem do inimigo
-- Footer com progresso das fases (Valetes → Rainhas → Reis)
-- Persistência automática do estado via AsyncStorage
-- Botões de Jogar, Ceder turno e Reiniciar
+### Jogo digital
+- Partida completa com todas as regras: combos, Animal Companions (Ás), Jester e imunidade
+- Resolução automática dos poderes de naipe e da fase de sofrer dano
+- Tutorial guiado com spotlight, incluindo prática das ações
+- Detalhes de cada carta em drawer (clique longo na mão)
+- Animações de compra, descarte e derrota (Reanimated), trilha sonora e háptico
+- Histórico da partida e persistência automática do estado (AsyncStorage)
 
-### Tracker Físico
-- Acompanhamento de HP e ataque do inimigo atual
-- Registro de dano por naipe com validação de imunidade
-- Seleção do inimigo ativo pelo footer
-- Histórico de inimigos derrotados
+### Multiplayer online
+- Salas com convite por link, lobby e chat em tempo real (Firebase Realtime Database)
+- Turnos sincronizados entre os jogadores, com revelação das jogadas e avatares
+
+### Marcador (baralho físico)
+- Acompanha HP e ataque do inimigo atual, com registro de dano por naipe e validação de imunidade
+- Grade de seleção do próximo nobre; os derrotados aparecem com sua arte de sombra
+- Desfazer (undo) da última ação
+
+### Regras no app
+- Rulebook completo e ilustrado, com tabelas de preparação e dos nobres
+
+Interface disponível em **português, inglês, espanhol e francês**.
 
 ## Estrutura do projeto
 
+Componentes e telas seguem o padrão pasta-por-componente: `Componente.tsx` (composição), `Componente.styles.ts` (StyleSheet) e `index.ts` (barrel), com subcomponentes em `components/`.
+
 ```
-├── app/                  # Rotas Expo Router
-├── assets/
-│   ├── backgrounds/      # Imagens de fundo
-│   ├── cards/            # Ilustrações dos inimigos
-│   ├── game/             # Cartas da taverna
-│   └── icons/            # Ícones SVG/WebP
-├── components/
-│   ├── ActionBar.tsx     # Botões de ação (jogar, ceder, descartar)
-│   ├── AttackInput.tsx   # Input de dano por naipe (tracker)
-│   ├── CardView.tsx      # Carta individual da mão do jogador
-│   ├── CastleFooter.tsx  # Footer de progresso do castelo
-│   ├── DefeatFooter.tsx  # Footer de inimigos (tracker)
-│   ├── EnemyCard.tsx     # Card do inimigo com HP/ATK overlay
-│   └── PlayerHand.tsx    # Mão do jogador
-├── data/
-│   ├── deck.ts           # Criação do baralho da taverna
-│   ├── enemies.ts        # Deck do castelo (stats dos inimigos)
-│   ├── images.ts         # Mapeamento rank/naipe → imagem
-│   └── types.ts          # Tipos TypeScript globais
-├── hooks/
-│   ├── useGame.ts        # Lógica completa do modo digital
-│   └── useTracker.ts     # Estado do tracker físico
-├── screens/
-│   ├── GameScreen.tsx    # Tela do modo digital
-│   ├── HomeScreen.tsx    # Tela inicial
-│   └── TrackerScreen.tsx # Tela do tracker físico
-├── services/
-│   └── storage.ts        # Persistência com AsyncStorage
-└── utils/
-    ├── gameLogic.ts      # Validação e resolução de jogadas
-    └── shuffle.ts        # Fisher-Yates shuffle
+├── app/                  # Rotas (Expo Router): index, game, multiplayer-game, lobby, tracker, instructions
+├── assets/               # Fundos, cartas, ícones, trilhas sonoras
+├── components/           # Componentes compartilhados (EnemyCard, PlayerHand, TutorialOverlay, ...)
+├── contexts/             # AudioContext e injeção da store de jogo (GameStoreContext)
+├── data/                 # Baralho, castelo, inimigos, avatares e mapa de imagens
+├── docs/                 # Notas de engenharia e planos de implementação
+├── hooks/                # Layout responsivo, escala do inimigo, tutorial, trilha sonora
+├── i18n/                 # Traduções (pt-BR, en, es, fr)
+├── screens/              # Uma pasta por tela
+├── services/             # Firebase (jogo, chat, log), storage, cache de imagens, notificações
+├── store/                # Estado com Zustand: game, tracker, multiplayer, chat, tutorial
+├── utils/                # gameLogic (validação) e gameEngine (resolução), embaralhamento, log
+└── __tests__/            # Testes Jest da lógica pura
 ```
+
+A regra de negócio vive em `utils/` e `store/` — os componentes não decidem regras.
 
 ## Tecnologias
 
-- **React Native** + **Expo** (~54)
-- **Expo Router** — navegação file-based
-- **react-native-svg** + **react-native-svg-transformer** — ícones SVG dinâmicos
-- **AsyncStorage** — persistência local do estado de jogo
-- **TypeScript**
-
-## Documentacao Tecnica
-
-- [Plano de implementacao do chat em tempo real](docs/real-time-chat-implementation-plan.md)
+- **React Native** + **Expo** (~54) + **Expo Router** (navegação file-based)
+- **Zustand** — estado (uma store por domínio)
+- **Firebase Realtime Database** — multiplayer e chat
+- **i18next** / **react-i18next** — 4 idiomas
+- **react-native-reanimated** — animações
+- **expo-av** (trilha sonora), **expo-image**, **expo-haptics**
+- **AsyncStorage** — persistência local
+- **TypeScript** + **Jest** (`jest-expo`)
 
 ## Como rodar
 
 ```bash
 npm install
-npx expo start
+npx expo start          # ou: npm run ios | npm run android | npm run web
 ```
 
-Abra no simulador iOS/Android ou no navegador via Expo Go.
+O multiplayer exige credenciais do Firebase: copie `.env.example` para `.env.local` e preencha com as do seu projeto. Cada variável — o que faz, onde é usada e o que quebra sem ela — está em [Variáveis de ambiente](docs/ENVIRONMENT.md); o passo a passo no console, no [Guia do Firebase](docs/FIREBASE_GUIDE.md). Os demais modos funcionam sem configuração.
+
+```bash
+npm test                # suíte de testes
+npm run lint            # ESLint
+npx tsc --noEmit        # checagem de tipos
+```
+
+## Documentação técnica
+
+- [Variáveis de ambiente](docs/ENVIRONMENT.md) — o que cada `EXPO_PUBLIC_*` faz e onde é consumida
+- [Guia do Firebase](docs/FIREBASE_GUIDE.md) — passo a passo no console, com prints
+- [Estratégias de multiplayer](docs/MULTIPLAYER_STRATEGIES.md)
+- [Chat em tempo real](docs/real-time-chat-implementation-plan.md) — plano de implementação
+- [Plano do tutorial](docs/PLANO_TUTORIAL.md)
+- [Persistência](docs/STORAGE.md)
