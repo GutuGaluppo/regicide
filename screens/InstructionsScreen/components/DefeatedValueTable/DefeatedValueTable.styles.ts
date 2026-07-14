@@ -12,6 +12,7 @@ export const styles = StyleSheet.create({
 	defeatedRankBadge: {
 		width: 32,
 		height: 32,
+		flexShrink: 0,
 		borderRadius: 8,
 		backgroundColor: "rgba(251,191,36,0.15)",
 		borderWidth: 1,
@@ -27,11 +28,15 @@ export const styles = StyleSheet.create({
 	},
 	defeatedLabel: {
 		flex: 1,
+		minWidth: 0,
 		color: "#F1F5F9",
 		fontWeight: "600",
 		fontSize: 14,
 	},
 	defeatedValue: {
+		flexShrink: 1,
+		minWidth: 0,
+		textAlign: "right",
 		color: "#FBBF24",
 		fontWeight: "800",
 		fontSize: 15,

@@ -2,12 +2,16 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
 	section: {
+		width: "100%",
+		alignSelf: "stretch",
 		backgroundColor: "rgba(15,23,42,0.8)",
 		borderRadius: 14,
 		padding: 16,
 		gap: 12,
 		borderWidth: 1,
 		borderColor: "rgba(148,163,184,0.12)",
+		// Barreira final: nenhum conteúdo pode ser pintado fora da caixa.
+		overflow: "hidden",
 	},
 	sectionTitle: {
 		fontFamily: "IMFellEnglish-Regular",

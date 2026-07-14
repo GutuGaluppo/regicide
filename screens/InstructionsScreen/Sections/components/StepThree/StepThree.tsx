@@ -5,6 +5,10 @@ import { Text, View } from "react-native";
 import DefeatStepList from "@/screens/InstructionsScreen/components/DefeatStepList";
 import EnemyTable from "@/screens/InstructionsScreen/components/EnemyTable";
 import Section from "@/screens/InstructionsScreen/Sections/Section";
+import {
+	columnFlex,
+	sectionLayout,
+} from "@/screens/InstructionsScreen/Sections/sectionLayout.styles";
 import { styles } from "./StepThree.styles";
 
 export default function StepThree() {
@@ -33,15 +37,21 @@ export default function StepThree() {
 		<Section title={t(`${s("step3")}.title`)}>
 			<View
 				style={[
-					styles.contentLayout,
-					isTablet ? styles.contentLayoutRow : styles.contentLayoutColumn,
+					sectionLayout.content,
+					isTablet ? sectionLayout.contentRow : sectionLayout.contentColumn,
 				]}
 			>
-				<View style={styles.textColumn}>
+				<View
+					style={[
+						sectionLayout.column,
+						styles.textColumn,
+						columnFlex(1.15, isTablet),
+					]}
+				>
 					<Text style={styles.stepSubtitle}>{t(`${s("step3")}.subtitle`)}</Text>
 					<Text style={styles.bodyText}>{t(`${s("step3")}.body`)}</Text>
 				</View>
-				<View style={styles.tableColumn}>
+				<View style={[sectionLayout.column, columnFlex(0.85, isTablet)]}>
 					<EnemyTable header={enemyHeader} rows={enemyRows} />
 				</View>
 			</View>
